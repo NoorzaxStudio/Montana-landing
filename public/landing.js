@@ -1,6 +1,5 @@
-/* Montana landing: theme + language toggles, live prices, TradingView ticker, consultation form. */
+/* Montana landing: theme + language toggles, live prices, TradingView ticker. */
 (function () {
-  var TELEGRAM = "https://t.me/+CI6bbCVc3M4xZjJk";
   var R = document.documentElement;
   function LANG() { return R.lang === "en" ? "en" : "fa"; }
   function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
@@ -13,7 +12,7 @@
       mail: "ایمیل درست نیست. اگه نمی‌خوای، خالیش بذار.",
       fail: "ثبت نشد. دوباره امتحان کن یا مستقیم تو تلگرام پیام بده.",
       sending: "در حال ثبت…",
-      title: "مونتانا | تحلیلگر سازمانی بازارهای جهانی",
+      title: "مجتبی حسینی (مونتانا) | تحلیلگر سازمانی بازارهای جهانی",
       light: "حالت روشن", dark: "حالت تیره", langLbl: "EN", langAria: "English"
     },
     en: {
@@ -22,7 +21,7 @@
       mail: "That email doesn't look right. Leave it empty if you prefer.",
       fail: "Couldn't submit. Please try again or message us on Telegram.",
       sending: "Submitting…",
-      title: "Montana | Institutional Global Markets Analyst",
+      title: "Mojtaba Hosseini (Montana) | Institutional Global Markets Analyst",
       light: "Light mode", dark: "Dark mode", langLbl: "فا", langAria: "فارسی"
     }
   };
@@ -137,34 +136,4 @@
   });
   applyLang(load("mt-lang") === "en" ? "en" : "fa");
 
-  /* ---------- consultation form -> /api/lead -> Telegram ---------- */
-  var f = document.getElementById("leadForm");
-  if (f) f.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var toEn = function (s) { return s.replace(/[۰-۹]/g, function (d) { return "۰۱۲۳۴۵۶۷۸۹".indexOf(d); }).replace(/[٠-٩]/g, function (d) { return "٠١٢٣٤٥٦٧٨٩".indexOf(d); }).replace(/[\s-]/g, ""); };
-    var name = f.fname.value.trim(), phone = toEn(f.fphone.value), mail = f.femail.value.trim();
-    if (name.length < 2) { err.textContent = T[LANG()].name; f.fname.focus(); return; }
-    if (!/^(\+98|0098|0)?9\d{9}$/.test(phone)) { err.textContent = T[LANG()].phone; f.fphone.focus(); return; }
-    if (mail && !/^\S+@\S+\.\S+$/.test(mail)) { err.textContent = T[LANG()].mail; f.femail.focus(); return; }
-    var q = new URLSearchParams(location.search);
-    var source = ["utm_source", "utm_medium", "utm_campaign", "utm_content"].map(function (k) { return q.get(k); }).filter(Boolean).join(" / ") || (document.referrer ? "ref: " + document.referrer : "direct");
-    var btn = f.querySelector('button[type="submit"]'), label = btn.innerHTML;
-    btn.disabled = true; btn.textContent = T[LANG()].sending; err.textContent = "";
-    fetch("/api/lead", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name, phone: phone, email: mail, source: source, website: f.website ? f.website.value : "" })
-    })
-      .then(function (r) { return r.json().catch(function () { return {}; }); })
-      .then(function (d) {
-        if (!d.ok) throw new Error("lead");
-        f.hidden = true;
-        document.getElementById("formDone").hidden = false;
-        setTimeout(function () { location.href = TELEGRAM; }, 1200);
-      })
-      .catch(function () {
-        err.textContent = T[LANG()].fail;
-        btn.disabled = false; btn.innerHTML = label;
-      });
-  });
 })();

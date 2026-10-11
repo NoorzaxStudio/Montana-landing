@@ -320,10 +320,10 @@ footer .page{padding-block:28px 40px;display:grid;gap:14px}
 }
 
 /* v6: three hero slides, trading floor first */
-.hero-media img{animation:slide3 27s infinite}
+.hero-media img{animation:slide3 12s infinite}
 .hero-media img.s0{object-position:50% 40%;filter:brightness(.7) saturate(.9);animation-delay:0s}
-.hero-media img.s1{animation-delay:9s}
-.hero-media img.s2{animation-delay:18s}
+.hero-media img.s1{animation-delay:4s}
+.hero-media img.s2{animation-delay:8s}
 @keyframes slide3{0%{opacity:0;transform:scale(1.04)}4%{opacity:1}31%{opacity:1}38%{opacity:0;transform:scale(1.12) translateX(-2%)}100%{opacity:0;transform:scale(1.04)}}
 @media (prefers-reduced-motion:reduce){.hero-media img.s1{opacity:0}.hero-media img.s0{opacity:1}}
 
