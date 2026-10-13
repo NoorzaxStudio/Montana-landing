@@ -1,5 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=$HOME/public_html/
+    - export DEPLOYPATH=$HOME/montana/
+    - /bin/mkdir -p $DEPLOYPATH
     - /bin/cp -R bluehost/. $DEPLOYPATH
