@@ -216,6 +216,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ga']) && csrf_ok()) {
 }
 $gaId = trim((string) @file_get_contents($GA));
 
+// ---------- settings: Google Sheet for leads ----------
+require_once __DIR__ . '/lib-sheet.php';
+$shMsg = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sheet_url']) && csrf_ok()) {
+  $u = trim((string) $_POST['sheet_url']); $t = trim((string) ($_POST['sheet_token'] ?? ''));
+  if ($u === '') { @unlink("$DIR/sheet.json"); $shMsg = 'اتصال به گوگل شیت قطع شد.'; }
+  elseif (!preg_match('~^https://script\.google\.com/macros/s/[A-Za-z0-9_-]+/exec$~', $u)) $shMsg = 'آدرس باید شبیه https://script.google.com/macros/s/.../exec باشد.';
+  elseif ($t === '' && empty(montana_sheet_conf($DIR)['token'])) $shMsg = 'توکن را وارد کنید.';
+  else {
+    if ($t === '') $t = montana_sheet_conf($DIR)['token'];  // empty box keeps the saved token
+    file_put_contents("$DIR/sheet.json", json_encode(['url' => $u, 'token' => $t]), LOCK_EX); @chmod("$DIR/sheet.json", 0600);
+    $shMsg = 'ذخیره شد.';
+  }
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sheet_test']) && csrf_ok()) {
+  [$ok, $why] = montana_sheet_send($DIR, ['name' => 'تست پنل ادمین', 'phone' => '09000000000', 'email' => '', 'birth_year' => '', 'source' => 'test']);
+  $shMsg = $ok ? 'یک ردیف تست به گوگل شیت اضافه شد ✓' : 'ارسال نشد: ' . $why;
+}
+$sheet = montana_sheet_conf($DIR);
+
 page_start('پنل آمار مونتانا'); ?>
 <div class="wrap">
 <header class="top">
@@ -275,6 +295,18 @@ page_start('پنل آمار مونتانا'); ?>
   <div style="overflow-x:auto"><table><tr><th>زمان</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>سال تولد</th><th>اپ / سایت تبلیغ</th></tr>
   <?php foreach (array_slice(array_reverse($leads), 0, 200) as $l) echo '<tr><td class="ltr">' . h($l[0]) . '</td><td>' . h($l[1]) . '</td><td class="ltr">' . h($l[2]) . '</td><td class="ltr">' . h($l[3]) . '</td><td>' . h($l[4]) . '</td><td class="ltr">' . h($l[6] ?? '') . '</td></tr>'; ?></table></div></div>
 <?php endif; ?>
+<div class="card"><h2>گوگل شیت ثبت‌نام‌ها</h2>
+  <p class="sub">ثبت‌نام‌های صفحه فرم علاوه بر این پنل، به این گوگل شیت هم فرستاده می‌شوند. آدرس Web app و توکن را از Apps Script همان شیت بردارید.</p>
+  <form method="post" style="display:grid;gap:8px;max-width:620px">
+    <input type="hidden" name="csrf" value="<?= h(csrf()) ?>">
+    <input type="text" name="sheet_url" value="<?= h($sheet['url'] ?? '') ?>" placeholder="https://script.google.com/macros/s/.../exec" dir="ltr">
+    <input type="text" name="sheet_token" value="" placeholder="<?= $sheet ? 'توکن ذخیره شده (برای تغییر، توکن جدید را بنویسید)' : 'توکن (TOKEN در Apps Script)' ?>" dir="ltr">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn" style="background:var(--blue);color:#fff;border-color:var(--blue)">ذخیره</button>
+      <?php if ($sheet): ?><button class="btn" name="sheet_test" value="1" formnovalidate>ارسال ردیف تست</button><?php endif; ?>
+      <span class="sub" style="margin:0"><?= $shMsg ? h($shMsg) : ($sheet ? 'متصل' : 'وصل نیست') ?></span>
+    </div>
+  </form></div>
 <div class="card"><h2>گوگل آنالیتیکس</h2>
   <p class="sub">شناسه اندازه‌گیری (Measurement ID) را از Google Analytics ← Admin ← Data streams بردارید. خالی بگذارید تا غیرفعال شود.</p>
   <form method="post" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">

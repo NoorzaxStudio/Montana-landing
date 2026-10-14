@@ -4,6 +4,11 @@ ErrorDocument 404 /404.php
 Options -Indexes
 AddType application/manifest+json .webmanifest
 
+# Helper files are included by other pages, never opened directly.
+<FilesMatch "^lib-">
+  Require all denied
+</FilesMatch>
+
 RewriteEngine On
 
 RewriteRule ^api/prices/?$ prices.php [L]

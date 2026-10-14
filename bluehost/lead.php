@@ -35,6 +35,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
           substr((string) ($_GET['utm_campaign'] ?? ''), 0, 60), substr($_SERVER["HTTP_USER_AGENT"] ?? '', 0, 200)]);
         flock($h, LOCK_UN); fclose($h);
       }
+      // Also to the Google Sheet the sales team works from (if set up in the admin panel).
+      require_once __DIR__ . "/lib-sheet.php";
+      $src = trim(($_GET['utm_source'] ?? '') . ' / ' . ($_GET['utm_content'] ?? ''), ' /');
+      montana_sheet_send($statsDir, ['name' => $val['name'], 'phone' => $phone, 'email' => $val['email'],
+        'birth_year' => $val['year'], 'source' => mb_substr($src !== '' ? $src : 'montanafx.com/lead', 0, 200)]);
     }
     header("Location: /go?l=1", true, 303);
     exit;
