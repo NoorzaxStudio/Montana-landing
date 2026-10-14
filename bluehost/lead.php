@@ -6,6 +6,7 @@ $statsDir = dirname(__DIR__, 2) . "/montana-stats";
 $fa2en = fn($v) => strtr(trim((string) $v), ['۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9','٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9']);
 $val = ['name' => '', 'phone' => '', 'email' => '', 'year' => ''];
 $err = [];
+$dup = '';
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
   $val['name'] = trim(preg_replace('/\s+/u', ' ', (string) ($_POST['name'] ?? '')));
   $val['phone'] = $fa2en($_POST['phone'] ?? '');
@@ -18,6 +19,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   if (!preg_match('/^09\d{9}$/', $phone)) $err['phone'] = 'شماره موبایل را درست وارد کنید، مثل ۰۹۱۲۳۴۵۶۷۸۹';
   if ($val['email'] !== '' && !filter_var($val['email'], FILTER_VALIDATE_EMAIL)) $err['email'] = 'ایمیل درست نیست.';
   if (!preg_match('/^1[34]\d\d$/', $val['year']) || (int) $val['year'] < 1320 || (int) $val['year'] > 1395) $err['year'] = 'سال تولد را انتخاب کنید.';
+  // Same mobile or email already signed up: don't save it twice.
+  $dup = '';
+  if (!$err && is_file($statsDir . "/leads.csv") && ($fh = fopen($statsDir . "/leads.csv", "r"))) {
+    $mail = strtolower($val['email']);
+    while (($row = fgetcsv($fh)) !== false) {
+      if (($row[2] ?? '') === $phone) { $dup = 'phone'; break; }
+      if ($mail !== '' && strtolower(ltrim($row[3] ?? '', "'")) === $mail) { $dup = 'email'; break; }
+    }
+    fclose($fh);
+  }
+  if ($dup === 'phone') $err['phone'] = 'این شماره موبایل قبلا ثبت‌نام کرده است.';
+  if ($dup === 'email') $err['email'] = 'این ایمیل قبلا ثبت‌نام کرده است.';
   // Bots: a hidden field people never fill, and a form sent too fast after loading.
   $bot = !empty($_POST['website']) || (time() - (int) ($_POST['ts'] ?? 0)) < 3;
   if (!$err) {
@@ -207,6 +220,7 @@ $e = fn($k) => htmlspecialchars($val[$k], ENT_QUOTES, 'UTF-8');
         <label class="f"><span data-en="Year of birth (Solar Hijri)">سال تولد</span>
           <select name="year" required class="sel"><option value="" data-en="Choose">انتخاب کنید</option><?php for ($y = 1390; $y >= 1320; $y--) echo '<option value="' . $y . '"' . ($val['year'] === (string) $y ? ' selected' : '') . '>' . strtr((string) $y, ['0'=>'۰','1'=>'۱','2'=>'۲','3'=>'۳','4'=>'۴','5'=>'۵','6'=>'۶','7'=>'۷','8'=>'۸','9'=>'۹']) . '</option>'; ?></select></label>
         <?php if (isset($err['year'])) echo '<span class="err">' . $err['year'] . '</span>'; ?>
+        <?php if ($dup) echo '<p class="done" style="padding:16px;gap:8px;margin:0"><span>شما قبلا ثبت‌نام کرده‌اید و به‌زودی برای مشاوره باهاتون تماس می‌گیریم. برای ورود به کانال تلگرام:</span><a class="btn btn-tg" href="/go?l=1" rel="nofollow">ورود به کانال تلگرام</a></p>'; ?>
         <button class="btn btn-tg" type="submit" style="width:100%" data-en="Sign up and join the channel">ثبت‌نام و ورود به کانال تلگرام</button>
         <p class="opt" style="margin:0;text-align:center;line-height:1.8" data-en="Your details are only used to contact you and are never shared.">اطلاعاتت فقط برای تماس با خودت استفاده میشه و در اختیار کسی قرار نمی‌گیره.</p>
       </form>
