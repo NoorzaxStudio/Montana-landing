@@ -16,7 +16,8 @@ $clean = fn($s) => str_replace(["\t", "\n", "\r"], ' ', $s);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $o = $_POST['o'] ?? '';
   if (in_array($o, ['open', 'stuck'], true)) {
-    @file_put_contents($dir . '/go.log', date('Y-m-d H:i:s') . "\t" . $o . "\t" . $clean($ua) . "\n", FILE_APPEND | LOCK_EX);
+    $src = ($_POST['l'] ?? '') === '1' ? 'lead' : 'main';
+    @file_put_contents($dir . '/go.log', date('Y-m-d H:i:s') . "\t" . $o . "\t" . $clean($ua) . "\t" . $src . "\n", FILE_APPEND | LOCK_EX);
   }
   http_response_code(204);
   exit;
@@ -26,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   date('Y-m-d H:i:s') . "\t" . $clean($_SERVER['HTTP_REFERER'] ?? '-') . "\t" . $clean($ua) . "\n",
   FILE_APPEND | LOCK_EX);
 
+$fromLead = ($_GET['l'] ?? '') === '1';
 $android = stripos($ua, 'Android') !== false;
 // Android WebView ("; wv)" or "Version/4.0 ... Chrome") or a known in-app browser.
 $inApp = preg_match('/; wv\)|Version\/4\.0 .*Chrome\/|FBAN|FBAV|Instagram|Line\/|MicroMessenger|GSA\//', $ua) === 1;
@@ -49,6 +51,7 @@ small{display:block;color:#8a93a3;margin-top:14px;line-height:1.8}
 .help b{display:block;margin-bottom:6px;color:#0d1016}.help ol{margin:6px 0 0;padding-inline-start:20px}
 .help.on{display:block}
 </style></head><body><div class="box">
+<?php if ($fromLead): ?><p style="color:#0f8a4b;font-weight:700;margin:0 0 14px">✓ ثبت‌نام شما انجام شد. به‌زودی برای مشاوره باهاتون تماس می‌گیریم.</p><?php endif; ?>
 <h1>در حال باز کردن تلگرام…</h1>
 <p>اگر تلگرام خودکار باز نشد، دکمه زیر را بزنید.</p>
 <a class="main" href="<?php echo htmlspecialchars($open); ?>">باز کردن در اپ تلگرام</a>
@@ -78,7 +81,7 @@ small{display:block;color:#8a93a3;margin-top:14px;line-height:1.8}
   var link = <?php echo json_encode($tme); ?>, sent = {};
   function report(o) {
     if (sent[o]) return; sent[o] = 1;
-    var d = new URLSearchParams({ o: o });
+    var d = new URLSearchParams({ o: o, l: <?php echo $fromLead ? '"1"' : '"0"'; ?> });
     if (!(navigator.sendBeacon && navigator.sendBeacon("/go.php", d))) {
       try { fetch("/go.php", { method: "POST", body: d, keepalive: true }); } catch (e) {}
     }

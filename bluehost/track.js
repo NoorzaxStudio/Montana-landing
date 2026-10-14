@@ -38,7 +38,7 @@
       seen: Object.keys(seen).map(Number).sort(function (a, b) { return a - b; }),
       total: secs.length, join: join, btn: joinBtn, w: window.innerWidth,
       ref: document.referrer || "", utm: q.get("utm_source") || q.get("utm_campaign") || "",
-      lang: document.documentElement.lang, clk: clicks.splice(0)
+      lang: document.documentElement.lang, pg: /^\/lead/.test(location.pathname) ? "lead" : "main", clk: clicks.splice(0)
     });
   }
   function send(ev) {
@@ -48,7 +48,7 @@
   }
 
   document.addEventListener("click", function (e) {
-    var a = e.target.closest && e.target.closest('a[href="/go"]');
+    var a = e.target.closest && e.target.closest('a[href="/go"], a[href="#lead"]');
     if (!a) return;
     join += 1;
     joinBtn = +a.getAttribute("data-b") || (Array.prototype.indexOf.call(document.querySelectorAll('a[href="/go"]'), a) + 1);

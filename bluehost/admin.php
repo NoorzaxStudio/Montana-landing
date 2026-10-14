@@ -113,6 +113,7 @@ if (empty($_SESSION['ok'])) {
 }
 
 // ---------- data ----------
+$PG = ($_GET['pg'] ?? '') === 'lead' ? 'lead' : 'main';  // main landing or the lead-form page (/lead)
 $range = $_GET['r'] ?? '7';
 $ranges = ['1' => 'امروز', '7' => '۷ روز', '30' => '۳۰ روز', 'all' => 'همه'];
 if (!isset($ranges[$range])) $range = '7';
@@ -125,14 +126,31 @@ function read_tsv(string $f, string $from, string $bot): array {
   foreach (file($f, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $l) {
     $p = explode("\t", $l);
     if (count($p) < 3 || substr($p[0], 0, 10) < $from || preg_match($bot, $p[2])) continue;
-    $out[] = ['t' => $p[0], 'ref' => $p[1], 'ua' => $p[2]];
+    $out[] = ['t' => $p[0], 'ref' => $p[1], 'ua' => $p[2], 'x' => $p[3] ?? ''];
   }
   return $out;
 }
-$views = read_tsv("$DIR/views.log", $from, $BOT);
-$jumps = read_tsv("$DIR/clicks.log", $from, $BOT);
+$views = read_tsv($PG === 'lead' ? "$DIR/views-lead.log" : "$DIR/views.log", $from, $BOT);
+// Telegram clicks, split by the page they came from (/lead sends people to /go after the form).
+$jumps = array_values(array_filter(read_tsv("$DIR/clicks.log", $from, $BOT), fn($j) => (strpos($j['ref'], '/lead') !== false) === ($PG === 'lead')));
+
+// Leads from the form on /lead.
+$LEADS = "$DIR/leads.csv";
+$leads = [];
+if (is_file($LEADS) && ($fh = fopen($LEADS, 'r'))) {
+  fgetcsv($fh);
+  while (($row = fgetcsv($fh)) !== false) if (count($row) >= 5 && substr($row[0], 0, 10) >= $from) $leads[] = $row;
+  fclose($fh);
+}
+if (isset($_GET['export']) && $_GET['export'] === 'leads') {
+  header('Content-Type: text/csv; charset=utf-8');
+  header('Content-Disposition: attachment; filename="montana-leads-' . date('Y-m-d') . '.csv"');
+  echo "\xEF\xBB\xBF";  // so Excel shows Persian text correctly
+  readfile($LEADS);
+  exit;
+}
 // Outcome after the join click (go.log): "open" = Telegram took over, "stuck" = page stayed on screen.
-$goOut = read_tsv("$DIR/go.log", $from, $BOT);
+$goOut = array_values(array_filter(read_tsv("$DIR/go.log", $from, $BOT), fn($g) => ($g['x'] === 'lead') === ($PG === 'lead')));
 $nOpen = count(array_filter($goOut, fn($g) => $g['ref'] === 'open'));
 $nStuck = count(array_filter($goOut, fn($g) => $g['ref'] === 'stuck'));
 $nInApp = count(array_filter($jumps, fn($j) => preg_match('/; wv\)|Version\/4\.0 .*Chrome\//', $j['ua'])));
@@ -142,7 +160,7 @@ $S = [];
 if (is_file("$DIR/engage.log")) {
   foreach (file("$DIR/engage.log", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $l) {
     $r = json_decode($l, true);
-    if (!$r || substr($r['t'], 0, 10) < $from || preg_match($BOT, $r['ua'] ?? '')) continue;
+    if (!$r || substr($r['t'], 0, 10) < $from || preg_match($BOT, $r['ua'] ?? '') || ($r['pg'] ?? 'main') !== $PG) continue;
     $id = $r['sid'];
     if (!isset($S[$id])) $S[$id] = ['t' => $r['t'], 'sec' => 0, 'scroll' => 0, 'seen' => [], 'join' => 0, 'btns' => [], 'w' => $r['w'], 'ref' => $r['ref'], 'clk' => [], 'total' => $r['total']];
     $s = &$S[$id];
@@ -159,10 +177,14 @@ $median = $n ? $secs[intdiv($n, 2)] : 0;
 $bounce = $n ? count(array_filter($S, fn($s) => $s['sec'] < 10)) : 0;
 $mobile = count(array_filter($S, fn($s) => $s['w'] < 768));
 $joinVisits = count(array_filter($S, fn($s) => $s['join'] > 0));
-$nv = count($views); $nj = count($jumps);
+$nv = count($views); $nj = count($jumps); $nl = count($leads);
 
 $SECTIONS = [1 => 'بالای صفحه (هیرو)', 2 => 'داستان و معرفی', 3 => 'آمار و اعداد', 4 => 'روش موسسات مالی', 5 => 'منتور', 6 => 'سیگنال / مقایسه', 7 => 'سه قدم', 8 => 'سوالات متداول', 9 => 'پایین صفحه (فوتر)'];
 $BUTTONS = [1 => 'هدر: کانال تلگرام', 2 => 'هیرو: عضویت رایگان', 3 => 'بخش روش: شروع آموزش در تلگرام', 4 => 'بخش سیگنال: عضویت', 5 => 'فوتر: کانال تلگرام', 6 => 'فوتر: پشتیبانی', 7 => 'دکمه چسبان موبایل'];
+if ($PG === 'lead') {
+  $SECTIONS = [1 => 'بالای صفحه (هیرو)', 2 => 'داستان و معرفی', 3 => 'آمار و اعداد', 4 => 'روش موسسات مالی', 5 => 'منتور', 6 => 'سیگنال / مقایسه', 7 => 'سه قدم', 8 => 'فرم ثبت‌نام', 9 => 'سوالات متداول', 10 => 'پایین صفحه (فوتر)'];
+  $BUTTONS = [3 => 'بخش روش: ثبت‌نام رایگان', 4 => 'بخش سیگنال: ثبت‌نام رایگان'];
+}
 $reach = []; foreach ($SECTIONS as $i => $_) $reach[$i] = $n ? count(array_filter($S, fn($s) => in_array($i, $s['seen'], true))) : 0;
 $depth = []; for ($p = 10; $p <= 100; $p += 10) $depth[$p] = $n ? count(array_filter($S, fn($s) => $s['scroll'] >= $p)) : 0;
 $btn = []; foreach ($S as $s) foreach ($s['btns'] as $b => $_) $btn[$b] = ($btn[$b] ?? 0) + 1; ksort($btn);
@@ -171,7 +193,7 @@ $clkD = []; $clkM = [];
 foreach ($S as $s) foreach ($s['clk'] as $c) { if ($s['w'] < 768) $clkM[] = $c; else $clkD[] = $c; }
 $daily = [];
 foreach ($views as $v) { $d = substr($v['t'], 0, 10); $daily[$d]['v'] = ($daily[$d]['v'] ?? 0) + 1; }
-foreach ($jumps as $v) { $d = substr($v['t'], 0, 10); $daily[$d]['j'] = ($daily[$d]['j'] ?? 0) + 1; }
+foreach ($PG === 'lead' ? array_map(fn($l) => ['t' => $l[0]], $leads) : $jumps as $v) { $d = substr($v['t'], 0, 10); $daily[$d]['j'] = ($daily[$d]['j'] ?? 0) + 1; }
 krsort($daily);
 $refs = [];
 foreach ($views as $v) { $host = $v['ref'] === '-' ? 'مستقیم / نامشخص' : (parse_url($v['ref'], PHP_URL_HOST) ?: $v['ref']); $refs[$host] = ($refs[$host] ?? 0) + 1; }
@@ -198,14 +220,20 @@ page_start('پنل آمار مونتانا'); ?>
 <div class="wrap">
 <header class="top">
   <div><div class="brand">MONTANA</div><h1>پنل آمار سایت</h1></div>
-  <div class="tabs"><?php foreach ($ranges as $k => $lbl) echo '<a class="' . ($k === $range ? 'on' : '') . '" href="?r=' . h($k) . '">' . h($lbl) . '</a>'; ?>
+  <div class="tabs"><?php foreach (['main' => 'صفحه اصلی', 'lead' => 'صفحه فرم (/lead)'] as $k => $lbl) echo '<a class="' . ($k === $PG ? 'on' : '') . '" href="?pg=' . h($k) . '&r=' . h($range) . '">' . h($lbl) . '</a>'; ?></div>
+  <div class="tabs"><?php foreach ($ranges as $k => $lbl) echo '<a class="' . ($k === $range ? 'on' : '') . '" href="?pg=' . h($PG) . '&r=' . h($k) . '">' . h($lbl) . '</a>'; ?>
     <a href="?logout=1">خروج</a></div>
 </header>
 
 <div class="kpis">
   <div class="kpi"><b><?= fa_num($nv) ?></b><span>بازدید صفحه</span></div>
+<?php if ($PG === 'lead'): ?>
+  <div class="kpi"><b><?= fa_num($nl) ?></b><span>فرم ثبت‌نام پر شده</span></div>
+  <div class="kpi"><b><?= fa_num($pct($nl, $nv)) ?>٪</b><span>نرخ ثبت‌نام</span></div>
+<?php else: ?>
   <div class="kpi"><b><?= fa_num($nj) ?></b><span>کلیک روی دکمه عضویت</span></div>
   <div class="kpi"><b><?= fa_num($pct($nj, $nv)) ?>٪</b><span>نرخ کلیک عضویت</span></div>
+<?php endif; ?>
   <div class="kpi"><b><?= fa_num($nOpen) ?></b><span>تلگرام باز شد</span></div>
   <div class="kpi"><b><?= fa_num($nStuck) ?></b><span>تلگرام باز نشد (گیر کرد)</span></div>
   <div class="kpi"><b><?= fa_num($pct($nInApp, $nj)) ?>٪</b><span>کلیک از داخل اپ‌ها (WebView)</span></div>
@@ -221,7 +249,7 @@ page_start('پنل آمار مونتانا'); ?>
     <a href="#" class="on" data-dev="m">موبایل (<?= fa_num(count($clkM)) ?> کلیک)</a>
     <a href="#" data-dev="d">دسکتاپ (<?= fa_num(count($clkD)) ?> کلیک)</a>
   </div>
-  <div class="heatwrap"><div class="heat" id="heat"><iframe id="pv" src="/?preview=1" title="پیش‌نمایش صفحه" loading="lazy"></iframe><canvas id="cv"></canvas></div></div>
+  <div class="heatwrap"><div class="heat" id="heat"><iframe id="pv" src="<?= $PG === 'lead' ? '/lead?preview=1' : '/?preview=1' ?>" title="پیش‌نمایش صفحه" loading="lazy"></iframe><canvas id="cv"></canvas></div></div>
   <div class="legend"><span>کم</span><i></i><span>زیاد</span></div>
 </div>
 
@@ -232,15 +260,21 @@ page_start('پنل آمار مونتانا'); ?>
     <?php foreach ($SECTIONS as $i => $lbl) echo bar($lbl, $reach[$i], max(1, $n), fa_num($pct($reach[$i], $n)) . '٪'); ?></div>
   <div class="card"><h2>چقدر مانده‌اند</h2><p class="sub">زمانی که صفحه واقعاً جلوی چشم بازدیدکننده بوده</p>
     <?php foreach ($tbuckets as $lbl => [$a, $b]) { $v = count(array_filter($S, fn($s) => $s['sec'] >= $a && $s['sec'] < $b)); echo bar($lbl, $v, max(1, $n), fa_num($pct($v, $n)) . '٪'); } ?></div>
-  <div class="card"><h2>کدام دکمه عضویت زده شده</h2><p class="sub">از <?= fa_num($joinVisits) ?> بازدیدی که روی دکمه عضویت زده‌اند</p>
+  <div class="card"><h2><?= $PG === 'lead' ? 'کدام دکمه ثبت‌نام زده شده' : 'کدام دکمه عضویت زده شده' ?></h2><p class="sub">از <?= fa_num($joinVisits) ?> بازدیدی که روی دکمه عضویت زده‌اند</p>
     <?php if (!$btn) echo '<p class="sub">هنوز کلیکی ثبت نشده.</p>'; foreach ($btn as $b => $v) echo bar($BUTTONS[$b] ?? ('دکمه ' . fa_num($b)), $v, max($btn)); ?></div>
   <div class="card"><h2>هر روز</h2>
-    <table><tr><th>تاریخ</th><th>بازدید</th><th>کلیک عضویت</th><th>نرخ</th></tr>
+    <table><tr><th>تاریخ</th><th>بازدید</th><th><?= $PG === 'lead' ? 'ثبت‌نام' : 'کلیک عضویت' ?></th><th>نرخ</th></tr>
     <?php foreach (array_slice($daily, 0, 31, true) as $d => $r) { $v = $r['v'] ?? 0; $j = $r['j'] ?? 0; echo '<tr><td>' . h($d) . '</td><td>' . fa_num($v) . '</td><td>' . fa_num($j) . '</td><td>' . fa_num($pct($j, $v)) . '٪</td></tr>'; } ?></table></div>
   <div class="card"><h2>از کجا آمده‌اند</h2>
     <table><tr><th>منبع</th><th>بازدید</th></tr>
     <?php foreach (array_slice($refs, 0, 12, true) as $k => $v) echo '<tr><td class="ltr">' . h($k) . '</td><td>' . fa_num($v) . '</td></tr>'; ?></table></div>
 </div>
+<?php if ($PG === 'lead'): ?>
+<div class="card"><h2>ثبت‌نام‌ها</h2>
+  <p class="sub"><?= fa_num($nl) ?> ثبت‌نام در این بازه. <?php if (is_file($LEADS)) echo '<a href="?export=leads">دانلود همه ثبت‌نام‌ها (فایل اکسل CSV)</a>'; ?></p>
+  <div style="overflow-x:auto"><table><tr><th>زمان</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>سال تولد</th><th>اپ / سایت تبلیغ</th></tr>
+  <?php foreach (array_slice(array_reverse($leads), 0, 200) as $l) echo '<tr><td class="ltr">' . h($l[0]) . '</td><td>' . h($l[1]) . '</td><td class="ltr">' . h($l[2]) . '</td><td class="ltr">' . h($l[3]) . '</td><td>' . h($l[4]) . '</td><td class="ltr">' . h($l[6] ?? '') . '</td></tr>'; ?></table></div></div>
+<?php endif; ?>
 <div class="card"><h2>گوگل آنالیتیکس</h2>
   <p class="sub">شناسه اندازه‌گیری (Measurement ID) را از Google Analytics ← Admin ← Data streams بردارید. خالی بگذارید تا غیرفعال شود.</p>
   <form method="post" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
