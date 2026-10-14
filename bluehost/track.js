@@ -51,7 +51,7 @@
     var a = e.target.closest && e.target.closest('a[href="/go"]');
     if (!a) return;
     join += 1;
-    joinBtn = Array.prototype.indexOf.call(document.querySelectorAll('a[href="/go"]'), a) + 1;
+    joinBtn = +a.getAttribute("data-b") || (Array.prototype.indexOf.call(document.querySelectorAll('a[href="/go"]'), a) + 1);
     send("join");
     if (window.gtag) window.gtag("event", "join_click", { button: joinBtn, transport_type: "beacon" });
   }, true);
