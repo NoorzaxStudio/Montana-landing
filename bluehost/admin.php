@@ -131,6 +131,11 @@ function read_tsv(string $f, string $from, string $bot): array {
 }
 $views = read_tsv("$DIR/views.log", $from, $BOT);
 $jumps = read_tsv("$DIR/clicks.log", $from, $BOT);
+// Outcome after the join click (go.log): "open" = Telegram took over, "stuck" = page stayed on screen.
+$goOut = read_tsv("$DIR/go.log", $from, $BOT);
+$nOpen = count(array_filter($goOut, fn($g) => $g['ref'] === 'open'));
+$nStuck = count(array_filter($goOut, fn($g) => $g['ref'] === 'stuck'));
+$nInApp = count(array_filter($jumps, fn($j) => preg_match('/; wv\)|Version\/4\.0 .*Chrome\//', $j['ua'])));
 
 // Engagement: one record per visit (sid), keeping the furthest values, summing clicks.
 $S = [];
@@ -201,6 +206,9 @@ page_start('پنل آمار مونتانا'); ?>
   <div class="kpi"><b><?= fa_num($nv) ?></b><span>بازدید صفحه</span></div>
   <div class="kpi"><b><?= fa_num($nj) ?></b><span>کلیک روی دکمه عضویت</span></div>
   <div class="kpi"><b><?= fa_num($pct($nj, $nv)) ?>٪</b><span>نرخ کلیک عضویت</span></div>
+  <div class="kpi"><b><?= fa_num($nOpen) ?></b><span>تلگرام باز شد</span></div>
+  <div class="kpi"><b><?= fa_num($nStuck) ?></b><span>تلگرام باز نشد (گیر کرد)</span></div>
+  <div class="kpi"><b><?= fa_num($pct($nInApp, $nj)) ?>٪</b><span>کلیک از داخل اپ‌ها (WebView)</span></div>
   <div class="kpi"><b><?= $fmt_t($median) ?></b><span>زمان ماندن (میانه)</span></div>
   <div class="kpi"><b><?= fa_num($pct($bounce, $n)) ?>٪</b><span>خروج زیر ۱۰ ثانیه</span></div>
   <div class="kpi"><b><?= fa_num($pct($mobile, $n)) ?>٪</b><span>بازدید با موبایل</span></div>
