@@ -53,6 +53,7 @@
     join += 1;
     joinBtn = Array.prototype.indexOf.call(document.querySelectorAll('a[href="/go"]'), a) + 1;
     send("join");
+    if (window.gtag) window.gtag("event", "join_click", { button: joinBtn, transport_type: "beacon" });
   }, true);
 
   document.addEventListener("visibilitychange", function () {

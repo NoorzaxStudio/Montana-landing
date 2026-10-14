@@ -178,6 +178,17 @@ function bar(string $label, int $v, int $max, string $right = ''): string {
   return '<div class="bar"><span>' . h($label) . '</span><i><em style="width:' . $w . '%"></em></i><small>' . h($right ?: fa_num($v)) . '</small></div>';
 }
 
+// ---------- settings: Google Analytics ID ----------
+$GA = "$DIR/ga.txt";
+$gaMsg = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ga']) && csrf_ok()) {
+  $id = strtoupper(trim((string) $_POST['ga']));
+  if ($id === '') { @unlink($GA); $gaMsg = 'گوگل آنالیتیکس غیرفعال شد.'; }
+  elseif (preg_match('/^G-[A-Z0-9]{4,15}$/', $id)) { file_put_contents($GA, $id . "\n", LOCK_EX); $gaMsg = 'ذخیره شد. از الان روی سایت فعال است.'; }
+  else $gaMsg = 'شناسه باید شبیه G-ABC123XYZ باشد.';
+}
+$gaId = trim((string) @file_get_contents($GA));
+
 page_start('پنل آمار مونتانا'); ?>
 <div class="wrap">
 <header class="top">
@@ -222,6 +233,14 @@ page_start('پنل آمار مونتانا'); ?>
     <table><tr><th>منبع</th><th>بازدید</th></tr>
     <?php foreach (array_slice($refs, 0, 12, true) as $k => $v) echo '<tr><td class="ltr">' . h($k) . '</td><td>' . fa_num($v) . '</td></tr>'; ?></table></div>
 </div>
+<div class="card"><h2>گوگل آنالیتیکس</h2>
+  <p class="sub">شناسه اندازه‌گیری (Measurement ID) را از Google Analytics ← Admin ← Data streams بردارید. خالی بگذارید تا غیرفعال شود.</p>
+  <form method="post" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <input type="hidden" name="csrf" value="<?= h(csrf()) ?>">
+    <input type="text" name="ga" value="<?= h($gaId) ?>" placeholder="G-XXXXXXXXXX" dir="ltr" style="max-width:260px">
+    <button class="btn" style="background:var(--blue);color:#fff;border-color:var(--blue)">ذخیره</button>
+    <span class="sub" style="margin:0"><?= $gaMsg ? h($gaMsg) : ($gaId ? 'فعال: ' . h($gaId) : 'غیرفعال') ?></span>
+  </form></div>
 <p class="note">بازدید ربات‌ها حذف شده است. اطلاعات اسکرول و زمان فقط برای بازدیدهای بعد از نصب این پنل ثبت می‌شود.</p>
 </div>
 
