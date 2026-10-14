@@ -5,6 +5,34 @@
 $statsDir = dirname(__DIR__, 2) . "/montana-stats";
 $fa2en = fn($v) => strtr(trim((string) $v), ['۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9','٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9']);
 $val = ['name' => '', 'phone' => '', 'email' => '', 'year' => ''];
+// Security question: a small sum, signed with a server secret so a bot can't
+// make up its own question. The token also carries when the form was opened.
+if (!is_dir($statsDir)) @mkdir($statsDir, 0755, true);
+$secretFile = $statsDir . "/secret.txt";
+if (!is_file($secretFile)) @file_put_contents($secretFile, bin2hex(random_bytes(32)), LOCK_EX);
+$secret = trim((string) @file_get_contents($secretFile)) ?: 'montana';
+$capNew = function () use ($secret) {
+  $a = random_int(2, 9); $b = random_int(1, 9); $t = time();
+  return [$a, $b, "$t-$a-$b-" . hash_hmac('sha256', "$t-$a-$b", $secret)];
+};
+$capOk = function ($token, $answer) use ($secret, $fa2en) {
+  if (!preg_match('/^(\d+)-(\d)-(\d)-([0-9a-f]{64})$/', (string) $token, $m)) return false;
+  if (!hash_equals(hash_hmac('sha256', "$m[1]-$m[2]-$m[3]", $secret), $m[4])) return false;
+  $age = time() - (int) $m[1];
+  return $age >= 3 && $age <= 3600 && $fa2en($answer) === (string) ($m[2] + $m[3]);
+};
+// Too many tries from one internet connection in an hour: stop accepting for a while.
+$tooMany = function () use ($statsDir) {
+  $f = $statsDir . "/lead-ips.json";
+  $h = @fopen($f, "c+"); if (!$h) return false;
+  flock($h, LOCK_EX);
+  $d = json_decode((string) stream_get_contents($h), true) ?: [];
+  $now = time(); $ip = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? '');
+  foreach ($d as $k => $ts) { $d[$k] = array_values(array_filter((array) $ts, fn($t) => $t > $now - 3600)); if (!$d[$k]) unset($d[$k]); }
+  $d[$ip][] = $now;
+  ftruncate($h, 0); rewind($h); fwrite($h, json_encode($d)); flock($h, LOCK_UN); fclose($h);
+  return count($d[$ip]) > 15;
+};
 $err = [];
 $dup = '';
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -18,6 +46,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   if (mb_strlen($val['name']) < 2 || mb_strlen($val['name']) > 60) $err['name'] = 'نام و نام خانوادگی را وارد کنید.';
   if (!preg_match('/^09\d{9}$/', $phone)) $err['phone'] = 'شماره موبایل را درست وارد کنید، مثل ۰۹۱۲۳۴۵۶۷۸۹';
   if ($val['email'] !== '' && !filter_var($val['email'], FILTER_VALIDATE_EMAIL)) $err['email'] = 'ایمیل درست نیست.';
+  if ($tooMany()) $err['form'] = 'تعداد تلاش‌ها زیاد بود. لطفا کمی بعد دوباره امتحان کنید.';
+  if (!$capOk($_POST['cap'] ?? '', $_POST['cap_ans'] ?? '')) $err['cap'] = 'جواب سوال امنیتی درست نیست. دوباره امتحان کنید.';
   if (!preg_match('/^1[34]\d\d$/', $val['year']) || (int) $val['year'] < 1320 || (int) $val['year'] > 1395) $err['year'] = 'سال تولد را انتخاب کنید.';
   // Same mobile or email already signed up: don't save it twice.
   $dup = '';
@@ -31,8 +61,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   }
   if ($dup === 'phone') $err['phone'] = 'قبلا با این شماره ثبت‌نام کرده‌اید.';
   if ($dup === 'email') $err['email'] = 'قبلا با این ایمیل ثبت‌نام کرده‌اید.';
-  // Bots: a hidden field people never fill, and a form sent too fast after loading.
-  $bot = !empty($_POST['website']) || (time() - (int) ($_POST['ts'] ?? 0)) < 3;
+  // Bots: a hidden field people never fill (dropped silently, so they don't learn why).
+  $bot = !empty($_POST['website']);
   if (!$err) {
     if (!$bot) {
       if (!is_dir($statsDir)) @mkdir($statsDir, 0755, true);
@@ -59,6 +89,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   }
 }
 $e = fn($k) => htmlspecialchars($val[$k], ENT_QUOTES, 'UTF-8');
+[$capA, $capB, $capToken] = $capNew();
+$faNum = fn($n) => strtr((string) $n, ['0'=>'۰','1'=>'۱','2'=>'۲','3'=>'۳','4'=>'۴','5'=>'۵','6'=>'۶','7'=>'۷','8'=>'۸','9'=>'۹']);
 ?>
 <?php $site = (((!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] !== "off") || ($_SERVER["HTTP_X_FORWARDED_PROTO"] ?? "") === "https") ? "https://" : "http://") . $_SERVER["HTTP_HOST"]; ?>
 <?php $preview = isset($_GET["preview"]); if (!$preview && $_SERVER["REQUEST_METHOD"] !== "POST") { $d = dirname(__DIR__, 2) . "/montana-stats"; if (!is_dir($d)) @mkdir($d, 0755, true); @file_put_contents($d . "/views-lead.log", date("Y-m-d H:i:s") . "\t" . ($_SERVER["HTTP_REFERER"] ?? "-") . "\t" . ($_SERVER["HTTP_USER_AGENT"] ?? "-") . "\n", FILE_APPEND | LOCK_EX); } ?>
@@ -206,7 +238,7 @@ $e = fn($k) => htmlspecialchars($val[$k], ENT_QUOTES, 'UTF-8');
       <h2 data-en="Sign up and start learning for free">ثبت‌نام کن و آموزش رو رایگان شروع کن</h2>
       <p class="lede" style="margin-inline:auto" data-en="Leave your details for a free consultation call, then go straight into the Montana trading club on Telegram.">اطلاعاتت رو بذار تا برای مشاوره رایگان باهات تماس بگیریم، بعدش مستقیم وارد باشگاه ترید مونتانا در تلگرام میشی.</p>
       <form method="post" action="#lead" novalidate>
-        <input type="hidden" name="ts" value="<?php echo time(); ?>">
+        <input type="hidden" name="cap" value="<?php echo $capToken; ?>">
         <div style="position:absolute;left:-9999px" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
         <label class="f"><span data-en="Full name">نام و نام خانوادگی</span>
           <input type="text" name="name" required maxlength="60" autocomplete="name" value="<?php echo $e('name'); ?>"></label>
@@ -221,6 +253,10 @@ $e = fn($k) => htmlspecialchars($val[$k], ENT_QUOTES, 'UTF-8');
           <select name="year" required class="sel"><option value="" data-en="Choose">انتخاب کنید</option><?php for ($y = 1390; $y >= 1320; $y--) echo '<option value="' . $y . '"' . ($val['year'] === (string) $y ? ' selected' : '') . '>' . strtr((string) $y, ['0'=>'۰','1'=>'۱','2'=>'۲','3'=>'۳','4'=>'۴','5'=>'۵','6'=>'۶','7'=>'۷','8'=>'۸','9'=>'۹']) . '</option>'; ?></select></label>
         <?php if (isset($err['year'])) echo '<span class="err">' . $err['year'] . '</span>'; ?>
         <?php if ($dup) echo '<p class="done" style="padding:16px;gap:8px;margin:0"><span>' . ($dup === 'phone' ? 'قبلا با این شماره ثبت‌نام کرده‌اید.' : 'قبلا با این ایمیل ثبت‌نام کرده‌اید.') . ' لطفا صبور باشید، کارشناسان ما به‌زودی با شما تماس می‌گیرند.</span><a class="btn btn-tg" href="/go?l=1" rel="nofollow">ورود به کانال تلگرام</a></p>'; ?>
+        <label class="f"><span><span data-en="Security question:">سوال امنیتی:</span> <?php echo $faNum($capA) . ' + ' . $faNum($capB); ?> <span data-en="equals?">چند می‌شود؟</span></span>
+          <input type="text" name="cap_ans" required inputmode="numeric" maxlength="3" autocomplete="off" dir="ltr"></label>
+        <?php if (isset($err['cap'])) echo '<span class="err">' . $err['cap'] . '</span>'; ?>
+        <?php if (isset($err['form'])) echo '<span class="err">' . $err['form'] . '</span>'; ?>
         <button class="btn btn-tg" type="submit" style="width:100%" data-en="Sign up and join the channel">ثبت‌نام و ورود به کانال تلگرام</button>
         <p class="opt" style="margin:0;text-align:center;line-height:1.8" data-en="Your details are only used to contact you and are never shared.">اطلاعاتت فقط برای تماس با خودت استفاده میشه و در اختیار کسی قرار نمی‌گیره.</p>
       </form>
