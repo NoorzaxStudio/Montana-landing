@@ -2,6 +2,7 @@
 DirectoryIndex index.php
 ErrorDocument 404 /404.php
 Options -Indexes
+AddType application/manifest+json .webmanifest
 
 RewriteEngine On
 

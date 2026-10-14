@@ -3,6 +3,11 @@ import "./globals.css";
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const metadata = {
+  icons: {
+    icon: [{ url: "/favicon.ico", sizes: "48x48" }, { url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
   metadataBase: new URL(SITE),
   title: "مجتبی حسینی (مونتانا) | تحلیلگر سازمانی بازارهای جهانی",
   description:

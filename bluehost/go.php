@@ -10,7 +10,7 @@ if (!is_dir($dir)) @mkdir($dir, 0755, true);
   FILE_APPEND | LOCK_EX);
 header('Cache-Control: no-store');
 ?><!DOCTYPE html>
-<html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="fa" dir="rtl"><head><meta charset="utf-8"><link rel="icon" href="/favicon.ico" sizes="48x48"/><link rel="icon" href="/favicon.svg" type="image/svg+xml"/><link rel="apple-touch-icon" href="/apple-touch-icon.png"/><link rel="manifest" href="/site.webmanifest"/><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex"><title>باشگاه ترید مونتانا</title>
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
