@@ -1,0 +1,144 @@
+/* vazirmatn-arabic-300-normal */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300;
+  src: url(/fonts/vazirmatn-arabic-300-normal.woff2) format('woff2');
+}
+/* vazirmatn-latin-300-normal */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300;
+  src: url(/fonts/vazirmatn-latin-300-normal.woff2) format('woff2');
+}
+/* vazirmatn-arabic-400-normal */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(/fonts/vazirmatn-arabic-400-normal.woff2) format('woff2');
+}
+/* vazirmatn-latin-400-normal */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(/fonts/vazirmatn-latin-400-normal.woff2) format('woff2');
+}
+/* vazirmatn-arabic-500-normal */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(/fonts/vazirmatn-arabic-500-normal.woff2) format('woff2');
+}
+/* vazirmatn-latin-500-normal */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(/fonts/vazirmatn-latin-500-normal.woff2) format('woff2');
+}
+/* vazirmatn-arabic-700-normal */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(/fonts/vazirmatn-arabic-700-normal.woff2) format('woff2');
+}
+/* vazirmatn-latin-700-normal */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(/fonts/vazirmatn-latin-700-normal.woff2) format('woff2');
+}
+/* vazirmatn-arabic-800-normal */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: url(/fonts/vazirmatn-arabic-800-normal.woff2) format('woff2');
+}
+/* vazirmatn-latin-800-normal */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: url(/fonts/vazirmatn-latin-800-normal.woff2) format('woff2');
+}
+/* markazi-text-arabic-500-normal */
+@font-face {
+  font-family: 'Markazi Text';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(/fonts/markazi-text-arabic-500-normal.woff2) format('woff2');
+}
+/* markazi-text-latin-500-normal */
+@font-face {
+  font-family: 'Markazi Text';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(/fonts/markazi-text-latin-500-normal.woff2) format('woff2');
+}
+/* markazi-text-arabic-600-normal */
+@font-face {
+  font-family: 'Markazi Text';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url(/fonts/markazi-text-arabic-600-normal.woff2) format('woff2');
+}
+/* markazi-text-latin-600-normal */
+@font-face {
+  font-family: 'Markazi Text';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url(/fonts/markazi-text-latin-600-normal.woff2) format('woff2');
+}
+/* markazi-text-arabic-700-normal */
+@font-face {
+  font-family: 'Markazi Text';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(/fonts/markazi-text-arabic-700-normal.woff2) format('woff2');
+}
+/* markazi-text-latin-700-normal */
+@font-face {
+  font-family: 'Markazi Text';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(/fonts/markazi-text-latin-700-normal.woff2) format('woff2');
+}
+/* cinzel-latin-600-normal */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url(/fonts/cinzel-latin-600-normal.woff2) format('woff2');
+}
+/* cinzel-latin-700-normal */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(/fonts/cinzel-latin-700-normal.woff2) format('woff2');
+}
