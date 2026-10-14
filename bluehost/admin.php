@@ -234,6 +234,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sheet_test']) && csrf
   [$ok, $why] = montana_sheet_send($DIR, ['name' => 'تست پنل ادمین', 'phone' => '09000000000', 'email' => '', 'birth_year' => '', 'source' => 'test']);
   $shMsg = $ok ? 'یک ردیف تست به گوگل شیت اضافه شد ✓' : 'ارسال نشد: ' . $why;
 }
+// After a settings form, reload with a normal GET so refreshing the page
+// can't send the form again (that was re-adding test rows to the sheet).
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['ga']) || isset($_POST['sheet_url']))) {
+  $_SESSION['flash'] = ['ga' => $gaMsg, 'sh' => $shMsg];
+  header('Location: /admin?pg=' . $PG . '&r=' . rawurlencode($range), true, 303);
+  exit;
+}
+if (isset($_SESSION['flash'])) { ['ga' => $gaMsg, 'sh' => $shMsg] = $_SESSION['flash'] + ['ga' => '', 'sh' => '']; unset($_SESSION['flash']); }
 $sheet = montana_sheet_conf($DIR);
 
 page_start('پنل آمار مونتانا'); ?>
