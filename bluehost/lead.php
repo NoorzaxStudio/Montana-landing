@@ -29,8 +29,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
     fclose($fh);
   }
-  if ($dup === 'phone') $err['phone'] = 'این شماره موبایل قبلا ثبت‌نام کرده است.';
-  if ($dup === 'email') $err['email'] = 'این ایمیل قبلا ثبت‌نام کرده است.';
+  if ($dup === 'phone') $err['phone'] = 'قبلا با این شماره ثبت‌نام کرده‌اید.';
+  if ($dup === 'email') $err['email'] = 'قبلا با این ایمیل ثبت‌نام کرده‌اید.';
   // Bots: a hidden field people never fill, and a form sent too fast after loading.
   $bot = !empty($_POST['website']) || (time() - (int) ($_POST['ts'] ?? 0)) < 3;
   if (!$err) {
@@ -220,7 +220,7 @@ $e = fn($k) => htmlspecialchars($val[$k], ENT_QUOTES, 'UTF-8');
         <label class="f"><span data-en="Year of birth (Solar Hijri)">سال تولد</span>
           <select name="year" required class="sel"><option value="" data-en="Choose">انتخاب کنید</option><?php for ($y = 1390; $y >= 1320; $y--) echo '<option value="' . $y . '"' . ($val['year'] === (string) $y ? ' selected' : '') . '>' . strtr((string) $y, ['0'=>'۰','1'=>'۱','2'=>'۲','3'=>'۳','4'=>'۴','5'=>'۵','6'=>'۶','7'=>'۷','8'=>'۸','9'=>'۹']) . '</option>'; ?></select></label>
         <?php if (isset($err['year'])) echo '<span class="err">' . $err['year'] . '</span>'; ?>
-        <?php if ($dup) echo '<p class="done" style="padding:16px;gap:8px;margin:0"><span>شما قبلا ثبت‌نام کرده‌اید و به‌زودی برای مشاوره باهاتون تماس می‌گیریم. برای ورود به کانال تلگرام:</span><a class="btn btn-tg" href="/go?l=1" rel="nofollow">ورود به کانال تلگرام</a></p>'; ?>
+        <?php if ($dup) echo '<p class="done" style="padding:16px;gap:8px;margin:0"><span>' . ($dup === 'phone' ? 'قبلا با این شماره ثبت‌نام کرده‌اید.' : 'قبلا با این ایمیل ثبت‌نام کرده‌اید.') . ' لطفا صبور باشید، کارشناسان ما به‌زودی با شما تماس می‌گیرند.</span><a class="btn btn-tg" href="/go?l=1" rel="nofollow">ورود به کانال تلگرام</a></p>'; ?>
         <button class="btn btn-tg" type="submit" style="width:100%" data-en="Sign up and join the channel">ثبت‌نام و ورود به کانال تلگرام</button>
         <p class="opt" style="margin:0;text-align:center;line-height:1.8" data-en="Your details are only used to contact you and are never shared.">اطلاعاتت فقط برای تماس با خودت استفاده میشه و در اختیار کسی قرار نمی‌گیره.</p>
       </form>
