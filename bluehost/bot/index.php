@@ -81,7 +81,10 @@ function show_start(string $T, int $chat, array $C): void {
 function show_section(string $T, int $chat, array $C, string $key): void {
   $s = $C['sections'][$key];
   tg($T, 'sendChatAction', ['chat_id' => $chat, 'action' => 'upload_photo'], 5);
-  send_photo($T, $chat, $s['photo'] ?? '', $s['text']);
+  // Optional buttons under the section's text that open other sections.
+  $links = [];
+  foreach ($s['links'] ?? [] as $to) if (isset($C['sections'][$to])) $links[] = [['text' => $C['sections'][$to]['button'], 'callback_data' => "s:$to"]];
+  send_photo($T, $chat, $s['photo'] ?? '', $s['text'], $links ? ['inline_keyboard' => $links] : null);
   send_video($T, $chat, $key);
   if ($key === 'support') {
     bot_store(function (&$d) use ($chat) { $d['awaiting'][(string) $chat] = time(); });
