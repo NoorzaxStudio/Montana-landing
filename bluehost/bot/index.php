@@ -88,6 +88,7 @@ function show_section(string $T, int $chat, array $C, string $key): void {
   // Optional buttons under the section's text that open other sections.
   $links = [];
   foreach ($s['links'] ?? [] as $to) if (isset($C['sections'][$to])) $links[] = [['text' => $C['sections'][$to]['button'], 'callback_data' => "s:$to"]];
+  foreach ($s['url_buttons'] ?? [] as $b) $links[] = [['text' => $b['text'], 'url' => $b['url']]];
   $delay = (int) ($C['channel_delay'] ?? 3);
   if (!empty($s['steps'])) {
     // A story told in several messages, a few seconds apart.
