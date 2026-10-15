@@ -36,24 +36,28 @@ function menu_markup(array $C): array {
   return ['inline_keyboard' => $rows];
 }
 
-// Send a photo from bot/img with a caption. Uploads it the first time and then
-// reuses Telegram's file id. Captions over 1024 characters go in their own message.
+// Send a photo (.jpg) or video (.mp4) from bot/img with a caption. Uploads it the
+// first time and then reuses Telegram's file id. Captions over 1024 characters go
+// in their own message.
 function send_photo(string $T, int $chat, string $file, string $text, ?array $markup = null): void {
   $path = __DIR__ . '/img/' . basename($file);
   if (!is_file($path)) { send_text($T, $chat, $text, $markup); return; }
+  $video = str_ends_with(strtolower($path), '.mp4');
+  [$method, $field, $mime] = $video ? ['sendVideo', 'video', 'video/mp4'] : ['sendPhoto', 'photo', 'image/jpeg'];
   $key = basename($file) . '@' . filemtime($path);
   $cached = bot_store()['photos'][$key] ?? null;
   $long = mb_strlen($text) > 1024;
-  $p = ['chat_id' => $chat, 'photo' => $cached ?: new CURLFile($path, 'image/jpeg', basename($file))];
+  $p = ['chat_id' => $chat, $field => $cached ?: new CURLFile($path, $mime, basename($file))];
+  if ($video) $p['supports_streaming'] = 'true';
   if (!$long) { $p['caption'] = $text; if ($markup) $p['reply_markup'] = $markup; }
-  $r = tg($T, 'sendPhoto', $p, 60);
+  $r = tg($T, $method, $p, 60);
   if (empty($r['ok']) && $cached) { // stale file id: upload again
-    $p['photo'] = new CURLFile($path, 'image/jpeg', basename($file));
-    $r = tg($T, 'sendPhoto', $p, 60);
+    $p[$field] = new CURLFile($path, $mime, basename($file));
+    $r = tg($T, $method, $p, 60);
   }
   if (!empty($r['ok']) && !$cached) {
     $sizes = $r['result']['photo'] ?? [];
-    $id = end($sizes)['file_id'] ?? null;
+    $id = $video ? ($r['result']['video']['file_id'] ?? null) : (end($sizes)['file_id'] ?? null);
     if ($id) bot_store(function (&$d) use ($key, $id) { $d['photos'][$key] = $id; });
   }
   if (empty($r['ok']) && !$long) { send_text($T, $chat, $text, $markup); return; }
@@ -84,12 +88,21 @@ function show_section(string $T, int $chat, array $C, string $key): void {
   // Optional buttons under the section's text that open other sections.
   $links = [];
   foreach ($s['links'] ?? [] as $to) if (isset($C['sections'][$to])) $links[] = [['text' => $C['sections'][$to]['button'], 'callback_data' => "s:$to"]];
-  send_photo($T, $chat, $s['photo'] ?? '', $s['text'], $links ? ['inline_keyboard' => $links] : null);
+  $delay = (int) ($C['channel_delay'] ?? 3);
+  if (!empty($s['steps'])) {
+    // A story told in several messages, a few seconds apart.
+    foreach ($s['steps'] as $i => $step) {
+      if ($i) { tg($T, 'sendChatAction', ['chat_id' => $chat, 'action' => 'typing'], 5); sleep($delay); }
+      send_photo($T, $chat, $step['photo'] ?? '', $step['text']);
+    }
+  } else {
+    send_photo($T, $chat, $s['photo'] ?? '', $s['text'], $links ? ['inline_keyboard' => $links] : null);
+  }
   send_video($T, $chat, $key);
   if ($key === 'support') {
     bot_store(function (&$d) use ($chat) { $d['awaiting'][(string) $chat] = time(); });
   }
-  sleep((int) ($C['channel_delay'] ?? 3));
+  sleep($delay);
   send_text($T, $chat, $C['channel_text'], ['inline_keyboard' => [
     [['text' => $C['channel_button'], 'url' => $C['channel_url']]],
     [['text' => $C['menu_button'], 'callback_data' => 'menu']],
