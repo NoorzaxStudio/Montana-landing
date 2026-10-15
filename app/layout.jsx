@@ -54,7 +54,7 @@ const personLd = {
     creditText: "Mojtaba Hosseini (Montana)",
   })),
   alumniOf: { "@type": "CollegeOrUniversity", name: "University of Tehran" },
-  sameAs: ["https://t.me/+CI6bbCVc3M4xZjJk"],
+  sameAs: ["https://t.me/+1c5ycCZE6_I5NTdk"],
 };
 
 // Set the saved theme before paint so there is no flash.

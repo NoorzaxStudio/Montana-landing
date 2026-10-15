@@ -4,7 +4,7 @@
 // tg://join opens the installed app without loading t.me. On Android an
 // intent:// link is used instead, which in-app browsers (WebViews) of ad apps
 // are more likely to hand over to Telegram than a bare tg:// link.
-$invite = 'CI6bbCVc3M4xZjJk';
+$invite = '1c5ycCZE6_I5NTdk';
 $tme = 'https://t.me/+' . $invite;
 $dir = dirname(__DIR__, 2) . '/montana-stats';
 if (!is_dir($dir)) @mkdir($dir, 0755, true);

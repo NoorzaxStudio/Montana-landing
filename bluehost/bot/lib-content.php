@@ -8,7 +8,7 @@ return [
   // Setup only accepts a token of this bot.
   'bot_username' => 'Montanatraderbot',
   // Every section ends with this message, sent 3 seconds after the section.
-  'channel_url' => 'https://t.me/+CI6bbCVc3M4xZjJk',
+  'channel_url' => 'https://t.me/+1c5ycCZE6_I5NTdk',
   'channel_delay' => 3,
   'channel_text' => "📊 اگه می‌خوای تحلیل‌های حرفه‌ای طلا، یورو/دلار و بقیه بازارهای جهانی رو هر روز داشته باشی، جات تو کانال مونتاناست:\n\n✅ تحلیل روزانه طلا و ارزها، به زبان ساده\n✅ گزارش همه معامله‌ها، چه سود چه ضرر\n✅ آموزش رایگان تکنیک‌های ترید\n\nعضویت رایگانه. همین الان بیا داخل 👇",
   'channel_button' => '📢 عضویت رایگان در کانال مونتانا',
