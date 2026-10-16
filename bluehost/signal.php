@@ -102,128 +102,142 @@ $extra = __DIR__ . "/lib-signal-extra.php";
 <html lang="fa" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#0b1a14">
+<meta name="theme-color" content="#f6f8fb">
 <title>مونتانا | کسب درآمد روزانه میانگین ۷٪ از بازارهای جهانی</title>
 <meta name="description" content="سیگنال اتوماتیک مونتانا: معامله‌ها مستقیم تو حساب خودت باز و بسته میشن، در کنار تحلیلگر سابق موسسات مالی.">
 <link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/fonts/vazirmatn-arabic-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/vazirmatn-arabic-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/images/new-york-stock-exchange-trading-floor.jpg" as="image">
+<link rel="stylesheet" href="/fonts/fonts.css">
 <style>
-@font-face{font-family:Vazirmatn;font-weight:400;font-display:swap;src:url(/fonts/vazirmatn-arabic-400-normal.woff2) format("woff2")}
-@font-face{font-family:Vazirmatn;font-weight:400;font-display:swap;src:url(/fonts/vazirmatn-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF}
-@font-face{font-family:Vazirmatn;font-weight:700;font-display:swap;src:url(/fonts/vazirmatn-arabic-700-normal.woff2) format("woff2")}
-@font-face{font-family:Vazirmatn;font-weight:700;font-display:swap;src:url(/fonts/vazirmatn-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF}
-@font-face{font-family:Vazirmatn;font-weight:800;font-display:swap;src:url(/fonts/vazirmatn-arabic-800-normal.woff2) format("woff2")}
-@font-face{font-family:Vazirmatn;font-weight:800;font-display:swap;src:url(/fonts/vazirmatn-latin-800-normal.woff2) format("woff2");unicode-range:U+0000-00FF}
-:root{--bg:#f5f7f6;--text:#0f1a15;--muted:#5b6b63;--line:#dfe6e2;--card:#fff;--green:#119a45;--green-hi:#0c7a36;--dark:#0b1a14;--dark-2:#122a20;--gold:#e7c26a;--red:#c8463c}
+/* Same palette and type as the main site (light: white, blue, green). */
+:root{--ink:#f6f8fb;--ink-rgb:246,248,251;--panel:#fff;--panel-rgb:255,255,255;--panel-2:#eef2f7;--line:rgba(15,27,45,.1);--acc:#1652c9;--acc-rgb:22,82,201;--acc-hi:#0f3d91;--text:#0f1b2d;--fg-rgb:15,27,45;--muted:#5b6678;--gain:#12a06a;--gain-rgb:18,160,106;--gain-hi:#0d8357;--loss:#d9434b;--loss-rgb:217,67,75;--display:"Markazi Text","Vazirmatn",Tahoma,serif;--body:"Vazirmatn",Tahoma,"Segoe UI",sans-serif}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Vazirmatn,Tahoma,sans-serif;font-size:16px;line-height:1.85;-webkit-text-size-adjust:100%;overflow-x:clip}
+body{margin:0;background:var(--ink);background-image:repeating-linear-gradient(90deg,transparent 0 21px,rgba(var(--fg-rgb),.026) 21px 22px);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.85;-webkit-text-size-adjust:100%;overflow-x:clip}
 img,video{display:block;max-width:100%}
-.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
-h1,h2,h3{line-height:1.45;margin:0}
+.wrap{max-width:1140px;margin:0 auto;padding:0 16px}
+h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.3;margin:0;text-wrap:balance}
+h3{font-family:var(--body);font-weight:800}
 p{margin:0}
-.top{position:absolute;inset-inline:0;top:0;z-index:3}
-.top .wrap{display:flex;align-items:center;height:60px}
-.logo{font-weight:800;letter-spacing:.2em;font-size:1.05rem;font-family:Tahoma,sans-serif;color:#fff}
-.btn{display:inline-block;border:0;cursor:pointer;font:inherit;font-weight:800;font-size:1.08rem;color:#fff;background:var(--green);border-radius:12px;padding:14px 26px;text-align:center;text-decoration:none;box-shadow:0 6px 18px rgba(17,154,69,.35)}
-.btn:hover{background:var(--green-hi)}
+.top{background:var(--ink);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;height:54px}
+.logo{font-family:"Cinzel","Times New Roman",serif;font-weight:700;letter-spacing:.2em;font-size:1.1rem;color:var(--text)}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:0;cursor:pointer;font:inherit;font-weight:800;font-size:1.05rem;color:#fff;background:var(--gain);border-radius:999px;padding:14px 30px;text-decoration:none;box-shadow:0 8px 22px rgba(var(--gain-rgb),.3);transition:transform .15s,background .15s}
+.btn:hover{background:var(--gain-hi);transform:translateY(-1px)}
 .btn[disabled]{opacity:.7;cursor:wait}
-.btn-line{background:transparent;color:var(--gold);border:1.5px solid var(--gold);box-shadow:none}
-.btn-line:hover{background:rgba(231,194,106,.12)}
+.btn-line{background:transparent;color:var(--acc);border:1.5px solid var(--acc);box-shadow:none}
+.btn-line:hover{background:rgba(var(--acc-rgb),.08)}
+.kick{color:var(--acc);font-weight:700;font-size:.85rem;letter-spacing:.03em;display:block;margin-bottom:4px}
 
-/* 1. hero */
-.hero{position:relative;color:#fff;background:var(--dark);min-height:88vh;min-height:88svh;display:flex;align-items:center;padding:90px 0 60px;isolation:isolate}
-.hero:before{content:"";position:absolute;inset:0;z-index:-2;background:url(/images/new-york-stock-exchange-trading-floor.jpg) center/cover}
-.hero:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(11,26,20,.72) 0,rgba(11,26,20,.82) 55%,var(--dark) 100%)}
-.tag{display:inline-block;background:rgba(231,194,106,.14);color:var(--gold);border:1px solid rgba(231,194,106,.35);border-radius:999px;padding:3px 14px;font-size:.88rem;font-weight:700}
-.hero h1{font-size:2rem;font-weight:800;margin:16px 0 6px;max-width:16em}
-.hero h1 span{color:var(--gold)}
-.hero .small{color:#b8c7bf;font-size:.9rem}
-.hero .sub{font-size:1.15rem;color:#e8efeb;margin:18px 0 26px;font-weight:700}
+/* 1. hero: photo on the left, copy over a soft fade (mobile: photo on top) */
+.hero{position:relative;isolation:isolate;overflow:hidden}
+.hero-media{position:relative;width:100%;aspect-ratio:1/.8}
+.hero-media img{width:100%;height:100%;object-fit:cover;object-position:40% 40%}
+.hero-media:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 0,transparent 60%,var(--ink) 100%)}
+.hero .wrap{position:relative;margin-top:-64px;padding-bottom:36px}
+.tag{display:inline-block;background:rgba(var(--acc-rgb),.08);color:var(--acc);border:1px solid rgba(var(--acc-rgb),.25);border-radius:999px;padding:3px 14px;font-size:.85rem;font-weight:700}
+.hero h1{font-size:clamp(2.3rem,6vw,4rem);margin:14px 0 6px}
+.hero h1 span{color:var(--gain)}
+.hero .small{color:var(--muted);font-size:.9rem}
+.hero .sub{font-family:var(--display);font-weight:700;font-size:clamp(1.45rem,3vw,2.1rem);line-height:1.35;color:var(--acc-hi);margin:16px 0 24px;text-wrap:balance}
 
-section.blk{padding:56px 0}
-.kick{color:var(--green);font-weight:800;font-size:.9rem}
-h2{font-size:1.5rem;font-weight:800;margin:4px 0 8px}
+/* prices under the hero, as on the main site */
+.tape{border-block:1px solid var(--line);background:rgba(var(--panel-rgb),.9);min-height:46px;padding:0 4px;direction:ltr;overflow:hidden}
+.tape .tradingview-widget-copyright{display:none}
+.irr{display:grid;grid-template-columns:repeat(2,1fr);border-bottom:1px solid var(--line);background:rgba(var(--panel-rgb),.6)}
+.irr div{padding:12px 16px;text-align:center;border-inline-start:1px solid rgba(var(--fg-rgb),.07)}
+.irr div:nth-child(odd){border-inline-start:0}
+.irr div:nth-child(n+3){border-top:1px solid rgba(var(--fg-rgb),.07)}
+.irr b{display:block;font-size:.8rem;color:var(--muted);font-weight:500}
+.irr span{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.05rem;color:var(--text);transition:color .4s}
+.irr span.na{color:var(--muted)}
+.irr small{color:var(--muted);font-size:.75rem;margin-inline-start:4px}
+.tape-note{text-align:center;font-size:.72rem;color:var(--muted);padding:4px 16px 0}
+
+section.blk{padding:60px 0}
+h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 .lead{color:var(--muted);font-size:1.02rem;margin-bottom:24px}
 
 /* 2. proof */
 .cards{display:grid;gap:12px}
-.cardx{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.cardx{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
 .cardx i{font-style:normal;font-size:1.5rem;line-height:1}
-.cardx h3{font-size:1.08rem;margin:8px 0 4px}
+.cardx h3{font-size:1.05rem;margin:8px 0 4px}
 .cardx p{color:var(--muted);font-size:.95rem}
 
 /* 3. statement */
-.proof{background:var(--dark);color:#fff}
-.proof .lead{color:#b8c7bf}
-.proof .kick{color:var(--gold)}
+.proof{background:var(--panel-2)}
 .scrub{height:190vh;position:relative}
 .scrub-in{position:sticky;top:0;height:100vh;height:100svh;display:flex;align-items:center;justify-content:center}
-.phone{width:min(290px,72vw,calc((82vh - 22px) * .4615 + 22px));width:min(290px,72vw,calc((82svh - 22px) * .4615 + 22px));border-radius:44px;padding:11px;background:#1d1f22;box-shadow:0 0 0 2px #3a3d42,0 30px 80px rgba(0,0,0,.55),0 0 90px rgba(231,194,106,.12);position:relative}
+.phone{width:min(290px,72vw,calc((82vh - 22px) * .4615 + 22px));width:min(290px,72vw,calc((82svh - 22px) * .4615 + 22px));border-radius:44px;padding:11px;background:#1d1f22;box-shadow:0 0 0 2px #3a3d42,0 30px 70px rgba(15,27,45,.28),0 0 90px rgba(var(--acc-rgb),.12);position:relative}
 .phone video{width:100%;height:auto;aspect-ratio:288/624;object-fit:cover;border-radius:34px;background:#fff}
 .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
-.chips span{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 14px;font-size:.88rem;color:#dbe5df}
-.cap{text-align:center;color:var(--gold);font-weight:700;margin-top:18px}
+.chips span{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 14px;font-size:.88rem;color:var(--muted)}
+.cap{text-align:center;color:var(--acc-hi);font-weight:800;margin-top:18px}
 .thanks{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;margin-top:14px}
-.thanks img{flex:0 0 auto;width:min(260px,72vw);border-radius:16px;scroll-snap-align:start;border:1px solid rgba(255,255,255,.12)}
+.thanks img{flex:0 0 auto;width:min(260px,72vw);border-radius:16px;scroll-snap-align:start;border:1px solid var(--line)}
 
 /* 4. signal problem */
 .probs{list-style:none;padding:0;margin:0;display:grid;gap:10px}
-.probs li{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.probs li{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
 .probs li i{font-style:normal;font-size:1.3rem;line-height:1.5}
-.sum{margin-top:18px;background:#fff4f2;border:1px solid rgba(200,70,60,.25);border-radius:14px;padding:16px 18px;font-weight:800;color:#7a2a23}
+.sum{margin-top:18px;background:rgba(var(--loss-rgb),.06);border:1px solid rgba(var(--loss-rgb),.25);border-radius:14px;padding:16px 18px;font-weight:800;color:#8f2329}
 
 /* 5. automatic signal, Montana, form */
 .steps{display:grid;gap:12px;counter-reset:s;margin-bottom:16px}
-.step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;position:relative;padding-inline-start:64px}
-.step:before{counter-increment:s;content:counter(s,persian);position:absolute;inset-inline-start:16px;top:16px;width:34px;height:34px;border-radius:50%;background:var(--green);color:#fff;font-weight:800;display:grid;place-items:center}
-.step p{color:#33433b;font-size:.97rem}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative;padding-inline-start:64px}
+.step:before{counter-increment:s;content:counter(s,persian);position:absolute;inset-inline-start:16px;top:16px;width:34px;height:34px;border-radius:50%;background:var(--acc);color:#fff;font-weight:800;display:grid;place-items:center}
+.step p{color:#33405a;font-size:.97rem}
 .badges{display:grid;gap:8px}
-.badges div{background:#f0faf3;border:1px solid rgba(17,154,69,.3);border-radius:12px;padding:10px 14px;font-size:.95rem}
-.me{background:var(--dark);color:#fff}
+.badges div{background:rgba(var(--gain-rgb),.07);border:1px solid rgba(var(--gain-rgb),.3);border-radius:12px;padding:10px 14px;font-size:.95rem}
+.me{background:var(--panel);border-block:1px solid var(--line)}
 .photos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
 .photos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px}
 .photos img:first-child{grid-column:1/-1;aspect-ratio:16/9}
-.bold{font-size:1.45rem;font-weight:800;line-height:1.6;margin-bottom:20px}
-.bold span{color:var(--gold)}
+.bold{font-family:var(--display);font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:700;line-height:1.45;margin-bottom:20px;text-wrap:balance}
+.bold span{color:var(--acc)}
 .about{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s ease}
 .about.open{grid-template-rows:1fr}
 .about>div{overflow:hidden}
-.about-in{margin-top:20px;background:var(--dark-2);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px}
-.about-in p{color:#dbe5df;margin-bottom:10px}
-.about-in ul{list-style:none;padding:0;margin:0;display:grid;gap:10px;color:#dbe5df}
-.formbox{background:var(--card);border-radius:20px;padding:24px 18px 18px;box-shadow:0 18px 50px rgba(0,0,0,.12);max-width:460px;margin:0 auto;border:1px solid var(--line)}
-.formbox h2{text-align:center;font-size:1.3rem}
+.about-in{margin-top:20px;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:18px}
+.about-in p{margin-bottom:10px;font-weight:700}
+.about-in ul{list-style:none;padding:0;margin:0;display:grid;gap:10px;color:#33405a}
+.formbox{background:var(--panel);border-radius:20px;padding:26px 18px 18px;box-shadow:0 18px 50px rgba(15,27,45,.1);max-width:460px;margin:0 auto;border:1px solid var(--line)}
+.formbox h2{text-align:center;font-size:clamp(1.6rem,3.4vw,2rem)}
 .formbox .lead{text-align:center;margin-bottom:14px;font-size:.95rem}
 #lead{display:grid;gap:10px;position:relative}
 #lead label{display:grid;gap:4px;font-size:.92rem;font-weight:700}
-#lead input{font:inherit;font-size:1.05rem;font-weight:400;width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fbfcfb;color:var(--text)}
-#lead input:focus{outline:none;border-color:var(--green);background:#fff}
+#lead input{font:inherit;font-size:1.05rem;font-weight:400;width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--ink);color:var(--text)}
+#lead input:focus{outline:none;border-color:var(--acc);background:#fff}
 #lead input[dir=ltr]{text-align:right}
-#lead input.bad{border-color:var(--red)}
+#lead input.bad{border-color:var(--loss)}
 #lead .btn{width:100%}
-.err{color:var(--red);font-size:.86rem;margin-top:-6px}
+.err{color:var(--loss);font-size:.86rem;margin-top:-6px}
 .hp{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);opacity:0;pointer-events:none}
 .micro{text-align:center;color:var(--muted);font-size:.8rem;line-height:1.7}
-footer{background:var(--dark);color:#8fa39a;padding:26px 0 96px;font-size:.8rem;text-align:center;line-height:1.9}
-footer .logo{display:block;margin-bottom:4px}
-footer small{display:block;color:#b8c7bf;margin-bottom:10px}
-.sticky{position:fixed;inset-inline:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(11,26,20,.94);transform:translateY(110%);transition:transform .25s;z-index:5}
+footer{border-top:1px solid var(--line);color:var(--muted);padding:26px 0 96px;font-size:.8rem;text-align:center;line-height:1.9}
+footer .logo{display:block;margin-bottom:2px}
+footer small{display:block;margin-bottom:10px}
+.sticky{position:fixed;inset-inline:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(var(--panel-rgb),.95);border-top:1px solid var(--line);transform:translateY(110%);transition:transform .25s;z-index:5}
 .sticky.on{transform:none}
 .sticky .btn{width:100%}
 @media (min-width:860px){
-  .hero h1{font-size:2.9rem}
-  .hero .sub{font-size:1.3rem}
-  h2{font-size:1.9rem}
+  .hero{min-height:620px;display:flex;align-items:center}
+  .hero-media{position:absolute;inset:0 auto 0 0;width:72%;aspect-ratio:auto;z-index:-1}
+  .hero-media:after{background:linear-gradient(to left,var(--ink) 0,rgba(var(--ink-rgb),.85) 30%,rgba(var(--ink-rgb),.2) 65%,rgba(var(--ink-rgb),.05) 100%),linear-gradient(180deg,transparent 75%,var(--ink))}
+  .hero .wrap{margin:0 auto;width:100%;padding-block:60px}
+  .hero-copy{max-width:580px}
+  .irr{grid-template-columns:repeat(4,1fr)}
+  .irr div:nth-child(n){border-inline-start:1px solid rgba(var(--fg-rgb),.07);border-top:0}
+  .irr div:first-child{border-inline-start:0}
   .cards{grid-template-columns:repeat(4,1fr)}
   .steps{grid-template-columns:repeat(3,1fr)}
   .badges{grid-template-columns:repeat(3,1fr)}
   .probs{grid-template-columns:1fr 1fr}
   .me .wrap{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
   .photos{margin:0}
-  .bold{font-size:1.8rem}
   .sticky{display:none}
   footer{padding-bottom:30px}
 }
@@ -235,14 +249,25 @@ footer small{display:block;color:#b8c7bf;margin-bottom:10px}
 
 <!-- 1. goal -->
 <section class="hero" id="hero">
-  <div class="wrap">
+  <div class="hero-media"><img src="/images/new-york-stock-exchange-trading-floor.jpg" alt="تالار معاملات بورس نیویورک" fetchpriority="high"></div>
+  <div class="wrap"><div class="hero-copy">
     <span class="tag">سیگنال اتوماتیک طلا و ارز</span>
     <h1>کسب درآمد روزانه میانگین <span>۷٪</span> از بازارهای جهانی</h1>
     <p class="small">بین ۲ تا ۹ درصد سود در روزهای کاری، بسته به شرایط مارکت.</p>
     <p class="sub">در ظاهر سخت، بسیار آسان؛ در کنار تحلیلگر سابق موسسات مالی</p>
     <a class="btn" href="#form" data-go>می‌خوام شروع کنم</a>
-  </div>
+  </div></div>
 </section>
+
+<!-- live prices, as on the main site -->
+<div class="tape" id="tv" aria-label="قیمت دارایی‌های جهانی"></div>
+<div class="irr" id="irr" aria-label="قیمت‌ها به تومان">
+  <div><b>دلار</b><span data-k="0"></span><small>تومان</small></div>
+  <div><b>یورو</b><span data-k="1"></span><small>تومان</small></div>
+  <div><b>یک گرم طلای آب‌شده</b><span data-k="2"></span><small>تومان</small></div>
+  <div><b>بیت‌کوین</b><span data-k="3"></span><small>تومان</small></div>
+</div>
+<p class="tape-note">قیمت‌های تومانی: بازار آزاد تهران (tgju)، هر یک دقیقه به‌روز میشه. بیت‌کوین با نرخ دلار آزاد حساب شده.</p>
 
 <!-- 2. proof -->
 <section class="blk"><div class="wrap">
@@ -446,6 +471,34 @@ footer small{display:block;color:#b8c7bf;margin-bottom:10px}
       v.src = URL.createObjectURL(bl); start();
     }).catch(plain);
   }
+
+  // Live prices under the hero: toman row from /api/prices, global tape from TradingView.
+  var KEYS = ["usd", "eur", "goldGram", "btc"], irs = document.querySelectorAll("#irr [data-k]"), PR = null;
+  var drawIR = function () {
+    irs.forEach(function (e) {
+      var x = PR && PR[KEYS[+e.dataset.k]];
+      if (x) { e.textContent = Math.round(x).toLocaleString("fa-IR"); e.classList.remove("na"); } else { e.textContent = "—"; e.classList.add("na"); }
+    });
+  };
+  var getPrices = function () {
+    fetch("/api/prices", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      var prev = PR; PR = d; drawIR();
+      if (prev) irs.forEach(function (e) {
+        var k = KEYS[+e.dataset.k];
+        if (prev[k] && d[k] && prev[k] !== d[k]) { e.style.color = d[k] > prev[k] ? "var(--gain)" : "var(--loss)"; setTimeout(function () { e.style.color = ""; }, 900); }
+      });
+    }).catch(drawIR);
+  };
+  drawIR(); getPrices(); setInterval(getPrices, 60000);
+  var tv = document.getElementById("tv");
+  tv.innerHTML = '<div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div>';
+  var tvs = document.createElement("script");
+  tvs.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js"; tvs.async = true;
+  tvs.innerHTML = JSON.stringify({
+    symbols: [["OANDA:XAUUSD", "طلا"], ["TVC:UKOIL", "نفت برنت"], ["FX:EURUSD", "یورو / دلار"], ["OANDA:XAGUSD", "نقره"], ["BITSTAMP:BTCUSD", "بیت‌کوین"], ["FX:GBPUSD", "پوند / دلار"], ["FOREXCOM:SPXUSD", "S&P 500"], ["FX:USDJPY", "دلار / ین"]].map(function (x) { return { proName: x[0], title: x[1] }; }),
+    showSymbolLogo: true, isTransparent: true, displayMode: "adaptive", colorTheme: "light", locale: "fa_IR"
+  });
+  tv.firstChild.appendChild(tvs);
   <?php if ($err): ?>f.scrollIntoView({ block: "center" });<?php endif; ?>
 })();
 </script>
