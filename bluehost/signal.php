@@ -102,9 +102,12 @@ if (!$preview && $_SERVER["REQUEST_METHOD"] !== "POST") {
 }
 $ga = $preview ? '' : trim((string) @file_get_contents($statsDir . "/ga.txt"));
 $errHtml = fn($k) => isset($err[$k]) ? '<span class="err">' . $err[$k] . '</span>' : '';
-// Thank-you screenshots: any image dropped in images/thanks/ shows up; none, no section.
-$thanks = glob(__DIR__ . "/images/thanks/*.{jpg,jpeg,png,webp}", GLOB_BRACE) ?: [];
-sort($thanks);
+// Followers' messages, copied word for word from their Telegram messages.
+// Only real messages go here.
+$thanks = [
+  ['علی', 'خاک زیر پاتم دمت گرم بخاطر سود های قشنگی که بدست میاری'],
+  ['بابک', 'دارم روی چارت نگا میکنم چجوری باز میکنی میبینیدی و سودهارو درو میکنی دمتگرم واقعاااا❤️'],
+];
 $extra = __DIR__ . "/lib-signal-extra.php";
 ?><!DOCTYPE html>
 <html lang="fa" dir="rtl"><head><meta charset="utf-8">
@@ -184,8 +187,16 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
 .chips span{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 14px;font-size:.88rem;color:var(--muted)}
 .cap{text-align:center;color:var(--acc-hi);font-weight:800;margin-top:18px}
-.thanks{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;margin-top:14px}
-.thanks img{flex:0 0 auto;width:min(260px,72vw);border-radius:16px;scroll-snap-align:start;border:1px solid var(--line)}
+/* followers' messages: chat bubbles drifting past under the phone */
+.thanks{margin:0 -16px 26px}
+.thanks-h{text-align:center;font-weight:800;margin-bottom:10px}
+.marq{overflow:hidden;direction:ltr;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.marq-track{display:flex;gap:14px;width:max-content;padding:6px 0;animation:marq 40s linear infinite}
+.marq:hover .marq-track{animation-play-state:paused}
+.bub{direction:rtl;margin:0;flex:0 0 auto;width:min(300px,78vw);background:var(--panel);border:1px solid var(--line);border-radius:18px 18px 18px 4px;padding:12px 16px 8px;box-shadow:0 6px 18px rgba(15,27,45,.06)}
+.bub blockquote{margin:0;font-size:.95rem;line-height:1.8}
+.bub figcaption{font-size:.78rem;color:var(--muted);margin-top:4px}
+@keyframes marq{to{transform:translateX(-50%)}}
 
 /* 4. signal problem */
 .probs{list-style:none;padding:0;margin:0;display:grid;gap:10px}
@@ -272,7 +283,7 @@ footer small{display:block;margin-bottom:10px}
   .sticky{display:none}
   footer{padding-bottom:30px}
 }
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.about{transition:none}.photos img{animation:none}.about.open .timeline li{animation:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.about{transition:none}.photos img{animation:none}.about.open .timeline li{animation:none}.marq-track{animation:none}.marq{overflow-x:auto}}
 </style>
 <?php if (preg_match("/^G-[A-Z0-9]{4,15}$/", $ga)) echo "<script async src=\"https://www.googletagmanager.com/gtag/js?id=$ga\"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag(\"js\",new Date());gtag(\"config\",\"$ga\");</script>"; ?>
 </head><body>
@@ -321,14 +332,17 @@ footer small{display:block;margin-bottom:10px}
       <div class="phone"><video id="stmt" poster="/images/mt-statement.jpg" muted playsinline preload="none" aria-label="تاریخچه معاملات در متاتریدر"><source src="/images/mt-statement.mp4" type='video/mp4; codecs="avc1.64001E"'><source src="/images/mt-statement.webm" type='video/webm; codecs="vp9"'></video></div>
     </div>
   </div>
-  <div class="chips"><span>تاریخچه واقعی متاتریدر</span><span>سود و ضرر، هر دو</span><span>بدون حذف معامله‌های ضررده</span></div>
-  <p class="cap">ضرر هم بخشی از ترید است، اما مدیریت‌شده. ما همه رو منتشر می‌کنیم.</p>
   <?php if ($thanks): ?>
-  <h3 style="margin-top:40px;font-size:1.2rem">نظرات دنبال‌کنندگان</h3>
-  <div class="thanks">
-    <?php foreach ($thanks as $t): ?><img loading="lazy" decoding="async" src="/images/thanks/<?php echo rawurlencode(basename($t)); ?>" alt="پیام تشکر یکی از دنبال‌کنندگان"><?php endforeach; ?>
+  <div class="thanks" aria-label="نظرات دنبال‌کنندگان">
+    <p class="thanks-h">نظرات دنبال‌کنندگان</p>
+    <div class="marq"><div class="marq-track">
+      <?php // The set repeats so the strip loops without a gap; copies after the first are hidden from screen readers.
+      for ($i = 0; $i < 4; $i++) foreach ($thanks as [$who, $msg]) echo '<figure class="bub"' . ($i ? ' aria-hidden="true"' : '') . '><blockquote>' . htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') . '</blockquote><figcaption>' . htmlspecialchars($who, ENT_QUOTES, 'UTF-8') . '</figcaption></figure>'; ?>
+    </div></div>
   </div>
   <?php endif; ?>
+  <div class="chips"><span>تاریخچه واقعی متاتریدر</span><span>سود و ضرر، هر دو</span><span>بدون حذف معامله‌های ضررده</span></div>
+  <p class="cap">ضرر هم بخشی از ترید است، اما مدیریت‌شده. ما همه رو منتشر می‌کنیم.</p>
 </div></section>
 
 <!-- 4. the signal-channel problem -->
