@@ -193,9 +193,14 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 .badges{display:grid;gap:8px}
 .badges div{background:rgba(var(--gain-rgb),.07);border:1px solid rgba(var(--gain-rgb),.3);border-radius:12px;padding:10px 14px;font-size:.95rem}
 .me{background:var(--panel);border-block:1px solid var(--line)}
-.photos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
-.photos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px}
-.photos img:first-child{grid-column:1/-1;aspect-ratio:16/9}
+/* photo slider like the main site: each photo 3 s, cross-fading under a soft gradient */
+.photos{position:relative;width:100%;aspect-ratio:1/.9;overflow:hidden;margin-bottom:8px}
+.photos img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 30%;opacity:0;animation:slide3 9s infinite;will-change:transform,opacity}
+.photos img:nth-child(1){opacity:1}
+.photos img:nth-child(2){animation-delay:3s}
+.photos img:nth-child(3){animation-delay:6s}
+.photos:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 0,transparent 62%,var(--panel) 100%)}
+@keyframes slide3{0%{opacity:0;transform:scale(1.04)}4%{opacity:1}31%{opacity:1}38%{opacity:0;transform:scale(1.12) translateX(-2%)}to{opacity:0;transform:scale(1.04)}}
 .bold{font-family:var(--display);font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:700;line-height:1.45;margin-bottom:20px;text-wrap:balance}
 .bold span{color:var(--acc)}
 .about{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s ease}
@@ -237,11 +242,15 @@ footer small{display:block;margin-bottom:10px}
   .badges{grid-template-columns:repeat(3,1fr)}
   .probs{grid-template-columns:1fr 1fr}
   .me .wrap{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
-  .photos{margin:0}
+  section.me{padding:0;overflow:hidden}
+  .me .wrap{max-width:none;padding:0;grid-template-columns:1.1fr 1fr}
+  .me .wrap>div:last-child{padding:60px 16px;max-width:560px}
+  .photos{margin:0;height:100%;min-height:520px;aspect-ratio:auto}
+  .photos:after{background:linear-gradient(to left,transparent 0,transparent 45%,var(--panel) 100%),linear-gradient(180deg,rgba(var(--panel-rgb),.25),transparent 20%,transparent 80%,rgba(var(--panel-rgb),.25))}
   .sticky{display:none}
   footer{padding-bottom:30px}
 }
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.about{transition:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.about{transition:none}.photos img{animation:none}}
 </style>
 <?php if (preg_match("/^G-[A-Z0-9]{4,15}$/", $ga)) echo "<script async src=\"https://www.googletagmanager.com/gtag/js?id=$ga\"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag(\"js\",new Date());gtag(\"config\",\"$ga\");</script>"; ?>
 </head><body>
@@ -335,9 +344,9 @@ footer small{display:block;margin-bottom:10px}
 <!-- Montana -->
 <section class="blk me"><div class="wrap">
   <div class="photos">
-    <img loading="lazy" decoding="async" src="/images/mojtaba-hosseini-montana-trading-desk.jpg" alt="مجتبی حسینی (مونتانا) پشت سیستم معاملاتی">
-    <img loading="lazy" decoding="async" src="/images/mojtaba-hosseini-montana-dubai-office.jpg" alt="مجتبی حسینی (مونتانا) در دفتر دبی">
-    <img loading="lazy" decoding="async" src="/images/mojtaba-hosseini-montana-podcast.jpg" alt="مجتبی حسینی (مونتانا) در استودیوی پادکست">
+    <img decoding="async" src="/images/mojtaba-hosseini-montana-trading-desk.jpg" alt="مجتبی حسینی (مونتانا) پشت سیستم معاملاتی">
+    <img decoding="async" src="/images/mojtaba-hosseini-montana-dubai-office.jpg" alt="مجتبی حسینی (مونتانا) در دفتر دبی">
+    <img decoding="async" src="/images/mojtaba-hosseini-montana-podcast.jpg" alt="مجتبی حسینی (مونتانا) در استودیوی پادکست">
   </div>
   <div>
     <p class="bold">من تنها استادی هستم که <span>جسارتش رو دارم</span> معامله‌هام رو، با سود و ضررش، به اشتراک بذارم.</p>
