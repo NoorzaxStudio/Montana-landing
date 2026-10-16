@@ -107,6 +107,9 @@ $errHtml = fn($k) => isset($err[$k]) ? '<span class="err">' . $err[$k] . '</span
 $thanks = [
   ['علی', 'خاک زیر پاتم دمت گرم بخاطر سود های قشنگی که بدست میاری'],
   ['بابک', 'دارم روی چارت نگا میکنم چجوری باز میکنی میبینیدی و سودهارو درو میکنی دمتگرم واقعاااا❤️'],
+  ['احمد', 'آقا دمت گرم دیگه از استرس و اعصاب خوردی ترید راحت شدم کاش زودتر با شما آشنا شده بودم'],
+  ['کیارش', 'اینجا خداییش تنها جایی که همه سود و ضرر ها رو میشه دید، همه کانال های دیگه سیگنال های دو پهلو هستن دیگه'],
+  ['یکی از دنبال‌کنندگان', 'یه چیزی که خیلی با سیستم شما حال میکنم اینه که سود دهی مستمر هستش و واقعا رشد اکانت رو دارم حس میکنم'],
 ];
 $extra = __DIR__ . "/lib-signal-extra.php";
 ?><!DOCTYPE html>
@@ -192,7 +195,7 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 .thanks{margin:0 -16px 26px}
 .thanks-h{text-align:center;font-weight:800;margin-bottom:10px}
 .marq{overflow:hidden;direction:ltr;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
-.marq-track{display:flex;gap:14px;width:max-content;padding:6px 0;animation:marq 40s linear infinite}
+.marq-track{display:flex;gap:14px;width:max-content;padding:6px 0;animation:marq 60s linear infinite}
 .marq:hover .marq-track{animation-play-state:paused}
 .bub{direction:rtl;margin:0;flex:0 0 auto;width:min(300px,78vw);background:var(--panel);border:1px solid var(--line);border-radius:18px 18px 18px 4px;padding:12px 16px 8px;box-shadow:0 6px 18px rgba(15,27,45,.06)}
 .bub blockquote{margin:0;font-size:.95rem;line-height:1.8}
@@ -339,7 +342,7 @@ footer small{display:block;margin-bottom:10px}
     <p class="thanks-h">نظرات دنبال‌کنندگان</p>
     <div class="marq"><div class="marq-track">
       <?php // The set repeats so the strip loops without a gap; copies after the first are hidden from screen readers.
-      for ($i = 0; $i < 4; $i++) foreach ($thanks as [$who, $msg]) echo '<figure class="bub"' . ($i ? ' aria-hidden="true"' : '') . '><blockquote>' . htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') . '</blockquote><figcaption>' . htmlspecialchars($who, ENT_QUOTES, 'UTF-8') . '</figcaption></figure>'; ?>
+      for ($i = 0; $i < 2; $i++) foreach ($thanks as [$who, $msg]) echo '<figure class="bub"' . ($i ? ' aria-hidden="true"' : '') . '><blockquote>' . htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') . '</blockquote><figcaption>' . htmlspecialchars($who, ENT_QUOTES, 'UTF-8') . '</figcaption></figure>'; ?>
     </div></div>
   </div>
   <?php endif; ?>
