@@ -180,8 +180,9 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 
 /* 3. statement */
 .proof{background:var(--panel-2)}
-.scrub{height:190vh;position:relative}
-.scrub-in{position:sticky;top:0;height:100vh;height:100svh;display:flex;align-items:center;justify-content:center}
+.scrub{position:relative;margin-bottom:28px}
+.scrub-sp{height:55vh;height:55svh}
+.scrub-in{position:sticky;top:9vh;top:9svh;display:flex;justify-content:center}
 .phone{width:min(290px,72vw,calc((82vh - 22px) * .4615 + 22px));width:min(290px,72vw,calc((82svh - 22px) * .4615 + 22px));border-radius:44px;padding:11px;background:#1d1f22;box-shadow:0 0 0 2px #3a3d42,0 30px 70px rgba(15,27,45,.28),0 0 90px rgba(var(--acc-rgb),.12);position:relative}
 .phone video{width:100%;height:auto;aspect-ratio:288/624;object-fit:cover;border-radius:34px;background:#fff}
 .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
@@ -331,6 +332,7 @@ footer small{display:block;margin-bottom:10px}
     <div class="scrub-in">
       <div class="phone"><video id="stmt" poster="/images/mt-statement.jpg" muted playsinline preload="none" aria-label="تاریخچه معاملات در متاتریدر"><source src="/images/mt-statement.mp4" type='video/mp4; codecs="avc1.64001E"'><source src="/images/mt-statement.webm" type='video/webm; codecs="vp9"'></video></div>
     </div>
+    <div class="scrub-sp"></div>
   </div>
   <?php if ($thanks): ?>
   <div class="thanks" aria-label="نظرات دنبال‌کنندگان">
@@ -497,12 +499,14 @@ footer small{display:block;margin-bottom:10px}
   // while its section passes, and the MetaTrader history scrolls with it.
   var v = document.getElementById("stmt"), box = document.getElementById("scrub"), want = 0, busy = false;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    box.style.height = "auto"; v.loop = true; v.autoplay = true; v.play().catch(function () {});
+    box.lastElementChild.style.height = "0"; v.loop = true; v.autoplay = true; v.play().catch(function () {});
   } else {
     var seek = function () {
       if (!v.duration) return;
-      var r = box.getBoundingClientRect(), span = r.height - window.innerHeight;
-      var p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
+      // 0 when the phone first sticks, 1 when it is about to scroll away.
+      var r = box.getBoundingClientRect(), inn = box.firstElementChild, top = parseFloat(getComputedStyle(inn).top) || 0;
+      var span = box.clientHeight - inn.offsetHeight;
+      var p = span > 0 ? Math.min(1, Math.max(0, (top - r.top) / span)) : 0;
       want = p * (v.duration - 0.05);
       if (!busy && Math.abs(v.currentTime - want) > 0.02) { busy = true; v.currentTime = want; }
     };
