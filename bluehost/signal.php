@@ -138,7 +138,7 @@ p{margin:0}
 .hero-media:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 0,transparent 60%,var(--ink) 100%)}
 .hero .wrap{position:relative;margin-top:-64px;padding-bottom:36px}
 .tag{display:inline-block;background:rgba(var(--acc-rgb),.08);color:var(--acc);border:1px solid rgba(var(--acc-rgb),.25);border-radius:999px;padding:3px 14px;font-size:.85rem;font-weight:700}
-.hero h1{font-size:clamp(2.3rem,6vw,4rem);margin:14px 0 6px}
+.hero h1{font-size:clamp(2.3rem,6vw,4rem);margin:0 0 6px}
 .hero h1 span{color:var(--gain)}
 .hero .small{color:var(--muted);font-size:.9rem}
 .hero .sub{font-family:var(--display);font-weight:700;font-size:clamp(1.45rem,3vw,2.1rem);line-height:1.35;color:var(--acc-hi);margin:16px 0 24px;text-wrap:balance}
@@ -251,7 +251,6 @@ footer small{display:block;margin-bottom:10px}
 <section class="hero" id="hero">
   <div class="hero-media"><img src="/images/new-york-stock-exchange-trading-floor.jpg" alt="تالار معاملات بورس نیویورک" fetchpriority="high"></div>
   <div class="wrap"><div class="hero-copy">
-    <span class="tag">سیگنال اتوماتیک طلا و ارز</span>
     <h1>کسب درآمد روزانه میانگین <span>۷٪</span> از بازارهای جهانی</h1>
     <p class="small">بین ۲ تا ۹ درصد سود در روزهای کاری، بسته به شرایط مارکت.</p>
     <p class="sub">در ظاهر سخت، بسیار آسان؛ در کنار تحلیلگر سابق موسسات مالی</p>
