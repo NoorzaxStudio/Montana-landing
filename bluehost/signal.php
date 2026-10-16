@@ -12,74 +12,82 @@ $fa2en = fn($v) => strtr(trim((string) $v), ['۰'=>'0','۱'=>'1','۲'=>'2','۳'=
 $faNum = fn($n) => strtr((string) $n, ['0'=>'۰','1'=>'۱','2'=>'۲','3'=>'۳','4'=>'۴','5'=>'۵','6'=>'۶','7'=>'۷','8'=>'۸','9'=>'۹']);
 $page = 'signal';
 
-// Spam check without bothering people: a signed token that carries when the
-// page was opened and a small sum. With JavaScript the page copies the token
-// into a hidden field; without it, the sum is asked (only then).
+// The same sign-up form as /lead: name, mobile, optional email, birth year and
+// a small sum as the security question (signed with a server secret so a bot
+// can't make up its own question; the token also carries when it was opened).
 $secretFile = $statsDir . "/secret.txt";
 if (!is_file($secretFile)) @file_put_contents($secretFile, bin2hex(random_bytes(32)), LOCK_EX);
 $secret = trim((string) @file_get_contents($secretFile)) ?: 'montana';
 $capNew = function () use ($secret) {
   $a = random_int(2, 9); $b = random_int(1, 9); $t = time();
-  return [$a, $b, "$t-$a-$b-" . hash_hmac('sha256', "signal-$t-$a-$b", $secret)];
+  return [$a, $b, "$t-$a-$b-" . hash_hmac('sha256', "$t-$a-$b", $secret)];
 };
-$capParse = function ($token) use ($secret) {
-  if (!preg_match('/^(\d+)-(\d)-(\d)-([0-9a-f]{64})$/', (string) $token, $m)) return null;
-  if (!hash_equals(hash_hmac('sha256', "signal-$m[1]-$m[2]-$m[3]", $secret), $m[4])) return null;
+$capOk = function ($token, $answer) use ($secret, $fa2en) {
+  if (!preg_match('/^(\d+)-(\d)-(\d)-([0-9a-f]{64})$/', (string) $token, $m)) return false;
+  if (!hash_equals(hash_hmac('sha256', "$m[1]-$m[2]-$m[3]", $secret), $m[4])) return false;
   $age = time() - (int) $m[1];
-  return $age >= 2 && $age <= 7200 ? (int) $m[2] + (int) $m[3] : null;
+  return $age >= 3 && $age <= 3600 && $fa2en($answer) === (string) ($m[2] + $m[3]);
 };
-// Many people in Iran share one mobile-network IP, so the limit is generous.
+// Too many tries from one internet connection in an hour: stop accepting for a while.
 $tooMany = function () use ($statsDir) {
-  $h = @fopen($statsDir . "/signal-ips.json", "c+"); if (!$h) return false;
+  $h = @fopen($statsDir . "/lead-ips.json", "c+"); if (!$h) return false;
   flock($h, LOCK_EX);
   $d = json_decode((string) stream_get_contents($h), true) ?: [];
   $now = time(); $ip = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? '');
   foreach ($d as $k => $ts) { $d[$k] = array_values(array_filter((array) $ts, fn($t) => $t > $now - 3600)); if (!$d[$k]) unset($d[$k]); }
   $d[$ip][] = $now;
   ftruncate($h, 0); rewind($h); fwrite($h, json_encode($d)); flock($h, LOCK_UN); fclose($h);
-  return count($d[$ip]) > 40;
+  return count($d[$ip]) > 15;
 };
 
-$val = ['name' => '', 'phone' => ''];
+$val = ['name' => '', 'phone' => '', 'email' => '', 'year' => ''];
 $err = [];
-$askCap = false;
+$dup = '';
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
   $val['name'] = trim(preg_replace('/\s+/u', ' ', (string) ($_POST['name'] ?? '')));
   $val['phone'] = $fa2en($_POST['phone'] ?? '');
+  $val['email'] = trim((string) ($_POST['email'] ?? ''));
+  $val['year'] = $fa2en($_POST['year'] ?? '');
   $phone = preg_replace('/[\s\-()]/', '', $val['phone']);
   $phone = preg_replace('/^(\+98|0098|98)(?=9\d{9}$)/', '0', $phone);
   if (preg_match('/^9\d{9}$/', $phone)) $phone = '0' . $phone;
-  if (mb_strlen($val['name']) < 2 || mb_strlen($val['name']) > 60) $err['name'] = 'اسمت رو بنویس.';
-  if (!preg_match('/^09\d{9}$/', $phone)) $err['phone'] = 'شماره موبایل باید ۱۱ رقم باشه و با ۰۹ شروع بشه.';
-  $token = (string) ($_POST['cap'] ?? '');
-  $sum = $capParse($token);
-  $human = $sum !== null && (hash_equals($token, (string) ($_POST['js'] ?? '')) || $fa2en($_POST['cap_ans'] ?? '') === (string) $sum);
-  if (!$human) { $askCap = true; $err['cap'] = 'برای ثبت، جواب این سؤال ساده رو بنویس.'; }
-  if (!$err && $tooMany()) $err['form'] = 'تعداد تلاش‌ها از این اینترنت زیاد بود. چند دقیقه دیگه دوباره امتحان کن.';
+  if (mb_strlen($val['name']) < 2 || mb_strlen($val['name']) > 60) $err['name'] = 'نام و نام خانوادگی را وارد کنید.';
+  if (!preg_match('/^09\d{9}$/', $phone)) $err['phone'] = 'شماره موبایل را درست وارد کنید، مثل ۰۹۱۲۳۴۵۶۷۸۹';
+  if ($val['email'] !== '' && !filter_var($val['email'], FILTER_VALIDATE_EMAIL)) $err['email'] = 'ایمیل درست نیست.';
+  if ($tooMany()) $err['form'] = 'تعداد تلاش‌ها زیاد بود. لطفا کمی بعد دوباره امتحان کنید.';
+  if (!$capOk($_POST['cap'] ?? '', $_POST['cap_ans'] ?? '')) $err['cap'] = 'جواب سوال امنیتی درست نیست. دوباره امتحان کنید.';
+  if (!preg_match('/^1[34]\d\d$/', $val['year']) || (int) $val['year'] < 1320 || (int) $val['year'] > 1395) $err['year'] = 'سال تولد را انتخاب کنید.';
+  // Same mobile or email already signed up: don't save it twice.
+  if (!$err && is_file($statsDir . "/leads.csv") && ($fh = fopen($statsDir . "/leads.csv", "r"))) {
+    $mail = strtolower($val['email']);
+    while (($row = fgetcsv($fh)) !== false) {
+      if (($row[2] ?? '') === $phone) { $dup = 'phone'; break; }
+      if ($mail !== '' && strtolower(ltrim($row[3] ?? '', "'")) === $mail) { $dup = 'email'; break; }
+    }
+    fclose($fh);
+  }
+  if ($dup === 'phone') $err['phone'] = 'قبلا با این شماره ثبت‌نام کرده‌اید.';
+  if ($dup === 'email') $err['email'] = 'قبلا با این ایمیل ثبت‌نام کرده‌اید.';
+  // Bots: a hidden field people never fill (dropped silently, so they don't learn why).
   $bot = !empty($_POST['website']);
   if (!$err) {
-    // Already on the list: don't save twice, but treat it as a sign-up.
-    $dup = false;
-    if (is_file($statsDir . "/leads.csv") && ($fh = fopen($statsDir . "/leads.csv", "r"))) {
-      while (($row = fgetcsv($fh)) !== false) if (($row[2] ?? '') === $phone) { $dup = true; break; }
-      fclose($fh);
-    }
-    if (!$bot && !$dup) {
+    if (!$bot) {
       $f = $statsDir . "/leads.csv";
       $new = !is_file($f);
       $src = substr((string) ($_GET['utm_source'] ?? ''), 0, 40);
       if ($h = @fopen($f, "a")) {
         flock($h, LOCK_EX);
         if ($new) fputcsv($h, ['time', 'name', 'phone', 'email', 'birth_year', 'source', 'app', 'campaign', 'user_agent']);
+        // A leading = + - @ would run as a formula when the file is opened in Excel.
         $cell = fn($v) => preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v;
-        fputcsv($h, [date("Y-m-d H:i:s"), $cell($val['name']), $phone, '', '',
+        fputcsv($h, [date("Y-m-d H:i:s"), $cell($val['name']), $phone, $cell($val['email']), $val['year'],
           $page . ($src !== '' ? ':' . $src : ''), substr((string) ($_GET['utm_content'] ?? ''), 0, 80),
           substr((string) ($_GET['utm_campaign'] ?? ''), 0, 60), substr($_SERVER["HTTP_USER_AGENT"] ?? '', 0, 200)]);
         flock($h, LOCK_UN); fclose($h);
       }
       require_once __DIR__ . "/lib-sheet.php";
       $s = trim($src . ' / ' . ($_GET['utm_content'] ?? ''), ' /');
-      montana_sheet_send($statsDir, ['name' => $val['name'], 'phone' => $phone, 'email' => '', 'birth_year' => '',
+      montana_sheet_send($statsDir, ['name' => $val['name'], 'phone' => $phone, 'email' => $val['email'], 'birth_year' => $val['year'],
         'source' => mb_substr('montanafx.com/' . $page . ($s !== '' ? ' · ' . $s : ''), 0, 200)]);
     }
     header("Location: /go?l=1", true, 303);
@@ -112,7 +120,7 @@ $extra = __DIR__ . "/lib-signal-extra.php";
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 /* Same palette and type as the main site (light: white, blue, green). */
-:root{--ink:#f6f8fb;--ink-rgb:246,248,251;--panel:#fff;--panel-rgb:255,255,255;--panel-2:#eef2f7;--line:rgba(15,27,45,.1);--acc:#1652c9;--acc-rgb:22,82,201;--acc-hi:#0f3d91;--text:#0f1b2d;--fg-rgb:15,27,45;--muted:#5b6678;--gain:#12a06a;--gain-rgb:18,160,106;--gain-hi:#0d8357;--loss:#d9434b;--loss-rgb:217,67,75;--display:"Markazi Text","Vazirmatn",Tahoma,serif;--body:"Vazirmatn",Tahoma,"Segoe UI",sans-serif}
+:root{--ink:#f6f8fb;--ink-rgb:246,248,251;--panel:#fff;--panel-rgb:255,255,255;--panel-2:#eef2f7;--line:rgba(15,27,45,.1);--acc:#1652c9;--acc-rgb:22,82,201;--acc-hi:#0f3d91;--text:#0f1b2d;--fg-rgb:15,27,45;--muted:#5b6678;--gain:#12a06a;--gain-rgb:18,160,106;--gain-hi:#0d8357;--loss:#d9434b;--loss-rgb:217,67,75;--tg:#2aa3e0;--display:"Markazi Text","Vazirmatn",Tahoma,serif;--body:"Vazirmatn",Tahoma,"Segoe UI",sans-serif}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--ink);background-image:repeating-linear-gradient(90deg,transparent 0 21px,rgba(var(--fg-rgb),.026) 21px 22px);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.85;-webkit-text-size-adjust:100%;overflow-x:clip}
@@ -219,19 +227,23 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 .about.open .timeline li:nth-child(3){animation-delay:.3s}
 .about.open .timeline li:nth-child(4){animation-delay:.45s}
 @keyframes tl{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
-.formbox{background:var(--panel);border-radius:20px;padding:26px 18px 18px;box-shadow:0 18px 50px rgba(15,27,45,.1);max-width:460px;margin:0 auto;border:1px solid var(--line)}
-.formbox h2{text-align:center;font-size:clamp(1.6rem,3.4vw,2rem)}
-.formbox .lead{text-align:center;margin-bottom:14px;font-size:.95rem}
-#lead{display:grid;gap:10px;position:relative}
-#lead label{display:grid;gap:4px;font-size:.92rem;font-weight:700}
-#lead input{font:inherit;font-size:1.05rem;font-weight:400;width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--ink);color:var(--text)}
-#lead input:focus{outline:none;border-color:var(--acc);background:#fff}
-#lead input[dir=ltr]{text-align:right}
-#lead input.bad{border-color:var(--loss)}
-#lead .btn{width:100%}
-.err{color:var(--loss);font-size:.86rem;margin-top:-6px}
+/* sign-up form, styled like /lead */
+.join1{max-width:480px;margin-inline:auto;text-align:center}
+.join1 h2{font-size:clamp(1.7rem,3.6vw,2.3rem);line-height:1.4}
+.lede{font-size:1.05rem;color:var(--muted);margin-top:14px}
+#lead{margin-top:26px;text-align:start;display:grid;gap:10px;position:relative}
+label.f{display:grid;gap:6px;font-size:.9rem;color:var(--muted)}
+label.f input,label.f .sel{font:inherit;font-size:1rem;color:var(--text);background:var(--ink);border:1px solid rgba(var(--fg-rgb),.18);border-radius:10px;padding:12px 14px;width:100%}
+label.f input:focus,label.f .sel:focus{outline:none;border-color:var(--acc)}
+label.f input[dir=ltr]{text-align:left}
+label.f input.bad,label.f .sel.bad{border-color:var(--loss)}
+.opt{font-size:.75rem;color:var(--muted)}
+#lead>.opt{margin:0;text-align:center;line-height:1.8}
+.btn-tg{background:var(--tg);box-shadow:0 8px 22px rgba(42,163,224,.3);width:100%}
+.btn-tg:hover{background:#3bb1ec}
+.err{color:var(--loss);font-size:.8rem;margin-top:-4px}
+.done{display:grid;gap:10px;justify-items:center;text-align:center;padding:16px;margin:0;background:var(--panel);border:1px solid var(--line);border-radius:16px}
 .hp{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);opacity:0;pointer-events:none}
-.micro{text-align:center;color:var(--muted);font-size:.8rem;line-height:1.7}
 footer{border-top:1px solid var(--line);color:var(--muted);padding:26px 0 96px;font-size:.8rem;text-align:center;line-height:1.9}
 footer .logo{display:block;margin-bottom:2px}
 footer small{display:block;margin-bottom:10px}
@@ -372,32 +384,34 @@ footer small{display:block;margin-bottom:10px}
   </div>
 </div></section>
 
-<!-- form -->
+<!-- form: the same sign-up form as /lead -->
 <section class="blk" id="form"><div class="wrap">
-  <div class="formbox">
-    <h2>می‌خوای معامله‌های من تو حساب تو هم باز بشه؟</h2>
-    <p class="lead">اسم و شماره‌ت رو بذار. تیم مونتانا باهات تماس می‌گیره و قدم‌به‌قدم برای اتصال کمکت می‌کنه.</p>
-    <form id="lead" method="post" action="" novalidate>
+  <div class="join1">
+    <span class="kick">ثبت‌نام رایگان</span>
+    <h2>ثبت‌نام کن و آموزش رو رایگان شروع کن</h2>
+    <p class="lede">اطلاعاتت رو بذار تا برای مشاوره رایگان باهات تماس بگیریم، بعدش مستقیم وارد باشگاه ترید مونتانا در تلگرام میشی.</p>
+    <form id="lead" method="post" action="#form" novalidate>
       <input type="hidden" name="cap" value="<?php echo $capToken; ?>">
-      <input type="hidden" name="js" value="">
       <div class="hp" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
-      <label><span>اسم شما</span>
-        <input type="text" name="name" required maxlength="60" autocomplete="name" placeholder="مثلا علی رضایی" value="<?php echo $e('name'); ?>"></label>
+      <label class="f"><span>نام و نام خانوادگی</span>
+        <input type="text" name="name" required maxlength="60" autocomplete="name" value="<?php echo $e('name'); ?>"></label>
       <?php echo $errHtml('name'); ?>
-      <label><span>شماره موبایل</span>
-        <input type="tel" name="phone" required inputmode="numeric" dir="ltr" autocomplete="tel" placeholder="09123456789" maxlength="16" value="<?php echo $e('phone'); ?>"></label>
+      <label class="f"><span>شماره موبایل</span>
+        <input type="tel" name="phone" required inputmode="tel" dir="ltr" autocomplete="tel" placeholder="09123456789" value="<?php echo $e('phone'); ?>"></label>
       <?php echo $errHtml('phone'); ?>
-      <?php if ($askCap): ?>
-      <label><span><?php echo $faNum($capA) . ' + ' . $faNum($capB); ?> چند می‌شه؟</span>
-        <input type="text" name="cap_ans" inputmode="numeric" maxlength="3" autocomplete="off" dir="ltr"></label>
+      <label class="f"><span>ایمیل <span class="opt">(اختیاری)</span></span>
+        <input type="email" name="email" maxlength="120" dir="ltr" autocomplete="email" placeholder="name@example.com" value="<?php echo $e('email'); ?>"></label>
+      <?php echo $errHtml('email'); ?>
+      <label class="f"><span>سال تولد</span>
+        <select name="year" required class="sel"><option value="">انتخاب کنید</option><?php for ($y = 1390; $y >= 1320; $y--) echo '<option value="' . $y . '"' . ($val['year'] === (string) $y ? ' selected' : '') . '>' . $faNum($y) . '</option>'; ?></select></label>
+      <?php echo $errHtml('year'); ?>
+      <?php if ($dup) echo '<p class="done"><span>' . ($dup === 'phone' ? 'قبلا با این شماره ثبت‌نام کرده‌اید.' : 'قبلا با این ایمیل ثبت‌نام کرده‌اید.') . ' لطفا صبور باشید، کارشناسان ما به‌زودی با شما تماس می‌گیرند.</span><a class="btn btn-tg" href="/go?l=1" rel="nofollow">ورود به کانال تلگرام</a></p>'; ?>
+      <label class="f"><span>سوال امنیتی: <?php echo $faNum($capA) . ' + ' . $faNum($capB); ?> چند می‌شود؟</span>
+        <input type="text" name="cap_ans" required inputmode="numeric" maxlength="3" autocomplete="off" dir="ltr"></label>
       <?php echo $errHtml('cap'); ?>
-      <?php else: ?>
-      <noscript><label><span><?php echo $faNum($capA) . ' + ' . $faNum($capB); ?> چند می‌شه؟</span>
-        <input type="text" name="cap_ans" inputmode="numeric" maxlength="3" autocomplete="off" dir="ltr"></label></noscript>
-      <?php endif; ?>
       <?php echo $errHtml('form'); ?>
-      <button class="btn" type="submit">ثبت و شروع</button>
-      <p class="micro">اطلاعاتت فقط برای تماس تیم مونتانا استفاده میشه.</p>
+      <button class="btn btn-tg" type="submit">ثبت‌نام و ورود به کانال تلگرام</button>
+      <p class="opt">اطلاعاتت فقط برای تماس با خودت استفاده میشه و در اختیار کسی قرار نمی‌گیره.</p>
     </form>
   </div>
 </div></section>
@@ -411,7 +425,7 @@ footer small{display:block;margin-bottom:10px}
 
 <script>
 (function () {
-  var f = document.getElementById("lead"), btn = f.querySelector("button");
+  var f = document.getElementById("lead"), btn = f.querySelector("button[type=submit]");
   var name = f.elements.name, phone = f.elements.phone;
   var digits = { "۰":0,"۱":1,"۲":2,"۳":3,"۴":4,"۵":5,"۶":6,"۷":7,"۸":8,"۹":9,"٠":0,"١":1,"٢":2,"٣":3,"٤":4,"٥":5,"٦":6,"٧":7,"٨":8,"٩":9 };
   function en(s) { return String(s).replace(/[۰-۹٠-٩]/g, function (d) { return digits[d]; }); }
@@ -425,25 +439,28 @@ footer small{display:block;margin-bottom:10px}
     el.classList.toggle("bad", !!msg);
     if (msg) { var s = document.createElement("span"); s.className = "err"; s.textContent = msg; el.parentNode.after(s); }
   }
-  // Someone typing: copy the signed token so the server knows it's a person.
-  function human() { f.elements.js.value = f.elements.cap.value; }
-  f.addEventListener("input", human); f.addEventListener("focusin", human);
   phone.addEventListener("input", function () { var v = en(phone.value); if (v !== phone.value) phone.value = v; });
+  f.elements.cap_ans.addEventListener("input", function () { var c = f.elements.cap_ans, v = en(c.value); if (v !== c.value) c.value = v; });
+  // Check in the browser first, with the same messages as the server.
   f.addEventListener("submit", function (ev) {
-    human();
-    var bad = false;
-    if (name.value.trim().length < 2) { mark(name, "اسمت رو بنویس."); bad = true; } else mark(name, "");
+    var first = null, chk = function (el, msg) { mark(el, msg); if (msg && !first) first = el; };
+    chk(name, name.value.trim().length < 2 ? "نام و نام خانوادگی را وارد کنید." : "");
     var m = mobile(phone.value);
-    if (!/^09\d{9}$/.test(m)) { mark(phone, "شماره موبایل باید ۱۱ رقم باشه و با ۰۹ شروع بشه."); bad = true; } else { mark(phone, ""); phone.value = m; }
-    if (bad) { ev.preventDefault(); (name.classList.contains("bad") ? name : phone).focus(); return; }
+    chk(phone, /^09\d{9}$/.test(m) ? "" : "شماره موبایل را درست وارد کنید، مثل ۰۹۱۲۳۴۵۶۷۸۹");
+    if (!first) phone.value = m;
+    var em = f.elements.email.value.trim();
+    chk(f.elements.email, em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em) ? "ایمیل درست نیست." : "");
+    chk(f.elements.year, f.elements.year.value ? "" : "سال تولد را انتخاب کنید.");
+    chk(f.elements.cap_ans, f.elements.cap_ans.value.trim() ? "" : "جواب سوال امنیتی را بنویسید.");
+    if (first) { ev.preventDefault(); first.focus(); return; }
     btn.disabled = true; btn.textContent = "در حال ثبت…";
     if (window.gtag) gtag("event", "generate_lead", { page: "signal", transport_type: "beacon" });
   });
-  window.addEventListener("pageshow", function () { btn.disabled = false; btn.textContent = "ثبت و شروع"; });
+  window.addEventListener("pageshow", function () { btn.disabled = false; btn.textContent = "ثبت‌نام و ورود به کانال تلگرام"; });
 
   // Buttons scroll to the form and put the cursor in it.
   document.querySelectorAll("[data-go]").forEach(function (a) {
-    a.addEventListener("click", function (ev) { ev.preventDefault(); f.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(function () { name.focus({ preventScroll: true }); }, 600); });
+    a.addEventListener("click", function (ev) { ev.preventDefault(); document.getElementById("form").scrollIntoView({ behavior: "smooth", block: "start" }); setTimeout(function () { name.focus({ preventScroll: true }); }, 700); });
   });
 
   // "About Montana" opens the section in place.
@@ -517,7 +534,7 @@ footer small{display:block;margin-bottom:10px}
     showSymbolLogo: true, isTransparent: true, displayMode: "adaptive", colorTheme: "light", locale: "fa_IR"
   });
   tv.firstChild.appendChild(tvs);
-  <?php if ($err): ?>f.scrollIntoView({ block: "center" });<?php endif; ?>
+  <?php if ($err): ?>f.scrollIntoView({ block: "start" });<?php endif; ?>
 })();
 </script>
 </body></html>
