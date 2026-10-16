@@ -203,12 +203,22 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 @keyframes slide3{0%{opacity:0;transform:scale(1.04)}4%{opacity:1}31%{opacity:1}38%{opacity:0;transform:scale(1.12) translateX(-2%)}to{opacity:0;transform:scale(1.04)}}
 .bold{font-family:var(--display);font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:700;line-height:1.45;margin-bottom:20px;text-wrap:balance}
 .bold span{color:var(--acc)}
-.about{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s ease}
+.about{display:grid;grid-template-rows:0fr;transition:grid-template-rows .6s ease}
 .about.open{grid-template-rows:1fr}
 .about>div{overflow:hidden}
-.about-in{margin-top:20px;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:18px}
-.about-in p{margin-bottom:10px;font-weight:700}
-.about-in ul{list-style:none;padding:0;margin:0;display:grid;gap:10px;color:#33405a}
+.about-in{padding-top:8px}
+/* the "my story" timeline from the main site, unfolding downward step by step */
+.timeline{list-style:none;margin:20px 0 0;padding:0;display:grid;border-inline-start:1px solid rgba(var(--acc-rgb),.3)}
+.timeline li{position:relative;padding:0 22px 22px 0;padding-inline-start:22px;padding-inline-end:0}
+.timeline li:last-child{padding-bottom:4px}
+.timeline li:before{content:"";position:absolute;inset-inline-start:-5px;top:10px;width:9px;height:9px;border-radius:50%;background:var(--acc)}
+.timeline b{display:block;color:var(--acc-hi);font-weight:800}
+.timeline span{color:var(--muted);font-size:.95rem}
+.about.open .timeline li{animation:tl .5s ease both}
+.about.open .timeline li:nth-child(2){animation-delay:.15s}
+.about.open .timeline li:nth-child(3){animation-delay:.3s}
+.about.open .timeline li:nth-child(4){animation-delay:.45s}
+@keyframes tl{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
 .formbox{background:var(--panel);border-radius:20px;padding:26px 18px 18px;box-shadow:0 18px 50px rgba(15,27,45,.1);max-width:460px;margin:0 auto;border:1px solid var(--line)}
 .formbox h2{text-align:center;font-size:clamp(1.6rem,3.4vw,2rem)}
 .formbox .lead{text-align:center;margin-bottom:14px;font-size:.95rem}
@@ -250,7 +260,7 @@ footer small{display:block;margin-bottom:10px}
   .sticky{display:none}
   footer{padding-bottom:30px}
 }
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.about{transition:none}.photos img{animation:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.about{transition:none}.photos img{animation:none}.about.open .timeline li{animation:none}}
 </style>
 <?php if (preg_match("/^G-[A-Z0-9]{4,15}$/", $ga)) echo "<script async src=\"https://www.googletagmanager.com/gtag/js?id=$ga\"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag(\"js\",new Date());gtag(\"config\",\"$ga\");</script>"; ?>
 </head><body>
@@ -352,12 +362,12 @@ footer small{display:block;margin-bottom:10px}
     <p class="bold">من تنها استادی هستم که <span>جسارتش رو دارم</span> معامله‌هام رو، با سود و ضررش، به اشتراک بذارم.</p>
     <button class="btn btn-line" type="button" id="aboutBtn" aria-expanded="false" aria-controls="about">بیشتر درباره مونتانا بدانید</button>
     <div class="about" id="about"><div><div class="about-in">
-      <p>من مجتبی حسینی هستم، معروف به مونتانا.</p>
-      <ul>
-        <li>🎓 در گرایش مالی مهندسی صنایع از دانشگاه تهران فارغ‌التحصیل شدم و پایان‌نامه‌م درباره الگوریتمیک ترید بود.</li>
-        <li>🏦 سال‌ها تحلیلگر بروکرها و موسسات مالی بودم و هزاران حساب معامله‌گر زیر دستم بود. اونجا از نزدیک دیدم معامله‌گرهای ضررده چه عادت‌هایی دارن و رمز موفقیت سودده‌ها چیه.</li>
-        <li>📈 ۸ ساله تو بازارهای جهانی ترید می‌کنم و حالا با استراتژی‌هایی که با هوش مصنوعی ارتقا دادم، معامله‌هام رو با تو شریک می‌شم.</li>
-      </ul>
+      <ol class="timeline">
+        <li><b>ورود به بازار ارز دیجیتال</b><span>من مجتبی حسینی هستم. مسیرم با ارز دیجیتال شروع شد و همین‌جا فهمیدم ثبات و پشتوانه یک دارایی، مهم‌ترین عامل بازدهی بلندمدته.</span></li>
+        <li><b>فارغ‌التحصیلی از دانشگاه تهران</b><span>در گرایش مالی مهندسی صنایع فارغ‌التحصیل شدم و از پایان‌نامه‌م در الگوریتمیک ترید دفاع کردم. همون‌جا به قدرت ربات‌های معامله‌گر و موسساتی که با این نرم‌افزارها بازار رو می‌گردونن پی بردم.</span></li>
+        <li><b>ورود به بروکرها و موسسات مالی</b><span>هزاران حساب معامله‌گر زیر دستم بود. از نزدیک دیدم معامله‌گرهای ضررده چه الگوها و عادت‌هایی دارن، و رمز موفقیت پایدار معامله‌گرهای سودده چیه.</span></li>
+        <li><b>ظهور هوش مصنوعی</b><span>قدرت هوش مصنوعی در مدل‌سازی، برنامه‌نویسی و شبیه‌سازی کمک کرد جواب خیلی از بن‌بست‌ها و باگ‌هایی رو که تو ترید داشتم پیدا کنم.</span></li>
+      </ol>
     </div></div></div>
   </div>
 </div></section>
