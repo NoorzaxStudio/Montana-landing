@@ -99,7 +99,9 @@ $e = fn($k) => htmlspecialchars($val[$k], ENT_QUOTES, 'UTF-8');
 [$capA, $capB, $capToken] = $capNew();
 $preview = isset($_GET["preview"]);
 if (!$preview && $_SERVER["REQUEST_METHOD"] !== "POST") {
-  @file_put_contents($statsDir . "/views-signal.log", date("Y-m-d H:i:s") . "\t" . ($_SERVER["HTTP_REFERER"] ?? "-") . "\t" . ($_SERVER["HTTP_USER_AGENT"] ?? "-") . "\t" . substr((string) ($_GET['utm_content'] ?? ''), 0, 40) . "\n", FILE_APPEND | LOCK_EX);
+  // Same view log as the old /lead page, so the admin panel's /lead tab counts this page.
+  if (!is_dir($statsDir)) @mkdir($statsDir, 0755, true);
+  @file_put_contents($statsDir . "/views-lead.log", date("Y-m-d H:i:s") . "\t" . ($_SERVER["HTTP_REFERER"] ?? "-") . "\t" . ($_SERVER["HTTP_USER_AGENT"] ?? "-") . "\n", FILE_APPEND | LOCK_EX);
 }
 $ga = $preview ? '' : trim((string) @file_get_contents($statsDir . "/ga.txt"));
 $errHtml = fn($k) => isset($err[$k]) ? '<span class="err">' . $err[$k] . '</span>' : '';
@@ -323,7 +325,7 @@ footer small{display:block;margin-bottom:10px}
     <h1 data-en="Earn an average of &lt;span&gt;7%&lt;/span&gt; a day from global markets">کسب درآمد روزانه میانگین <span>۷٪</span> از بازارهای جهانی</h1>
     <p class="small" data-en="Between 2% and 9% profit on trading days, depending on market conditions.">بین ۲ تا ۹ درصد سود در روزهای کاری، بسته به شرایط مارکت.</p>
     <p class="sub" data-en="Looks hard, is easy, alongside a former financial-institution analyst">در ظاهر سخت، بسیار آسان؛ در کنار تحلیلگر سابق موسسات مالی</p>
-    <a class="btn" href="#form" data-go data-en="Get started">می‌خوام شروع کنم</a>
+    <a class="btn" href="#form" data-go data-b="1" data-en="Get started">می‌خوام شروع کنم</a>
   </div></div>
 </section>
 
@@ -453,7 +455,7 @@ footer small{display:block;margin-bottom:10px}
   <span data-en="Trading in financial markets carries a risk of losing capital, and past results do not guarantee future results. Nothing on this page is investment advice.">معامله در بازارهای مالی ریسک از دست دادن سرمایه داره و نتایج گذشته تضمینی برای آینده نیست. محتوای این صفحه توصیه سرمایه‌گذاری نیست.</span>
 </div></footer>
 
-<div class="sticky" id="sticky"><a class="btn" href="#form" data-go data-en="Get started">می‌خوام شروع کنم</a></div>
+<div class="sticky" id="sticky"><a class="btn" href="#form" data-go data-b="2" data-en="Get started">می‌خوام شروع کنم</a></div>
 
 <script>
 (function () {
@@ -638,4 +640,5 @@ footer small{display:block;margin-bottom:10px}
   <?php if ($err): ?>f.scrollIntoView({ block: "start" });<?php endif; ?>
 })();
 </script>
+<?php if (!$preview) echo '<script src="/track.js" defer></script>'; ?>
 </body></html>

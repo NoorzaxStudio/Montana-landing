@@ -2,7 +2,7 @@
 // sections they see and whether they press a join button. Sent to /t.php.
 (function () {
   var sid = Math.random().toString(36).slice(2) + Date.now().toString(36);
-  var secs = Array.prototype.slice.call(document.querySelectorAll("main section, body > div section, footer"));
+  var secs = Array.prototype.slice.call(document.querySelectorAll("main section, body > div section, body > section, footer"));
   var seen = {}, maxPct = 0, join = 0, joinBtn = null, clicks = [];
   var visibleMs = 0, since = document.visibilityState === "visible" ? Date.now() : 0;
   var q = new URLSearchParams(location.search);
@@ -38,7 +38,7 @@
       seen: Object.keys(seen).map(Number).sort(function (a, b) { return a - b; }),
       total: secs.length, join: join, btn: joinBtn, w: window.innerWidth,
       ref: document.referrer || "", utm: q.get("utm_source") || q.get("utm_campaign") || "",
-      lang: document.documentElement.lang, pg: /^\/lead/.test(location.pathname) ? "lead" : "main", clk: clicks.splice(0)
+      lang: document.documentElement.lang, pg: /^\/(lead|signal)/.test(location.pathname) ? "lead" : "main", clk: clicks.splice(0)
     });
   }
   function send(ev) {
@@ -48,7 +48,7 @@
   }
 
   document.addEventListener("click", function (e) {
-    var a = e.target.closest && e.target.closest('a[href="/go"], a[href="#lead"]');
+    var a = e.target.closest && e.target.closest('a[href="/go"], a[href="#lead"], a[data-go]');
     if (!a) return;
     join += 1;
     joinBtn = +a.getAttribute("data-b") || (Array.prototype.indexOf.call(document.querySelectorAll('a[href="/go"]'), a) + 1);
