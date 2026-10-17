@@ -259,6 +259,8 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 /* sign-up form, styled like /lead */
 .join1{max-width:480px;margin-inline:auto;text-align:center}
 .join1 h2{font-size:clamp(1.7rem,3.6vw,2.3rem);line-height:1.4}
+#lead{background:var(--panel);border:1px solid rgba(var(--acc-rgb),.28);border-radius:20px;padding:24px 20px;box-shadow:0 14px 40px rgba(var(--fg-rgb),.08),0 0 0 6px rgba(var(--acc-rgb),.05)}
+@media (max-width:420px){#lead{padding:20px 16px}}
 .lede{font-size:1.05rem;color:var(--muted);margin-top:14px}
 #lead{margin-top:26px;text-align:start;display:grid;gap:10px;position:relative}
 label.f{display:grid;gap:6px;font-size:.9rem;color:var(--muted)}
