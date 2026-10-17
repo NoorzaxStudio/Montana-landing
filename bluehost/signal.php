@@ -292,7 +292,7 @@ footer small{display:block;margin-bottom:10px}
   .irr{grid-template-columns:repeat(4,1fr)}
   .irr div:nth-child(n){border-inline-start:1px solid rgba(var(--fg-rgb),.07);border-top:0}
   .irr div:first-child{border-inline-start:0}
-  .cards{grid-template-columns:repeat(4,1fr)}
+  .cards{grid-template-columns:repeat(4,1fr);gap:24px}
   .steps{grid-template-columns:repeat(3,1fr)}
   .badges{grid-template-columns:repeat(3,1fr)}
   .probs{grid-template-columns:1fr 1fr}
