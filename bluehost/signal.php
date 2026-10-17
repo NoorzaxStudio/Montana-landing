@@ -259,6 +259,8 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 /* sign-up form, styled like /lead */
 .join1{max-width:480px;margin-inline:auto;text-align:center}
 .join1 h2{font-size:clamp(1.7rem,3.6vw,2.3rem);line-height:1.4}
+#lead{background:var(--panel);border:1px solid rgba(var(--acc-rgb),.28);border-radius:20px;padding:24px 20px;box-shadow:0 14px 40px rgba(var(--fg-rgb),.08),0 0 0 6px rgba(var(--acc-rgb),.05)}
+@media (max-width:420px){#lead{padding:20px 16px}}
 .lede{font-size:1.05rem;color:var(--muted);margin-top:14px}
 #lead{margin-top:26px;text-align:start;display:grid;gap:10px;position:relative}
 label.f{display:grid;gap:6px;font-size:.9rem;color:var(--muted)}
@@ -290,7 +292,7 @@ footer small{display:block;margin-bottom:10px}
   .irr{grid-template-columns:repeat(4,1fr)}
   .irr div:nth-child(n){border-inline-start:1px solid rgba(var(--fg-rgb),.07);border-top:0}
   .irr div:first-child{border-inline-start:0}
-  .cards{grid-template-columns:repeat(4,1fr)}
+  .cards{grid-template-columns:repeat(4,1fr);gap:24px}
   .steps{grid-template-columns:repeat(3,1fr)}
   .badges{grid-template-columns:repeat(3,1fr)}
   .probs{grid-template-columns:1fr 1fr}
@@ -370,7 +372,6 @@ footer small{display:block;margin-bottom:10px}
   </div>
   <?php endif; ?>
   <div class="chips"><span data-en="Real MetaTrader history">تاریخچه واقعی متاتریدر</span><span data-en="Profits and losses, both">سود و ضرر، هر دو</span><span data-en="No losing trades hidden">بدون حذف معامله‌های ضررده</span></div>
-  <p class="cap" data-en="Losses are part of trading too, but managed. We publish all of them.">ضرر هم بخشی از ترید است، اما مدیریت‌شده. ما همه رو منتشر می‌کنیم.</p>
 </div></section>
 
 <!-- 4. the signal-channel problem -->
@@ -392,7 +393,7 @@ footer small{display:block;margin-bottom:10px}
   <span class="kick" data-en="The solution">راه‌حل</span>
   <h2 data-en="Automatic signals: my trades, in your own account">سیگنال اتوماتیک: معامله‌های من، تو حساب خودت</h2>
   <p class="lead" data-en="Instead of sending a signal and waiting for you to act, trades open and close directly in your own account.">به‌جای اینکه سیگنال بفرستیم و منتظر بمونیم تو وارد شی، معامله‌ها مستقیم تو حساب خودت باز و بسته میشن.</p>
-  <div class="perks" id="perks"><div class="perks-track"><div class="perk"><i>🤝</i><p data-en="Connecting is free; only a small share of the profit made for you is charged.">برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه دریافت میشه.</p></div></div></div>
+  <div class="perks" id="perks"><div class="perks-track"><div class="perk"><i>🔍</i><p data-en="Every trade is transparent.">تمام معاملات شفاف.</p></div><div class="perk"><i>📊</i><p data-en="Managed professionally.">به‌صورت حرفه‌ای مدیریت میشن.</p></div><div class="perk"><i>🤝</i><p data-en="Connecting is free; only a small share of the profit made for you is charged.">برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه دریافت میشه.</p></div></div></div>
 </div></section>
 
 <!-- Montana -->
