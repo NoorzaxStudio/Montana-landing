@@ -209,9 +209,11 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 .bub blockquote{margin:0;font-size:.95rem;line-height:1.8}
 .bub figcaption{font-size:.78rem;color:var(--muted);margin-top:4px}
 @keyframes marq{to{transform:translateX(-50%)}}
-.perks{margin:22px -16px 0}
-.perks .marq-track{animation-duration:40s;align-items:center}
-.perk{direction:rtl;flex:0 0 auto;white-space:nowrap;background:rgba(var(--gain-rgb),.07);border:1px solid rgba(var(--gain-rgb),.3);border-radius:999px;padding:10px 18px;font-size:.95rem}
+.perks{margin:22px auto 0;max-width:520px;overflow:hidden;border-radius:18px}
+.perks-track{display:flex;transition:transform .7s cubic-bezier(.12,.9,.2,1)}
+.perk{flex:0 0 100%;display:flex;align-items:center;gap:14px;background:rgba(var(--gain-rgb),.07);border:1px solid rgba(var(--gain-rgb),.3);border-radius:18px;padding:18px 20px;min-height:92px}
+.perk i{font-style:normal;font-size:1.9rem;line-height:1}
+.perk p{margin:0;font-weight:700;font-size:1.02rem;line-height:1.8}
 
 /* 4. signal problem */
 .probs{list-style:none;padding:0;margin:0;display:grid;gap:10px}
@@ -301,11 +303,10 @@ footer small{display:block;margin-bottom:10px}
   .sticky{display:none}
   footer{padding-bottom:30px}
 }
-[dir=ltr] .perk{direction:ltr}
 [dir=ltr] .bub{direction:ltr;border-radius:18px 18px 4px 18px}
 [dir=ltr] .marq-track{animation-direction:reverse}
 [lang=en] .hero h1{font-size:clamp(2rem,4.6vw,3.3rem)}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.about{transition:none}.photos img{animation:none}.about.open .timeline li{animation:none}.marq-track{animation:none}.marq{overflow-x:auto}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.about{transition:none}.photos img{animation:none}.about.open .timeline li{animation:none}.marq-track{animation:none}.marq{overflow-x:auto}.perks-track{flex-direction:column;gap:10px}}
 </style>
 <?php if (preg_match("/^G-[A-Z0-9]{4,15}$/", $ga)) echo "<script async src=\"https://www.googletagmanager.com/gtag/js?id=$ga\"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag(\"js\",new Date());gtag(\"config\",\"$ga\");</script>"; ?>
 </head><body>
@@ -389,7 +390,7 @@ footer small{display:block;margin-bottom:10px}
   <span class="kick" data-en="The solution">راه‌حل</span>
   <h2 data-en="Automatic signals: my trades, in your own account">سیگنال اتوماتیک: معامله‌های من، تو حساب خودت</h2>
   <p class="lead" data-en="Instead of sending a signal and waiting for you to act, trades open and close directly in your own account.">به‌جای اینکه سیگنال بفرستیم و منتظر بمونیم تو وارد شی، معامله‌ها مستقیم تو حساب خودت باز و بسته میشن.</p>
-  <div class="marq perks"><div class="marq-track"><div class="perk" data-en="💰 Your money always stays in your account.">💰 پولت همیشه تو حساب خودته.</div><div class="perk" data-en="🔌 Disconnect whenever you want.">🔌 هر وقت بخوای، اتصال رو قطع می‌کنی.</div><div class="perk" data-en="🤝 Connecting is free; we only take a small share of the profit we make for you.">🤝 برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</div><div class="perk" data-en="💰 Your money always stays in your account.">💰 پولت همیشه تو حساب خودته.</div><div class="perk" data-en="🔌 Disconnect whenever you want.">🔌 هر وقت بخوای، اتصال رو قطع می‌کنی.</div><div class="perk" data-en="🤝 Connecting is free; we only take a small share of the profit we make for you.">🤝 برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</div><div class="perk" data-en="💰 Your money always stays in your account.">💰 پولت همیشه تو حساب خودته.</div><div class="perk" data-en="🔌 Disconnect whenever you want.">🔌 هر وقت بخوای، اتصال رو قطع می‌کنی.</div><div class="perk" data-en="🤝 Connecting is free; we only take a small share of the profit we make for you.">🤝 برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</div><div class="perk" data-en="💰 Your money always stays in your account.">💰 پولت همیشه تو حساب خودته.</div><div class="perk" data-en="🔌 Disconnect whenever you want.">🔌 هر وقت بخوای، اتصال رو قطع می‌کنی.</div><div class="perk" data-en="🤝 Connecting is free; we only take a small share of the profit we make for you.">🤝 برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</div></div></div>
+  <div class="perks" id="perks"><div class="perks-track"><div class="perk"><i>💰</i><p data-en="Your money always stays in your account.">پولت همیشه تو حساب خودته.</p></div><div class="perk"><i>🔌</i><p data-en="Disconnect whenever you want.">هر وقت بخوای، اتصال رو قطع می‌کنی.</p></div><div class="perk"><i>🤝</i><p data-en="Connecting is free; we only take a small share of the profit we make for you.">برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</p></div></div></div>
 </div></section>
 
 <!-- Montana -->
@@ -562,6 +563,19 @@ footer small{display:block;margin-bottom:10px}
     }).catch(drawIR);
   };
   drawIR(); getPrices(); setInterval(getPrices, 60000);
+  // Copy-trade perks: each card slides in fast, brakes, holds, then the next one.
+  var pk = document.querySelector("#perks .perks-track"), pi = 0, pn = 0;
+  if (pk && matchMedia("(prefers-reduced-motion: reduce)").matches) pk = null;
+  if (pk) {
+    pk.appendChild(pk.firstElementChild.cloneNode(true));
+    pn = pk.children.length - 1;
+    var pmove = function (anim) { pk.style.transition = anim ? "" : "none"; pk.style.transform = "translateX(" + (R.dir === "ltr" ? -pi : pi) * 100 + "%)"; };
+    setInterval(function () {
+      if (document.hidden) return;
+      pi++; pmove(true);
+      if (pi === pn) setTimeout(function () { pi = 0; pmove(false); }, 750);
+    }, 3000);
+  }
   var tv = document.getElementById("tv"), tvKey = "";
   var SYM = [["OANDA:XAUUSD", "طلا", "Gold"], ["TVC:UKOIL", "نفت برنت", "Brent oil"], ["FX:EURUSD", "یورو / دلار", "EUR / USD"], ["OANDA:XAGUSD", "نقره", "Silver"], ["BITSTAMP:BTCUSD", "بیت‌کوین", "Bitcoin"], ["FX:GBPUSD", "پوند / دلار", "GBP / USD"], ["FOREXCOM:SPXUSD", "S&P 500", "S&P 500"], ["FX:USDJPY", "دلار / ین", "USD / JPY"]];
   var drawTV = function () {
@@ -614,6 +628,7 @@ footer small{display:block;margin-bottom:10px}
     document.querySelectorAll("#lead .err").forEach(function (e) { e.remove(); });
     document.title = T().title; lb.textContent = T().lang; lb.setAttribute("aria-label", T().langAria);
     drawIR(); paintTheme(); drawTV();
+    if (pk) { pk.style.transition = "none"; pk.style.transform = ""; pi = 0; }
   };
   lb.addEventListener("click", function () { var l = R.lang === "en" ? "fa" : "en"; store("mt-lang", l); applyLang(l); });
   applyLang(R.lang === "en" ? "en" : "fa");
