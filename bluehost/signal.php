@@ -185,8 +185,9 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 .proof{background:var(--panel-2)}
 .scrub{position:relative;margin-bottom:28px}
 .scrub-sp{height:90vh;height:90svh}
-.scrub-in{position:sticky;top:9vh;top:9svh;display:flex;justify-content:center}
-.phone{width:min(290px,72vw,calc((82vh - 22px) * .4615 + 22px));width:min(290px,72vw,calc((82svh - 22px) * .4615 + 22px));border-radius:44px;padding:11px;background:#1d1f22;box-shadow:0 0 0 2px #3a3d42,0 30px 70px rgba(15,27,45,.28),0 0 90px rgba(var(--acc-rgb),.12);position:relative}
+.scrub-in{position:sticky;top:6vh;top:6svh;display:flex;flex-direction:column;align-items:center;gap:10px}
+.phone-cap{font-size:.88rem;color:var(--muted);font-weight:700}
+.phone{width:min(290px,72vw,calc((78vh - 60px) * .4615 + 22px));width:min(290px,72vw,calc((78svh - 60px) * .4615 + 22px));border-radius:44px;padding:11px;background:#1d1f22;box-shadow:0 0 0 2px #3a3d42,0 30px 70px rgba(15,27,45,.28),0 0 90px rgba(var(--acc-rgb),.12);position:relative}
 .phone video{width:100%;height:auto;aspect-ratio:288/624;object-fit:cover;border-radius:34px;background:#fff}
 .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
 .chips span{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 14px;font-size:.88rem;color:var(--muted)}
@@ -334,6 +335,7 @@ footer small{display:block;margin-bottom:10px}
   <div class="scrub" id="scrub">
     <div class="scrub-in">
       <div class="phone"><video id="stmt" poster="/images/mt-statement.jpg" muted playsinline preload="none" aria-label="تاریخچه معاملات در متاتریدر"><source src="/images/mt-statement.mp4" type='video/mp4; codecs="avc1.64001E"'><source src="/images/mt-statement.webm" type='video/webm; codecs="vp9"'></video></div>
+      <p class="phone-cap">نتایج یک هفته یکی از کاربران</p>
     </div>
     <div class="scrub-sp"></div>
   </div>
