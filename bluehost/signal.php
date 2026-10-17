@@ -72,23 +72,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   $bot = !empty($_POST['website']);
   if (!$err) {
     if (!$bot) {
+      if (!is_dir($statsDir)) @mkdir($statsDir, 0755, true);
       $f = $statsDir . "/leads.csv";
       $new = !is_file($f);
-      $src = substr((string) ($_GET['utm_source'] ?? ''), 0, 40);
       if ($h = @fopen($f, "a")) {
         flock($h, LOCK_EX);
         if ($new) fputcsv($h, ['time', 'name', 'phone', 'email', 'birth_year', 'source', 'app', 'campaign', 'user_agent']);
         // A leading = + - @ would run as a formula when the file is opened in Excel.
         $cell = fn($v) => preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v;
         fputcsv($h, [date("Y-m-d H:i:s"), $cell($val['name']), $phone, $cell($val['email']), $val['year'],
-          $page . ($src !== '' ? ':' . $src : ''), substr((string) ($_GET['utm_content'] ?? ''), 0, 80),
+          substr((string) ($_GET['utm_source'] ?? ''), 0, 40), substr((string) ($_GET['utm_content'] ?? ''), 0, 80),
           substr((string) ($_GET['utm_campaign'] ?? ''), 0, 60), substr($_SERVER["HTTP_USER_AGENT"] ?? '', 0, 200)]);
         flock($h, LOCK_UN); fclose($h);
       }
       require_once __DIR__ . "/lib-sheet.php";
-      $s = trim($src . ' / ' . ($_GET['utm_content'] ?? ''), ' /');
-      montana_sheet_send($statsDir, ['name' => $val['name'], 'phone' => $phone, 'email' => $val['email'], 'birth_year' => $val['year'],
-        'source' => mb_substr('montanafx.com/' . $page . ($s !== '' ? ' · ' . $s : ''), 0, 200)]);
+      $src = trim(($_GET['utm_source'] ?? '') . ' / ' . ($_GET['utm_content'] ?? ''), ' /');
+      montana_sheet_send($statsDir, ['name' => $val['name'], 'phone' => $phone, 'email' => $val['email'],
+        'birth_year' => $val['year'], 'source' => mb_substr($src !== '' ? $src : 'montanafx.com/' . $page, 0, 200)]);
     }
     header("Location: /go?l=1", true, 303);
     exit;
@@ -335,7 +335,7 @@ footer small{display:block;margin-bottom:10px}
   <div class="cards">
     <div class="cardx"><i>🎯</i><h3 data-en="No gambling">به دور از قمار</h3><p data-en="We are not chasing overnight riches. Every position is sized by risk management, and protecting capital comes first.">دنبال پولدار شدن یک‌شبه نیستیم. حجم هر معامله با مدیریت ریسک تعیین میشه و اولویت اول، حفظ سرمایه‌ست.</p></div>
     <div class="cardx"><i>🛑</i><h3 data-en="We don&#x27;t trade on high-risk days">در روزهای پرریسک ترید نمی‌کنیم</h3><p data-en="On major news days and in turbulent markets, we stay out. Sometimes the best trade is no trade.">روزهای خبرهای مهم و بازار ناآروم، وارد معامله نمی‌شیم. گاهی بهترین معامله، معامله نکردنه.</p></div>
-    <div class="cardx"><i>🏦</i><h3 data-en="Financial-institution experience">تجربه موسسات مالی</h3><p data-en="For years I was an analyst at brokers and financial institutions and saw thousands of trader accounts up close. The principles institutions trade by are the ones applied here.">سال‌ها تحلیلگر بروکرها و موسسات مالی بودم و هزاران حساب معامله‌گر رو از نزدیک دیدم. همون اصولی که موسسات باهاش معامله می‌کنن، اینجا اجرا میشه.</p></div>
+    <div class="cardx"><i>🏦</i><h3 data-en="Financial-institution experience">تجربه موسسات مالی</h3><p data-en="Years as an analyst at brokers and financial institutions, trading by the same principles they use.">سال‌ها تحلیلگر بروکرها و موسسات مالی بودم و همون اصول موسسات اینجا اجرا میشه.</p></div>
     <div class="cardx"><i>🤖</i><h3 data-en="Powered by AI">استفاده از هوش مصنوعی</h3><p data-en="Strategies are tested and optimised with AI tools, so decisions rest on data, not guesswork or emotion.">استراتژی‌ها با ابزارهای هوش مصنوعی تست و بهینه میشن، تا تصمیم‌ها بر اساس داده باشه، نه حدس و هیجان.</p></div>
   </div>
 </div></section>
@@ -373,7 +373,6 @@ footer small{display:block;margin-bottom:10px}
   <ul class="probs">
     <li><i>⏰</i><span data-en="You&#x27;re in a meeting or asleep, and by the time you see the signal, the price has moved.">وسط جلسه‌ای یا خوابی و وقتی سیگنال رو می‌بینی، قیمت رفته.</span></li>
     <li><i>📉</i><span data-en="You get in late, at a worse price.">دیر وارد میشی و با قیمت بدتری معامله می‌کنی.</span></li>
-    <li><i>😬</i><span data-en="You forget the stop loss, or close the trade early out of fear.">حد ضرر یادت میره، یا از ترس معامله رو زود می‌بندی.</span></li>
     <li><i>📸</i><span data-en="The channel only shows screenshots of wins, never the losses.">کانال فقط اسکرین‌شات سودها رو نشون میده، نه ضررها رو.</span></li>
   </ul>
   <p class="sum" data-en="The same signal that was a win for the channel turns into a loss in your account. It&#x27;s not you, it&#x27;s the method.">همون سیگنالی که برای کانال سود بوده، تو حساب تو ضرر میشه. مشکل از تو نیست، مشکل از روشه.</p>
@@ -385,17 +384,6 @@ footer small{display:block;margin-bottom:10px}
 <section class="blk" style="padding-top:0"><div class="wrap">
   <span class="kick" data-en="The solution">راه‌حل</span>
   <h2 data-en="Automatic signals: my trades, in your own account">سیگنال اتوماتیک: معامله‌های من، تو حساب خودت</h2>
-  <p class="lead" data-en="Instead of sending a signal and waiting for you to act, trades open and close directly in your own account.">به‌جای اینکه سیگنال بفرستیم و منتظر بمونیم تو وارد شی، معامله‌ها مستقیم تو حساب خودت باز و بسته میشن.</p>
-  <div class="steps">
-    <div class="step"><p data-en="You open an account in your own name with a licensed international broker.">تو یه بروکر بین‌المللی دارای مجوز، حساب به اسم خودت باز می‌کنی.</p></div>
-    <div class="step"><p data-en="You connect it to my trades through the broker&#x27;s own copy-trading system. No extra software or fees.">حسابت رو با سیستم کپی‌ترید خود بروکر به معامله‌های من وصل می‌کنی. نرم‌افزار یا هزینه اضافه‌ای لازم نیست.</p></div>
-    <div class="step"><p data-en="Every trade I open opens in your account at the same moment and the same price.">هر معامله‌ای که من باز می‌کنم، همون لحظه و با همون قیمت تو حساب تو هم باز میشه.</p></div>
-  </div>
-  <div class="badges">
-    <div data-en="💰 Your money always stays in your account.">💰 پولت همیشه تو حساب خودته.</div>
-    <div data-en="🔌 Disconnect whenever you want.">🔌 هر وقت بخوای، اتصال رو قطع می‌کنی.</div>
-    <div data-en="🤝 Connecting is free; we only take a small share of the profit we make for you.">🤝 برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</div>
-  </div>
 </div></section>
 
 <!-- Montana -->
@@ -406,7 +394,7 @@ footer small{display:block;margin-bottom:10px}
     <img decoding="async" src="/images/mojtaba-hosseini-montana-podcast.jpg" alt="مجتبی حسینی (مونتانا) در استودیوی پادکست" data-en-alt="Mojtaba Hosseini (Montana) in a podcast studio">
   </div>
   <div>
-    <p class="bold" data-en="I&#x27;m the only mentor with the &lt;span&gt;nerve to share&lt;/span&gt; my trades, profits and losses alike.">من تنها استادی هستم که <span>جسارتش رو دارم</span> معامله‌هام رو، با سود و ضررش، به اشتراک بذارم.</p>
+    <p class="bold" data-en="I&#x27;m the only analyst with the &lt;span&gt;nerve to share&lt;/span&gt; my trades, profits and losses alike.">من تنها تحلیلگری هستم که <span>جسارتش رو دارم</span> معامله‌هام رو، با سود و ضررش، به اشتراک بذارم.</p>
     <button class="btn btn-line" type="button" id="aboutBtn" aria-expanded="false" aria-controls="about" data-en="More about Montana">بیشتر درباره مونتانا بدانید</button>
     <div class="about" id="about"><div><div class="about-in">
       <ol class="timeline">
@@ -422,9 +410,8 @@ footer small{display:block;margin-bottom:10px}
 <!-- form: the same sign-up form as /lead -->
 <section class="blk" id="form"><div class="wrap">
   <div class="join1">
-    <span class="kick" data-en="Free sign-up">ثبت‌نام رایگان</span>
-    <h2 data-en="Sign up and start learning for free">ثبت‌نام کن و آموزش رو رایگان شروع کن</h2>
-    <p class="lede" data-en="Leave your details for a free consultation call, then go straight into the Montana trading club on Telegram.">اطلاعاتت رو بذار تا برای مشاوره رایگان باهات تماس بگیریم، بعدش مستقیم وارد باشگاه ترید مونتانا در تلگرام میشی.</p>
+    <h2 data-en="To start your professional trading path, fill in the details below">برای شروع مسیر حرفه‌ای ترید، اطلاعات زیر را وارد کنید</h2>
+    <p class="lede" data-en="Our team will get in touch with you to get started.">کارشناسان ما برای شروع با شما در ارتباط خواهند بود.</p>
     <form id="lead" method="post" action="#form" novalidate>
       <input type="hidden" name="cap" value="<?php echo $capToken; ?>">
       <div class="hp" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
