@@ -370,7 +370,6 @@ footer small{display:block;margin-bottom:10px}
   </div>
   <?php endif; ?>
   <div class="chips"><span data-en="Real MetaTrader history">تاریخچه واقعی متاتریدر</span><span data-en="Profits and losses, both">سود و ضرر، هر دو</span><span data-en="No losing trades hidden">بدون حذف معامله‌های ضررده</span></div>
-  <p class="cap" data-en="Losses are part of trading too, but managed. We publish all of them.">ضرر هم بخشی از ترید است، اما مدیریت‌شده. ما همه رو منتشر می‌کنیم.</p>
 </div></section>
 
 <!-- 4. the signal-channel problem -->
@@ -392,7 +391,7 @@ footer small{display:block;margin-bottom:10px}
   <span class="kick" data-en="The solution">راه‌حل</span>
   <h2 data-en="Automatic signals: my trades, in your own account">سیگنال اتوماتیک: معامله‌های من، تو حساب خودت</h2>
   <p class="lead" data-en="Instead of sending a signal and waiting for you to act, trades open and close directly in your own account.">به‌جای اینکه سیگنال بفرستیم و منتظر بمونیم تو وارد شی، معامله‌ها مستقیم تو حساب خودت باز و بسته میشن.</p>
-  <div class="perks" id="perks"><div class="perks-track"><div class="perk"><i>💰</i><p data-en="Your money always stays in your account.">پولت همیشه تو حساب خودته.</p></div><div class="perk"><i>🔌</i><p data-en="Disconnect whenever you want.">هر وقت بخوای، اتصال رو قطع می‌کنی.</p></div><div class="perk"><i>🤝</i><p data-en="Connecting is free; only a small share of the profit made for you is charged.">برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه دریافت میشه.</p></div></div></div>
+  <div class="perks" id="perks"><div class="perks-track"><div class="perk"><i>🔍</i><p data-en="Every trade is transparent.">تمام معاملات شفاف.</p></div><div class="perk"><i>📊</i><p data-en="Managed professionally.">به‌صورت حرفه‌ای مدیریت میشن.</p></div><div class="perk"><i>🤝</i><p data-en="Connecting is free; only a small share of the profit made for you is charged.">برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه دریافت میشه.</p></div></div></div>
 </div></section>
 
 <!-- Montana -->
