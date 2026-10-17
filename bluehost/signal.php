@@ -293,6 +293,7 @@ footer small{display:block;margin-bottom:10px}
   .steps{grid-template-columns:repeat(3,1fr)}
   .badges{grid-template-columns:repeat(3,1fr)}
   .probs{grid-template-columns:1fr 1fr}
+  .probs li:last-child:nth-child(odd){grid-column:1/-1}
   .me .wrap{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
   section.me{padding:0;overflow:hidden}
   .me .wrap{max-width:none;padding:0;grid-template-columns:1.1fr 1fr}
