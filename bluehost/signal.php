@@ -209,6 +209,9 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 .bub blockquote{margin:0;font-size:.95rem;line-height:1.8}
 .bub figcaption{font-size:.78rem;color:var(--muted);margin-top:4px}
 @keyframes marq{to{transform:translateX(-50%)}}
+.perks{margin:22px -16px 0}
+.perks .marq-track{animation-duration:40s;align-items:center}
+.perk{direction:rtl;flex:0 0 auto;white-space:nowrap;background:rgba(var(--gain-rgb),.07);border:1px solid rgba(var(--gain-rgb),.3);border-radius:999px;padding:10px 18px;font-size:.95rem}
 
 /* 4. signal problem */
 .probs{list-style:none;padding:0;margin:0;display:grid;gap:10px}
@@ -298,6 +301,7 @@ footer small{display:block;margin-bottom:10px}
   .sticky{display:none}
   footer{padding-bottom:30px}
 }
+[dir=ltr] .perk{direction:ltr}
 [dir=ltr] .bub{direction:ltr;border-radius:18px 18px 4px 18px}
 [dir=ltr] .marq-track{animation-direction:reverse}
 [lang=en] .hero h1{font-size:clamp(2rem,4.6vw,3.3rem)}
@@ -385,6 +389,7 @@ footer small{display:block;margin-bottom:10px}
   <span class="kick" data-en="The solution">راه‌حل</span>
   <h2 data-en="Automatic signals: my trades, in your own account">سیگنال اتوماتیک: معامله‌های من، تو حساب خودت</h2>
   <p class="lead" data-en="Instead of sending a signal and waiting for you to act, trades open and close directly in your own account.">به‌جای اینکه سیگنال بفرستیم و منتظر بمونیم تو وارد شی، معامله‌ها مستقیم تو حساب خودت باز و بسته میشن.</p>
+  <div class="marq perks"><div class="marq-track"><div class="perk" data-en="💰 Your money always stays in your account.">💰 پولت همیشه تو حساب خودته.</div><div class="perk" data-en="🔌 Disconnect whenever you want.">🔌 هر وقت بخوای، اتصال رو قطع می‌کنی.</div><div class="perk" data-en="🤝 Connecting is free; we only take a small share of the profit we make for you.">🤝 برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</div><div class="perk" data-en="💰 Your money always stays in your account.">💰 پولت همیشه تو حساب خودته.</div><div class="perk" data-en="🔌 Disconnect whenever you want.">🔌 هر وقت بخوای، اتصال رو قطع می‌کنی.</div><div class="perk" data-en="🤝 Connecting is free; we only take a small share of the profit we make for you.">🤝 برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</div><div class="perk" data-en="💰 Your money always stays in your account.">💰 پولت همیشه تو حساب خودته.</div><div class="perk" data-en="🔌 Disconnect whenever you want.">🔌 هر وقت بخوای، اتصال رو قطع می‌کنی.</div><div class="perk" data-en="🤝 Connecting is free; we only take a small share of the profit we make for you.">🤝 برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</div><div class="perk" data-en="💰 Your money always stays in your account.">💰 پولت همیشه تو حساب خودته.</div><div class="perk" data-en="🔌 Disconnect whenever you want.">🔌 هر وقت بخوای، اتصال رو قطع می‌کنی.</div><div class="perk" data-en="🤝 Connecting is free; we only take a small share of the profit we make for you.">🤝 برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</div></div></div>
 </div></section>
 
 <!-- Montana -->
