@@ -184,7 +184,7 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:8px}
 /* 3. statement */
 .proof{background:var(--panel-2)}
 .scrub{position:relative;margin-bottom:28px}
-.scrub-sp{height:55vh;height:55svh}
+.scrub-sp{height:90vh;height:90svh}
 .scrub-in{position:sticky;top:9vh;top:9svh;display:flex;justify-content:center}
 .phone{width:min(290px,72vw,calc((82vh - 22px) * .4615 + 22px));width:min(290px,72vw,calc((82svh - 22px) * .4615 + 22px));border-radius:44px;padding:11px;background:#1d1f22;box-shadow:0 0 0 2px #3a3d42,0 30px 70px rgba(15,27,45,.28),0 0 90px rgba(var(--acc-rgb),.12);position:relative}
 .phone video{width:100%;height:auto;aspect-ratio:288/624;object-fit:cover;border-radius:34px;background:#fff}
