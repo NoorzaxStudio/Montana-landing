@@ -390,7 +390,7 @@ footer small{display:block;margin-bottom:10px}
   <span class="kick" data-en="The solution">راه‌حل</span>
   <h2 data-en="Automatic signals: my trades, in your own account">سیگنال اتوماتیک: معامله‌های من، تو حساب خودت</h2>
   <p class="lead" data-en="Instead of sending a signal and waiting for you to act, trades open and close directly in your own account.">به‌جای اینکه سیگنال بفرستیم و منتظر بمونیم تو وارد شی، معامله‌ها مستقیم تو حساب خودت باز و بسته میشن.</p>
-  <div class="perks" id="perks"><div class="perks-track"><div class="perk"><i>🤝</i><p data-en="Connecting is free; we only take a small share of the profit we make for you.">برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</p></div></div></div>
+  <div class="perks" id="perks"><div class="perks-track"><div class="perk"><i>🤝</i><p data-en="Connecting is free; only a small share of the profit made for you is charged.">برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه دریافت میشه.</p></div></div></div>
 </div></section>
 
 <!-- Montana -->
