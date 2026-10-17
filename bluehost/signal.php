@@ -10,7 +10,8 @@ $statsDir = dirname(__DIR__, 2) . "/montana-stats";
 if (!is_dir($statsDir)) @mkdir($statsDir, 0755, true);
 $fa2en = fn($v) => strtr(trim((string) $v), ['۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9','٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9']);
 $faNum = fn($n) => strtr((string) $n, ['0'=>'۰','1'=>'۱','2'=>'۲','3'=>'۳','4'=>'۴','5'=>'۵','6'=>'۶','7'=>'۷','8'=>'۸','9'=>'۹']);
-$page = 'signal';
+// Served at /lead (it replaced the old lead page) and at /signal.
+$page = preg_match('#^/lead(/|\?|$)#', $_SERVER['REQUEST_URI'] ?? '') ? 'lead' : 'signal';
 
 // The same sign-up form as /lead: name, mobile, optional email, birth year and
 // a small sum as the security question (signed with a server secret so a bot
@@ -374,7 +375,7 @@ footer small{display:block;margin-bottom:10px}
 
 <!-- 4. the signal-channel problem -->
 <section class="blk"><div class="wrap">
-  <h2 data-en="Why don&#x27;t signal channels make you money?">چرا همه کانال‌های سیگنال سود نمی‌سازن؟</h2>
+  <h2 data-en="Why don&#x27;t many signal channels make you money?">چرا خیلی از کانال‌های سیگنال سود نمی‌سازن؟</h2>
   <p class="lead" data-en="Most signal channels share one problem: the signal arrives when you&#x27;re not ready.">بیشتر کانال‌های سیگنال یه مشکل مشترک دارن: سیگنال وقتی میاد که تو آماده نیستی.</p>
   <ul class="probs">
     <li><i>⏰</i><span data-en="You&#x27;re in a meeting or asleep, and by the time you see the signal, the price has moved.">وسط جلسه‌ای یا خوابی و وقتی سیگنال رو می‌بینی، قیمت رفته.</span></li>
@@ -490,7 +491,7 @@ footer small{display:block;margin-bottom:10px}
     chk(f.elements.cap_ans, f.elements.cap_ans.value.trim() ? "" : L().cap);
     if (first) { ev.preventDefault(); first.focus(); return; }
     btn.disabled = true; btn.textContent = L().sending;
-    if (window.gtag) gtag("event", "generate_lead", { page: "signal", transport_type: "beacon" });
+    if (window.gtag) gtag("event", "generate_lead", { page: "<?php echo $page; ?>", transport_type: "beacon" });
   });
   var btnText = function () { btn.innerHTML = R.lang === "en" ? btn.getAttribute("data-en") : (btn.getAttribute("data-fa") || btn.innerHTML); };
   window.addEventListener("pageshow", function () { btn.disabled = false; btnText(); });
@@ -505,7 +506,7 @@ footer small{display:block;margin-bottom:10px}
   ab.addEventListener("click", function () {
     var open = about.classList.toggle("open");
     ab.setAttribute("aria-expanded", open);
-    if (window.gtag && open) gtag("event", "about_open", { page: "signal" });
+    if (window.gtag && open) gtag("event", "about_open", { page: "<?php echo $page; ?>" });
   });
 
   // Mobile: a start bar at the bottom between the hero and the form.

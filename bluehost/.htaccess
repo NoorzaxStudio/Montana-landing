@@ -14,7 +14,7 @@ RewriteEngine On
 RewriteRule ^api/prices/?$ prices.php [L]
 RewriteRule ^go/?$ go.php [L]
 RewriteRule ^admin/?$ admin.php [L]
-RewriteRule ^lead/?$ lead.php [L]
+RewriteRule ^lead/?$ signal.php [L]
 RewriteRule ^signal/?$ signal.php [L]
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 RewriteRule ^robots\.txt$ robots.php [L]
