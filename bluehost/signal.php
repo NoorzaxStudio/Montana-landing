@@ -390,7 +390,7 @@ footer small{display:block;margin-bottom:10px}
   <span class="kick" data-en="The solution">راه‌حل</span>
   <h2 data-en="Automatic signals: my trades, in your own account">سیگنال اتوماتیک: معامله‌های من، تو حساب خودت</h2>
   <p class="lead" data-en="Instead of sending a signal and waiting for you to act, trades open and close directly in your own account.">به‌جای اینکه سیگنال بفرستیم و منتظر بمونیم تو وارد شی، معامله‌ها مستقیم تو حساب خودت باز و بسته میشن.</p>
-  <div class="perks" id="perks"><div class="perks-track"><div class="perk"><i>💰</i><p data-en="Your money always stays in your account.">پولت همیشه تو حساب خودته.</p></div><div class="perk"><i>🔌</i><p data-en="Disconnect whenever you want.">هر وقت بخوای، اتصال رو قطع می‌کنی.</p></div><div class="perk"><i>🤝</i><p data-en="Connecting is free; we only take a small share of the profit we make for you.">برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</p></div></div></div>
+  <div class="perks" id="perks"><div class="perks-track"><div class="perk"><i>🤝</i><p data-en="Connecting is free; we only take a small share of the profit we make for you.">برای اتصال پولی نمیدی؛ فقط سهم کوچیکی از سودی که برات ساخته میشه برمی‌داریم.</p></div></div></div>
 </div></section>
 
 <!-- Montana -->
@@ -565,7 +565,7 @@ footer small{display:block;margin-bottom:10px}
   drawIR(); getPrices(); setInterval(getPrices, 60000);
   // Copy-trade perks: each card slides in fast, brakes, holds, then the next one.
   var pk = document.querySelector("#perks .perks-track"), pi = 0, pn = 0;
-  if (pk && matchMedia("(prefers-reduced-motion: reduce)").matches) pk = null;
+  if (pk && (pk.children.length < 2 || matchMedia("(prefers-reduced-motion: reduce)").matches)) pk = null;
   if (pk) {
     pk.appendChild(pk.firstElementChild.cloneNode(true));
     pn = pk.children.length - 1;
