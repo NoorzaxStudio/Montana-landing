@@ -51,7 +51,7 @@ small{display:block;color:#8a93a3;margin-top:14px;line-height:1.8}
 .help b{display:block;margin-bottom:6px;color:#0d1016}.help ol{margin:6px 0 0;padding-inline-start:20px}
 .help.on{display:block}
 </style></head><body><div class="box">
-<?php if ($fromLead): ?><p style="color:#0f8a4b;font-weight:700;margin:0 0 14px">✓ ثبت‌نام شما انجام شد. به‌زودی برای مشاوره باهاتون تماس می‌گیریم.</p><?php endif; ?>
+<?php if ($fromLead): ?><p style="color:#0f8a4b;font-weight:700;margin:0 0 14px">✓ <?php echo ($_GET['m'] ?? '') === '1' ? 'ثبت‌نام شما در منتورشیپ رایگان انجام شد. لینک و زمان جلسه‌ها از کانال تلگرام و تماس کارشناس‌ها اعلام میشه.' : 'ثبت‌نام شما انجام شد. به‌زودی برای مشاوره باهاتون تماس می‌گیریم.'; ?></p><?php endif; ?>
 <h1>در حال باز کردن تلگرام…</h1>
 <p>اگر تلگرام خودکار باز نشد، دکمه زیر را بزنید.</p>
 <a class="main" href="<?php echo htmlspecialchars($open); ?>">باز کردن در اپ تلگرام</a>
