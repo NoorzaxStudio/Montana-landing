@@ -165,6 +165,19 @@ h2{font-size:clamp(1.85rem,4.2vw,2.7rem);margin-bottom:10px}
 .facts li{display:flex;align-items:center;gap:6px}
 .facts li:before{content:"✓";color:var(--gain);font-weight:800}
 
+/* live prices under the hero, as on the main site and /lead */
+.tape{border-block:1px solid var(--line);background:rgba(var(--panel-rgb),.9);min-height:46px;padding:0 4px;direction:ltr;overflow:hidden}
+.tape .tradingview-widget-copyright{display:none}
+.irr{display:grid;grid-template-columns:repeat(2,1fr);border-bottom:1px solid var(--line);background:rgba(var(--panel-rgb),.6)}
+.irr div{padding:12px 16px;text-align:center;border-inline-start:1px solid rgba(var(--fg-rgb),.07)}
+.irr div:nth-child(odd){border-inline-start:0}
+.irr div:nth-child(n+3){border-top:1px solid rgba(var(--fg-rgb),.07)}
+.irr b{display:block;font-size:.8rem;color:var(--muted);font-weight:500}
+.irr span{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.05rem;color:var(--text);transition:color .4s}
+.irr span.na{color:var(--muted)}
+.irr small{color:var(--muted);font-size:.75rem;margin-inline-start:4px}
+.tape-note{text-align:center;font-size:.72rem;color:var(--muted);padding:4px 16px 0}
+
 /* 2. why it's easy with Montana */
 .why{background:var(--panel-2)}
 .why h2 em{font-style:normal;color:var(--loss)}
@@ -280,6 +293,9 @@ footer small{display:block;margin-bottom:10px}
   .hero-media:after{background:linear-gradient(to left,var(--ink) 0,rgba(var(--ink-rgb),.85) 28%,rgba(var(--ink-rgb),.15) 65%,transparent 100%),linear-gradient(180deg,transparent 75%,var(--ink))}
   .hero .wrap{margin:0 auto;width:100%;padding-block:60px}
   .hero-copy{max-width:600px}
+  .irr{grid-template-columns:repeat(4,1fr)}
+  .irr div:nth-child(n){border-inline-start:1px solid rgba(var(--fg-rgb),.07);border-top:0}
+  .irr div:first-child{border-inline-start:0}
   .pillars{grid-template-columns:repeat(4,1fr)}
   .res{grid-template-columns:330px 1fr;gap:56px}
   .cmp{grid-template-columns:1fr 1fr}
@@ -311,6 +327,16 @@ footer small{display:block;margin-bottom:10px}
     <ul class="facts"><li>کلاس آنلاین و زنده</li><li>پرسش و پاسخ و رفع اشکال</li><li>از پایه، بدون نیاز به تجربه</li></ul>
   </div></div>
 </section>
+
+<!-- live prices, as on the main site -->
+<div class="tape" id="tv" aria-label="قیمت دارایی‌های جهانی"></div>
+<div class="irr" id="irr" aria-label="قیمت‌ها به تومان">
+  <div><b>دلار</b><span data-k="0"></span><small>تومان</small></div>
+  <div><b>یورو</b><span data-k="1"></span><small>تومان</small></div>
+  <div><b>یک گرم طلای آب‌شده</b><span data-k="2"></span><small>تومان</small></div>
+  <div><b>بیت‌کوین</b><span data-k="3"></span><small>تومان</small></div>
+</div>
+<p class="tape-note">قیمت‌های تومانی: بازار آزاد تهران (tgju)، هر یک دقیقه به‌روز میشه. بیت‌کوین با نرخ دلار آزاد حساب شده.</p>
 
 <!-- 2. why it's easy with Montana -->
 <section class="blk why"><div class="wrap">
@@ -479,6 +505,41 @@ footer small{display:block;margin-bottom:10px}
     }, { threshold: .4 }).observe(v);
   }
 
+  // Live prices under the hero: toman row from /api/prices, global tape from TradingView.
+  var KEYS = ["usd", "eur", "goldGram", "btc"], irs = document.querySelectorAll("#irr [data-k]"), PR = null;
+  var drawIR = function () {
+    irs.forEach(function (e) {
+      var x = PR && PR[KEYS[+e.dataset.k]];
+      if (x) { e.textContent = Math.round(x).toLocaleString("fa-IR"); e.classList.remove("na"); } else { e.textContent = "—"; e.classList.add("na"); }
+    });
+  };
+  var getPrices = function () {
+    fetch("/api/prices", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      var prev = PR; PR = d; drawIR();
+      if (prev) irs.forEach(function (e) {
+        var k = KEYS[+e.dataset.k];
+        if (prev[k] && d[k] && prev[k] !== d[k]) { e.style.color = d[k] > prev[k] ? "var(--gain)" : "var(--loss)"; setTimeout(function () { e.style.color = ""; }, 900); }
+      });
+    }).catch(drawIR);
+  };
+  drawIR(); getPrices(); setInterval(getPrices, 60000);
+  var tv = document.getElementById("tv"), tvKey = "";
+  var SYM = [["OANDA:XAUUSD", "طلا"], ["TVC:UKOIL", "نفت برنت"], ["FX:EURUSD", "یورو / دلار"], ["OANDA:XAGUSD", "نقره"], ["BITSTAMP:BTCUSD", "بیت‌کوین"], ["FX:GBPUSD", "پوند / دلار"], ["FOREXCOM:SPXUSD", "S&P 500"], ["FX:USDJPY", "دلار / ین"]];
+  var drawTV = function () {
+    var dark = R.getAttribute("data-theme") === "dark";
+    if (tvKey === (dark ? "d" : "l")) return;
+    tvKey = dark ? "d" : "l";
+    tv.innerHTML = '<div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div>';
+    var tvs = document.createElement("script");
+    tvs.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js"; tvs.async = true;
+    tvs.innerHTML = JSON.stringify({
+      symbols: SYM.map(function (x) { return { proName: x[0], title: x[1] }; }),
+      showSymbolLogo: true, isTransparent: true, displayMode: "adaptive", colorTheme: dark ? "dark" : "light", locale: "fa_IR"
+    });
+    tv.firstChild.appendChild(tvs);
+  };
+  drawTV();
+
   // Light/dark, remembered in this browser (same key as the main site).
   var tb = document.getElementById("themeBtn");
   var SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
@@ -492,7 +553,7 @@ footer small{display:block;margin-bottom:10px}
     var dark = R.getAttribute("data-theme") !== "dark";
     if (dark) R.setAttribute("data-theme", "dark"); else R.removeAttribute("data-theme");
     try { localStorage.setItem("mt-theme", dark ? "dark" : "light"); } catch (e) {}
-    paint();
+    paint(); drawTV();
   });
   paint();
   <?php if ($err): ?>f.scrollIntoView({ block: "start" });<?php endif; ?>
