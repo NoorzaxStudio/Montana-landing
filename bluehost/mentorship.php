@@ -230,6 +230,26 @@ h2{font-size:clamp(1.85rem,4.2vw,2.7rem);margin-bottom:10px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
 .chips span{background:rgba(var(--gain-rgb),.08);border:1px solid rgba(var(--gain-rgb),.3);border-radius:999px;padding:4px 14px;font-size:.86rem;font-weight:600}
 
+/* roadmap: four steps joined by a line, lighting up one after another */
+.road{padding-top:56px}
+.rsteps{margin:30px 0 0;display:grid;gap:26px;position:relative;counter-reset:r}
+.rail{position:absolute;inset-inline-start:31px;top:32px;bottom:32px;width:4px;border-radius:4px;background:rgba(var(--fg-rgb),.1);overflow:hidden}
+.rail i{position:absolute;inset:0;transform-origin:top;transform:scaleY(0);background:linear-gradient(180deg,var(--acc),var(--gain));transition:transform .7s ease}
+.rstep{position:relative;display:flex;align-items:center;gap:18px;opacity:.45;transition:opacity .5s}
+.rstep .dot{flex:0 0 auto;width:66px;height:66px;border-radius:50%;display:grid;place-items:center;background:var(--panel);border:3px solid rgba(var(--fg-rgb),.15);color:var(--muted);position:relative;z-index:1;transition:background .5s,border-color .5s,color .5s,box-shadow .5s,transform .5s}
+.rstep .dot svg{width:28px;height:28px}
+.rstep .dot:after{counter-increment:r;content:counter(r,persian);position:absolute;top:-6px;inset-inline-end:-6px;width:24px;height:24px;border-radius:50%;background:var(--panel);border:2px solid rgba(var(--fg-rgb),.15);font-size:.75rem;font-weight:800;display:grid;place-items:center;color:var(--muted);transition:inherit}
+[lang=en] .rstep .dot:after{content:counter(r)}
+.rstep p{font-weight:500;font-size:1.05rem;line-height:1.6;color:var(--muted);transition:color .5s}
+.rstep.on{opacity:1}
+.rstep.on .dot{background:var(--acc);border-color:var(--acc);color:var(--on-acc);box-shadow:0 0 0 6px rgba(var(--acc-rgb),.15)}
+.rstep.on .dot:after{background:var(--gain);border-color:var(--gain);color:#fff}
+.rstep.on p{font-weight:800;color:var(--text)}
+.rstep.cur .dot{transform:scale(1.12);box-shadow:0 0 0 8px rgba(var(--acc-rgb),.18),0 10px 30px rgba(var(--acc-rgb),.35)}
+.rstep:last-child.on .dot{background:var(--gain);border-color:var(--gain);color:#fff;box-shadow:0 0 0 8px rgba(var(--gain-rgb),.2),0 10px 30px rgba(var(--gain-rgb),.4)}
+.rstep:last-child.on p{color:var(--gain-hi)}
+[data-theme=dark] .rstep:last-child.on p{color:var(--gain)}
+
 /* 4. the course */
 .course{background:var(--deep);color:#ece6d8}
 .course .kick{color:#d6b46a;text-align:center}
@@ -323,6 +343,12 @@ footer small{display:block;margin-bottom:10px}
   .res{grid-template-columns:330px 1fr;gap:56px}
   .cmp{grid-template-columns:1fr 1fr}
   .feats{grid-template-columns:repeat(3,1fr)}
+  .rsteps{grid-template-columns:repeat(4,1fr);gap:16px}
+  .rail{inset-inline:12.5%;top:31px;bottom:auto;width:auto;height:4px}
+  .rail i{transform-origin:right;transform:scaleX(0)}
+  [dir=ltr] .rail i{transform-origin:left}
+  .rstep{flex-direction:column;text-align:center;gap:14px}
+  .rstep .dot{width:66px;height:66px}
   section.me{padding:0;overflow:hidden}
   .me .wrap{display:grid;max-width:none;padding:0;grid-template-columns:1.1fr 1fr;gap:44px;align-items:center}
   .me .wrap>div:last-child{padding:60px 16px;max-width:560px}
@@ -342,7 +368,7 @@ footer small{display:block;margin-bottom:10px}
   [dir=ltr] .hero-media:after{background:linear-gradient(to right,var(--ink) 0,rgba(var(--ink-rgb),.85) 28%,rgba(var(--ink-rgb),.15) 65%,transparent 100%),linear-gradient(180deg,transparent 75%,var(--ink))}
   [dir=ltr] .photos:after{background:linear-gradient(to right,transparent 0,transparent 45%,var(--panel) 100%),linear-gradient(180deg,rgba(var(--panel-rgb),.25),transparent 20%,transparent 80%,rgba(var(--panel-rgb),.25))}
 }
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.scr>.go{transition:none}.hero-media img{animation:none}.tag i{animation:none}.photos img{animation:none}.bubs-track{animation:none}.bubs{overflow-y:auto}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.rstep,.rstep .dot,.rail i{transition:none}.scr>.go{transition:none}.hero-media img{animation:none}.tag i{animation:none}.photos img{animation:none}.bubs-track{animation:none}.bubs{overflow-y:auto}}
 </style>
 <?php if (preg_match("/^G-[A-Z0-9]{4,15}$/", $ga)) echo "<script async src=\"https://www.googletagmanager.com/gtag/js?id=$ga\"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag(\"js\",new Date());gtag(\"config\",\"$ga\");</script>"; ?>
 </head><body>
@@ -384,6 +410,17 @@ footer small{display:block;margin-bottom:10px}
     <div class="pillar"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9.3-9A5.2 5.2 0 0 1 12 6.3 5.2 5.2 0 0 1 21.3 12C19 16.6 12 21 12 21Z"/><path d="M7.5 12h2.5l1.5-3 2 6 1.5-3h1.5"/></svg></div><h3 data-en="Trading psychology and emotional control">روانشناسی ترید و کنترل احساسات</h3><p data-en="Fear and greed burn more capital than anything else. You learn to trade calmly and by plan.">ترس و طمع بیشتر از هر چیزی سرمایه می‌سوزونه. یاد می‌گیری با ذهن آروم و طبق برنامه معامله کنی.</p></div>
     <div class="pillar"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6l-8-3Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></div><h3 data-en="Risk management techniques">تکنیک‌های مدیریت ریسک</h3><p data-en="Position size, stop loss, and when not to enter the market at all. Protecting capital comes first.">حجم هر معامله، حد ضرر و اینکه کِی اصلا نباید وارد بازار شد. اولویت اول، حفظ سرمایه‌ست.</p></div>
     <div class="pillar"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10M9.5 21V10M14.5 21V10M19 21V10M2 10l10-6 10 6"/></svg></div><h3 data-en="Financial-institution strategies">استراتژی موسسات مالی</h3><p data-en="The same principles brokers and financial institutions use to move the market, from someone who worked inside them for years.">همون اصولی که بروکرها و موسسات مالی باهاش بازار رو می‌چرخونن، از کسی که سال‌ها داخلشون کار کرده.</p></div>
+  </div>
+</div></section>
+
+<!-- roadmap -->
+<section class="blk road"><div class="wrap">
+  <div class="c"><span class="kick" data-en="Your roadmap">نقشه راه</span><h2 data-en="From learning to earning, in four steps">از یادگیری تا درآمد، در چهار قدم</h2></div>
+  <div class="rsteps" id="road"><span class="rail" aria-hidden="true"><i></i></span>
+    <div class="rstep"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5L2 9Z"/><path d="M6 11v5c3 2 9 2 12 0v-5M22 9v6"/></svg></span><p data-en="Learn in the mentorship">در منتورشیپ آموزش ببین</p></div>
+    <div class="rstep"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M7 12l3-3 2 2 4-4"/></svg></span><p data-en="Practise on a demo account">روی حساب دمو تمرین کن</p></div>
+    <div class="rstep"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 8-9"/><path d="M14 6h6v6"/></svg></span><p data-en="Catch the swings in gold and the euro">نوسان طلا و یورو رو بگیر</p></div>
+    <div class="rstep"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.8 9.2A3 3 0 0 0 12 8c-1.7 0-3 .9-3 2s1.3 1.7 3 2 3 .9 3 2-1.3 2-3 2a3 3 0 0 1-2.8-1.2M12 6v2M12 16v2"/></svg></span><p data-en="Earn 2 to 9% of your capital a day">روزانه ۲ تا ۹ درصد سرمایه‌ت درآمد بساز</p></div>
   </div>
 </div></section>
 
@@ -544,6 +581,21 @@ footer small{display:block;margin-bottom:10px}
     new IntersectionObserver(function (es) { heroOn = es[0].isIntersecting; upd(); }).observe(document.getElementById("hero"));
     new IntersectionObserver(function (es) { formOn = es[0].isIntersecting; upd(); }).observe(document.getElementById("form"));
   }
+
+  // Roadmap: the steps light up one by one, the line fills behind them, then it starts again.
+  var road = document.getElementById("road"), rs = road.querySelectorAll(".rstep"), rail = road.querySelector(".rail i"), ri = -1, rt = 0, rOn = false;
+  var rdraw = function () {
+    rs.forEach(function (e, k) { e.classList.toggle("on", k <= ri); e.classList.toggle("cur", k === ri); });
+    var v = Math.max(0, ri) / (rs.length - 1);
+    rail.style.transform = matchMedia("(min-width:860px)").matches ? "scaleX(" + v + ")" : "scaleY(" + v + ")";
+  };
+  var rnext = function () {
+    clearTimeout(rt); if (!rOn) return;
+    ri = ri >= rs.length - 1 ? -1 : ri + 1; rdraw();
+    rt = setTimeout(rnext, ri === rs.length - 1 ? 3000 : ri === -1 ? 700 : 1400);
+  };
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) { ri = rs.length - 1; rdraw(); }
+  else new IntersectionObserver(function (es) { rOn = es[0].isIntersecting; if (rOn) rnext(); else clearTimeout(rt); }, { threshold: .5 }).observe(road);
 
   // Phone slider: the statement video (8 s), then each result image (3.5 s).
   // The next slide comes in fast from the left and brakes; it only runs while on screen.
