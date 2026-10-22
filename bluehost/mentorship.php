@@ -89,6 +89,10 @@ $errHtml = fn($k) => isset($err[$k]) ? '<span class="err">' . $err[$k] . '</span
 $h = fn($v) => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
 // Followers' messages, word for word from Telegram (same as /lead). Only real messages go here.
 $thanks = [
+  ['آرش', 'آقا مرسی واقعا، من دوره زیاد دیدم ولی چیزایی که شما آموزش میدید اصن هیچ جایی نشدیدم چطور این همه وقت هیچس درموردشون صحبت نمیکرده!!'],
+  ['حسن', 'واقعا بی ادعا، کار درست، خفن، بدون هیچ زرق و برقی حرفه ای ترین تریدری هستی که تا حالا دیدم، زنده باشی'],
+  ['صدرا', 'مونتانای عزیز، این دوره مثل یه تولد دوباره بود تو ترید، اصن چشمام باز شدش، واقعیت ها رو تازه فهمیدم، همیشه یه حسی داشتم یه چیزایی مشکوکه ولی الان فهمیدمشون، عاشقتم'],
+  ['نازنین', 'کاش همه تحلیلگر ها و اساتید از شما یاد بگیرن، و تکنیک ها و استراتژی های کارآمد آموزش بدن، درسته سبک شما یه مقدار پیچیده هستش، اما تنها سبکی هستش که واقعا سود میده'],
   ['علی', 'خاک زیر پاتم دمت گرم بخاطر سود های قشنگی که بدست میاری'],
   ['بابک', 'دارم روی چارت نگا میکنم چجوری باز میکنی میبینیدی و سودهارو درو میکنی دمتگرم واقعاااا❤️'],
   ['احمد', 'آقا دمت گرم دیگه از استرس و اعصاب خوردی ترید راحت شدم کاش زودتر با شما آشنا شده بودم'],
@@ -178,7 +182,11 @@ h2{font-size:clamp(1.85rem,4.2vw,2.7rem);margin-bottom:10px}
 .phone{width:min(270px,68vw);margin:0 auto;border-radius:42px;padding:10px;background:#1d1f22;box-shadow:0 0 0 2px #3a3d42,0 30px 70px rgba(15,27,45,.25)}
 .phone video{width:100%;height:auto;aspect-ratio:288/624;object-fit:cover;border-radius:33px;background:#fff}
 .phone-cap{text-align:center;font-size:.88rem;color:var(--muted);font-weight:700;margin-top:10px}
-.bubs{display:grid;gap:12px}
+/* reviews roll slowly upward like a shutter; hover pauses */
+.bubs{height:460px;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(180deg,transparent,#000 12%,#000 88%,transparent)}
+.bubs-track{display:grid;gap:12px;padding-bottom:12px;animation:vroll 70s linear infinite}
+.bubs:hover .bubs-track{animation-play-state:paused}
+@keyframes vroll{to{transform:translateY(-50%)}}
 .bub{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:18px 18px 18px 4px;padding:12px 16px 8px;box-shadow:0 6px 18px rgba(15,27,45,.05)}
 .bub blockquote{margin:0;font-size:.97rem;line-height:1.85}
 .bub figcaption{font-size:.78rem;color:var(--muted);margin-top:4px}
@@ -286,7 +294,7 @@ footer small{display:block;margin-bottom:10px}
   footer{padding-bottom:30px}
 }
 @media (max-width:859px){.top .btn{display:none}.top .tgl{margin-inline-start:auto}.hero-copy>.btn{width:100%}}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tag i{animation:none}.photos img{animation:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tag i{animation:none}.photos img{animation:none}.bubs-track{animation:none}.bubs{overflow-y:auto}}
 </style>
 <?php if (preg_match("/^G-[A-Z0-9]{4,15}$/", $ga)) echo "<script async src=\"https://www.googletagmanager.com/gtag/js?id=$ga\"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag(\"js\",new Date());gtag(\"config\",\"$ga\");</script>"; ?>
 </head><body>
@@ -328,8 +336,10 @@ footer small{display:block;margin-bottom:10px}
       <span class="kick">نظرات کاربران و نتایج</span>
       <h2>حرف نمی‌زنیم، نتیجه نشون میدیم</h2>
       <p class="lead">این‌ها پیام‌های واقعی دنبال‌کننده‌های مونتانا تو تلگرامه، بدون ویرایش.</p>
-      <div class="bubs">
-        <?php foreach (array_slice($thanks, 0, 4) as [$who, $msg]) echo '<figure class="bub"><blockquote>' . $h($msg) . '</blockquote><figcaption>' . $h($who) . '</figcaption></figure>'; ?>
+      <div class="bubs"><div class="bubs-track">
+        <?php // The set repeats so the roll loops without a gap; the copy is hidden from screen readers.
+        for ($i = 0; $i < 2; $i++) foreach ($thanks as [$who, $msg]) echo '<figure class="bub"' . ($i ? ' aria-hidden="true"' : '') . '><blockquote>' . $h($msg) . '</blockquote><figcaption>' . $h($who) . '</figcaption></figure>'; ?>
+      </div>
       </div>
       <div class="chips"><span>سود و ضرر، هر دو</span><span>بدون حذف معامله‌های ضررده</span><span>تاریخچه واقعی متاتریدر</span></div>
     </div>
