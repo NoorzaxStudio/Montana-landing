@@ -376,7 +376,24 @@ footer small{display:block;margin-bottom:10px}
   </div>
 </div></section>
 
-<!-- 3. reviews and results -->
+<!-- 3. the course -->
+<section class="blk course"><div class="wrap">
+  <span class="kick">معرفی منتورشیپ</span>
+  <h2>یکی از سخت‌ترین کارهای دنیا رو <span>با دوره‌های بی‌کیفیت</span> یاد نگیر</h2>
+  <div class="cost"><i>⚠️</i><p>هزینه آموزش بد فقط وقت نیست: <b>از دست دادن سرمایه‌ست.</b> بیشتر ضررها از ویدیوهای پراکنده و دوره‌های بدون پشتیبانی شروع میشه.</p></div>
+  <div class="cmp">
+    <div class="bad"><h3>دوره‌های معمولی</h3><ul><li>ویدیوی ضبط‌شده و قدیمی</li><li>سوالت بی‌جواب می‌مونه</li><li>مدرسی که خودش معامله‌هاش رو نشون نمیده</li><li>تمرکز روی سیگنال، نه مهارت</li></ul></div>
+    <div class="good"><h3>منتورشیپ مونتانا</h3><ul><li>کلاس آنلاین و زنده</li><li>پرسش و پاسخ و رفع اشکال سر کلاس</li><li>استادی که سود و ضررش رو شفاف نشون میده</li><li>یادگیری مهارت، قدم به قدم در کنار استاد</li></ul></div>
+  </div>
+  <div class="feats">
+    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg></div><div><h3>آنلاین و زنده</h3></div></div>
+    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5M12 16h.01"/></svg></div><div><h3>پرسش و پاسخ و رفع اشکال</h3></div></div>
+    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div><h3>رشد در کنار استاد</h3></div></div>
+  </div>
+  <div class="cta"><a class="btn" href="#form" data-go>رزرو جای رایگان در منتورشیپ</a></div>
+</div></section>
+
+<!-- 4. reviews and results -->
 <section class="blk"><div class="wrap">
   <div class="res">
     <div>
@@ -399,23 +416,6 @@ footer small{display:block;margin-bottom:10px}
       <div class="chips"><span>سود و ضرر، هر دو</span><span>بدون حذف معامله‌های ضررده</span><span>تاریخچه واقعی متاتریدر</span></div>
     </div>
   </div>
-</div></section>
-
-<!-- 4. the course -->
-<section class="blk course"><div class="wrap">
-  <span class="kick">معرفی منتورشیپ</span>
-  <h2>یکی از سخت‌ترین کارهای دنیا رو <span>با دوره‌های بی‌کیفیت</span> یاد نگیر</h2>
-  <div class="cost"><i>⚠️</i><p>هزینه آموزش بد فقط وقت نیست: <b>از دست دادن سرمایه‌ست.</b> بیشتر ضررها از ویدیوهای پراکنده و دوره‌های بدون پشتیبانی شروع میشه.</p></div>
-  <div class="cmp">
-    <div class="bad"><h3>دوره‌های معمولی</h3><ul><li>ویدیوی ضبط‌شده و قدیمی</li><li>سوالت بی‌جواب می‌مونه</li><li>مدرسی که خودش معامله‌هاش رو نشون نمیده</li><li>تمرکز روی سیگنال، نه مهارت</li></ul></div>
-    <div class="good"><h3>منتورشیپ مونتانا</h3><ul><li>کلاس آنلاین و زنده</li><li>پرسش و پاسخ و رفع اشکال سر کلاس</li><li>استادی که سود و ضررش رو شفاف نشون میده</li><li>یادگیری مهارت، قدم به قدم در کنار استاد</li></ul></div>
-  </div>
-  <div class="feats">
-    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg></div><div><h3>آنلاین و زنده</h3></div></div>
-    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5M12 16h.01"/></svg></div><div><h3>پرسش و پاسخ و رفع اشکال</h3></div></div>
-    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div><h3>رشد در کنار استاد</h3></div></div>
-  </div>
-  <div class="cta"><a class="btn" href="#form" data-go>رزرو جای رایگان در منتورشیپ</a></div>
 </div></section>
 
 <!-- 5. Montana -->
