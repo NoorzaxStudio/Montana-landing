@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $cell = fn($v) => preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v;
         fputcsv($h, [date("Y-m-d H:i:s"), $cell($val['name']), $phone, '', $val['year'],
           substr((string) ($_GET['utm_source'] ?? 'mentorship'), 0, 40), substr((string) ($_GET['utm_content'] ?? ''), 0, 80),
-          substr((string) ($_GET['utm_campaign'] ?? 'mentorship'), 0, 60), substr($_SERVER["HTTP_USER_AGENT"] ?? '', 0, 200)]);
+          substr((string) ($_GET['utm_campaign'] ?? 'mentorship'), 0, 60), substr($_SERVER["HTTP_USER_AGENT"] ?? '', 0, 200), 'mentor']);
         flock($h, LOCK_UN); fclose($h);
       }
       require_once __DIR__ . "/lib-sheet.php";
@@ -83,7 +83,7 @@ $e = fn($k) => htmlspecialchars($val[$k], ENT_QUOTES, 'UTF-8');
 [$capA, $capB, $capToken] = $capNew();
 $preview = isset($_GET["preview"]);
 if (!$preview && $_SERVER["REQUEST_METHOD"] !== "POST") {
-  @file_put_contents($statsDir . "/views-lead.log", date("Y-m-d H:i:s") . "\t" . ($_SERVER["HTTP_REFERER"] ?? "-") . "\t" . ($_SERVER["HTTP_USER_AGENT"] ?? "-") . "\n", FILE_APPEND | LOCK_EX);
+  @file_put_contents($statsDir . "/views-mentorship.log", date("Y-m-d H:i:s") . "\t" . ($_SERVER["HTTP_REFERER"] ?? "-") . "\t" . ($_SERVER["HTTP_USER_AGENT"] ?? "-") . "\n", FILE_APPEND | LOCK_EX);
 }
 $ga = $preview ? '' : trim((string) @file_get_contents($statsDir . "/ga.txt"));
 $errHtml = fn($k) => isset($err[$k]) ? '<span class="err">' . $err[$k] . '</span>' : '';

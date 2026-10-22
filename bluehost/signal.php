@@ -99,9 +99,9 @@ $e = fn($k) => htmlspecialchars($val[$k], ENT_QUOTES, 'UTF-8');
 [$capA, $capB, $capToken] = $capNew();
 $preview = isset($_GET["preview"]);
 if (!$preview && $_SERVER["REQUEST_METHOD"] !== "POST") {
-  // Its own view log now that /lead is the mentorship page.
+  // Same view log as when this page was /lead, so its admin tab keeps its history.
   if (!is_dir($statsDir)) @mkdir($statsDir, 0755, true);
-  @file_put_contents($statsDir . "/views-ct.log", date("Y-m-d H:i:s") . "\t" . ($_SERVER["HTTP_REFERER"] ?? "-") . "\t" . ($_SERVER["HTTP_USER_AGENT"] ?? "-") . "\n", FILE_APPEND | LOCK_EX);
+  @file_put_contents($statsDir . "/views-lead.log", date("Y-m-d H:i:s") . "\t" . ($_SERVER["HTTP_REFERER"] ?? "-") . "\t" . ($_SERVER["HTTP_USER_AGENT"] ?? "-") . "\n", FILE_APPEND | LOCK_EX);
 }
 $ga = $preview ? '' : trim((string) @file_get_contents($statsDir . "/ga.txt"));
 $errHtml = fn($k) => isset($err[$k]) ? '<span class="err">' . $err[$k] . '</span>' : '';
