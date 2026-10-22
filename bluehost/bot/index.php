@@ -1,7 +1,9 @@
 <?php
 // Montana Telegram bot (@Montanatraderbot): Telegram sends every message here (webhook).
-// /start shows an intro with the menu; each menu button sends its photo and text,
-// the section's video message if one was added, then the channel link 3 seconds later.
+// /start shows the welcome (why Montana, the online mentorship) with the menu:
+// syllabus, teacher intro, free sign-up and the analysis channel. Sign-up asks for
+// name, mobile, city and birth year, one at a time, and saves the lead with the
+// site's mentorship sign-ups (~/montana-stats/leads.csv, the admin panel and the Google Sheet).
 // Setup (token, webhook, bot description): open /bot/setup.php once.
 declare(strict_types=1);
 require __DIR__ . '/lib-bot.php';
@@ -14,8 +16,8 @@ if ($secret === '' || !hash_equals($secret, (string) ($_SERVER['HTTP_X_TELEGRAM_
 }
 $update = json_decode((string) file_get_contents('php://input'), true);
 
-// Answer Telegram right away, then keep working, so the 3-second wait
-// before the channel link doesn't hold up the webhook.
+// Answer Telegram right away, then keep working, so the pauses in the teacher
+// intro don't hold up the webhook.
 ignore_user_abort(true);
 set_time_limit(60);
 http_response_code(200);
@@ -32,8 +34,17 @@ $adminId = (int) ($cfg['admin_id'] ?? 0);
 
 function menu_markup(array $C): array {
   $rows = [];
-  foreach ($C['sections'] as $key => $s) $rows[] = [['text' => $s['button'], 'callback_data' => "s:$key"]];
+  foreach ($C['menu'] as $key => $label)
+    $rows[] = [$key === 'channel' ? ['text' => $label, 'url' => $C['channel_url']] : ['text' => $label, 'callback_data' => "s:$key"]];
   return ['inline_keyboard' => $rows];
+}
+
+// Buttons under a section: sign up, and back to the menu.
+function next_markup(array $C): array {
+  return ['inline_keyboard' => [
+    [['text' => $C['signup_button'], 'callback_data' => 's:signup']],
+    [['text' => $C['menu_button'], 'callback_data' => 'menu']],
+  ]];
 }
 
 // Send a photo (.jpg) or video (.mp4) from bot/img with a caption. Uploads it the
@@ -41,7 +52,7 @@ function menu_markup(array $C): array {
 // in their own message.
 function send_photo(string $T, int $chat, string $file, string $text, ?array $markup = null): void {
   $path = __DIR__ . '/img/' . basename($file);
-  if (!is_file($path)) { send_text($T, $chat, $text, $markup); return; }
+  if ($file === '' || !is_file($path)) { send_text($T, $chat, $text, $markup); return; }
   $video = str_ends_with(strtolower($path), '.mp4');
   [$method, $field, $mime] = $video ? ['sendVideo', 'video', 'video/mp4'] : ['sendPhoto', 'photo', 'image/jpeg'];
   $key = basename($file) . '@' . filemtime($path);
@@ -70,44 +81,42 @@ function send_text(string $T, int $chat, string $text, ?array $markup = null): v
   tg($T, 'sendMessage', $p);
 }
 
-function send_video(string $T, int $chat, string $key): void {
+// The video message the admin added for this place, if any. Returns whether one was sent.
+function send_video(string $T, int $chat, string $key): bool {
   $v = bot_store()['videos'][$key] ?? null;
-  if (!$v) return;
-  if (($v['type'] ?? '') === 'video') tg($T, 'sendVideo', ['chat_id' => $chat, 'video' => $v['file_id']], 30);
-  else tg($T, 'sendVideoNote', ['chat_id' => $chat, 'video_note' => $v['file_id']], 30);
+  if (!$v) return false;
+  if (($v['type'] ?? '') === 'video') $r = tg($T, 'sendVideo', ['chat_id' => $chat, 'video' => $v['file_id']], 30);
+  else $r = tg($T, 'sendVideoNote', ['chat_id' => $chat, 'video_note' => $v['file_id']], 30);
+  return !empty($r['ok']);
 }
 
+// Welcome text, then its video message, then the menu (on the text itself when there's no video).
 function show_start(string $T, int $chat, array $C): void {
-  send_video($T, $chat, 'start');
-  send_photo($T, $chat, $C['start']['photo'] ?? '', $C['start']['text'], menu_markup($C));
+  $hasVideo = isset(bot_store()['videos']['welcome']);
+  send_photo($T, $chat, $C['start']['photo'] ?? '', $C['start']['text'], $hasVideo ? null : menu_markup($C));
+  if ($hasVideo) {
+    send_video($T, $chat, 'welcome');
+    send_text($T, $chat, $C['start']['menu_text'], menu_markup($C));
+  }
 }
 
-function show_section(string $T, int $chat, array $C, string $key): void {
-  $s = $C['sections'][$key];
-  tg($T, 'sendChatAction', ['chat_id' => $chat, 'action' => 'upload_photo'], 5);
-  // Optional buttons under the section's text that open other sections.
-  $links = [];
-  foreach ($s['links'] ?? [] as $to) if (isset($C['sections'][$to])) $links[] = [['text' => $C['sections'][$to]['button'], 'callback_data' => "s:$to"]];
-  foreach ($s['url_buttons'] ?? [] as $b) $links[] = [['text' => $b['text'], 'url' => $b['url']]];
-  $delay = (int) ($C['channel_delay'] ?? 3);
-  if (!empty($s['steps'])) {
-    // A story told in several messages, a few seconds apart.
-    foreach ($s['steps'] as $i => $step) {
-      if ($i) { tg($T, 'sendChatAction', ['chat_id' => $chat, 'action' => 'typing'], 5); sleep($delay); }
-      send_photo($T, $chat, $step['photo'] ?? '', $step['text']);
-    }
-  } else {
-    send_photo($T, $chat, $s['photo'] ?? '', $s['text'], $links ? ['inline_keyboard' => $links] : null);
+function show_syllabus(string $T, int $chat, array $C): void {
+  $hasVideo = isset(bot_store()['videos']['syllabus']);
+  send_photo($T, $chat, $C['syllabus']['photo'], $C['syllabus']['text'], $hasVideo ? null : next_markup($C));
+  if ($hasVideo) {
+    send_video($T, $chat, 'syllabus');
+    send_text($T, $chat, $C['fallback'], next_markup($C));
   }
-  send_video($T, $chat, $key);
-  if ($key === 'support') {
-    bot_store(function (&$d) use ($chat) { $d['awaiting'][(string) $chat] = time(); });
+}
+
+function show_about(string $T, int $chat, array $C): void {
+  $delay = (int) ($C['step_delay'] ?? 3);
+  $last = count($C['about']) - 1;
+  foreach ($C['about'] as $i => $step) {
+    if ($i) { tg($T, 'sendChatAction', ['chat_id' => $chat, 'action' => 'typing'], 5); sleep($delay); }
+    send_photo($T, $chat, $step['photo'] ?? '', $step['text'], $i === $last && !isset(bot_store()['videos']['about']) ? next_markup($C) : null);
   }
-  sleep($delay);
-  send_text($T, $chat, $C['channel_text'], ['inline_keyboard' => [
-    [['text' => $C['channel_button'], 'url' => $C['channel_url']]],
-    [['text' => $C['menu_button'], 'callback_data' => 'menu']],
-  ]]);
+  if (send_video($T, $chat, 'about')) send_text($T, $chat, $C['fallback'], next_markup($C));
 }
 
 function count_visit(int $chat, string $what): void {
@@ -117,11 +126,125 @@ function count_visit(int $chat, string $what): void {
   });
 }
 
-// Labels of the places a video message can go: the intro and each section.
+// Places a video message can go.
 function video_targets(array $C): array {
-  $t = ['start' => '👋 پیام خوش‌آمد (استارت)'];
-  foreach ($C['sections'] as $key => $s) $t[$key] = $s['button'];
-  return $t;
+  return ['welcome' => '👋 پیام خوش‌آمد (استارت)', 'syllabus' => $C['menu']['syllabus'], 'about' => $C['menu']['about']];
+}
+
+// ---------- sign-up ----------
+
+function fa2en(string $v): string {
+  return strtr(trim($v), ['۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9','٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9']);
+}
+
+// Iranian mobile as 09xxxxxxxxx, or '' when it isn't one (same rules as the site form).
+function norm_phone(string $v): string {
+  $p = preg_replace('/[\s\-()]/', '', fa2en($v));
+  $p = preg_replace('/^(\+98|0098|98)(?=9\d{9}$)/', '0', $p);
+  if (preg_match('/^9\d{9}$/', $p)) $p = '0' . $p;
+  return preg_match('/^09\d{9}$/', $p) ? $p : '';
+}
+
+function phone_taken(string $phone): bool {
+  $f = bot_dir() . '/leads.csv';
+  if (!is_file($f) || !($fh = fopen($f, 'r'))) return false;
+  while (($row = fgetcsv($fh)) !== false) if (($row[2] ?? '') === $phone) { fclose($fh); return true; }
+  fclose($fh);
+  return false;
+}
+
+function set_step(int $chat, ?array $reg): void {
+  bot_store(function (&$d) use ($chat, $reg) {
+    if ($reg === null) unset($d['reg'][(string) $chat]); else $d['reg'][(string) $chat] = $reg + ['t' => time()];
+  });
+}
+
+function start_signup(string $T, int $chat, array $C): void {
+  set_step($chat, ['step' => 'name']);
+  send_photo($T, $chat, $C['signup']['photo'], $C['signup']['intro']);
+  send_text($T, $chat, $C['signup']['ask_name'], ['remove_keyboard' => true]);
+}
+
+// Saves the lead next to the site's mentorship sign-ups: same CSV (page "mentor",
+// source "telegram-bot", city in the 13th column), so it shows in the admin panel.
+function save_lead(array $r, array $from): void {
+  $f = bot_dir() . '/leads.csv';
+  $new = !is_file($f);
+  $cell = fn($v) => preg_match('/^[=+\-@]/', (string) $v) ? "'" . $v : (string) $v;
+  $tgUser = isset($from['username']) ? '@' . $from['username'] : 'id ' . ($from['id'] ?? '');
+  if ($h = @fopen($f, 'a')) {
+    flock($h, LOCK_EX);
+    if ($new) fputcsv($h, ['time', 'name', 'phone', 'email', 'birth_year', 'source', 'app', 'campaign', 'user_agent', 'page', 'medium', 'term', 'city']);
+    fputcsv($h, [date('Y-m-d H:i:s'), $cell($r['name']), $r['phone'], '', $r['year'], 'telegram-bot', '', 'mentorship',
+      'Telegram ' . $tgUser, 'mentor', '', '', $cell($r['city'])]);
+    flock($h, LOCK_UN); fclose($h);
+  }
+  $sheet = dirname(__DIR__) . '/lib-sheet.php';
+  if (is_file($sheet)) {
+    require_once $sheet;
+    montana_sheet_send(bot_dir(), ['name' => $r['name'], 'phone' => $r['phone'], 'email' => '', 'birth_year' => $r['year'],
+      'city' => $r['city'], 'source' => mb_substr('mentorship / telegram-bot / ' . $r['city'], 0, 200)]);
+  }
+  bot_store(function (&$d) { $d['stats']['signed_up'] = ($d['stats']['signed_up'] ?? 0) + 1; });
+}
+
+// One answer of the sign-up. Returns false when the chat isn't signing up.
+function signup_answer(string $T, int $chat, array $C, array $m, int $adminId): bool {
+  $reg = bot_store()['reg'][(string) $chat] ?? null;
+  if (!$reg || time() - (int) ($reg['t'] ?? 0) > 86400) return false;
+  $S = $C['signup'];
+  $text = trim((string) ($m['text'] ?? ''));
+  switch ($reg['step']) {
+    case 'name':
+      $name = trim(preg_replace('/\s+/u', ' ', $text));
+      if (mb_strlen($name) < 3 || mb_strlen($name) > 60 || preg_match('/\d/', fa2en($name)) || str_starts_with($name, '/')) { send_text($T, $chat, $S['bad_name']); break; }
+      set_step($chat, ['step' => 'phone', 'name' => $name]);
+      send_text($T, $chat, $S['ask_phone'], ['keyboard' => [[['text' => $S['phone_button'], 'request_contact' => true]]], 'resize_keyboard' => true, 'one_time_keyboard' => true]);
+      break;
+    case 'phone':
+      $phone = norm_phone(isset($m['contact']) ? (string) ($m['contact']['phone_number'] ?? '') : $text);
+      if ($phone === '') { send_text($T, $chat, $S['bad_phone']); break; }
+      if (phone_taken($phone)) {
+        set_step($chat, null);
+        send_text($T, $chat, $S['duplicate'], ['remove_keyboard' => true]);
+        send_text($T, $chat, $C['fallback'], menu_markup($C));
+        break;
+      }
+      set_step($chat, ['phone' => $phone, 'step' => 'city'] + $reg);
+      send_text($T, $chat, $S['ask_city'], ['remove_keyboard' => true]);
+      break;
+    case 'city':
+      $city = trim(preg_replace('/\s+/u', ' ', $text));
+      if (mb_strlen($city) < 2 || mb_strlen($city) > 40 || preg_match('/\d/', fa2en($city)) || str_starts_with($city, '/')) { send_text($T, $chat, $S['bad_city']); break; }
+      set_step($chat, ['city' => $city, 'step' => 'year'] + $reg);
+      send_text($T, $chat, $S['ask_year']);
+      break;
+    case 'year':
+      $year = fa2en($text);
+      if (!preg_match('/^1[34]\d\d$/', $year) || (int) $year < 1310 || (int) $year > 1395) { send_text($T, $chat, $S['bad_year']); break; }
+      $reg['year'] = $year;
+      set_step($chat, null);
+      save_lead($reg, $m['from'] ?? []);
+      send_text($T, $chat, $S['done'], ['inline_keyboard' => [
+        [['text' => $S['channel_button'], 'url' => $C['channel_url']]],
+        [['text' => $C['menu_button'], 'callback_data' => 'menu']],
+      ]]);
+      if ($adminId) {
+        $u = isset($m['from']['username']) ? ' (@' . $m['from']['username'] . ')' : '';
+        send_text($T, $adminId, "🆕 ثبت‌نام منتورشیپ از ربات$u\n\n👤 {$reg['name']}\n📱 {$reg['phone']}\n🏙 {$reg['city']}\n🎂 {$reg['year']}");
+      }
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+
+function open_section(string $T, int $chat, array $C, string $key): void {
+  count_visit($chat, $key);
+  if ($key === 'syllabus') show_syllabus($T, $chat, $C);
+  elseif ($key === 'about') show_about($T, $chat, $C);
+  elseif ($key === 'signup') start_signup($T, $chat, $C);
 }
 
 // ---------- button presses ----------
@@ -134,11 +257,11 @@ if (isset($update['callback_query'])) {
   tg($T, 'answerCallbackQuery', ['callback_query_id' => $q['id']], 5);
 
   if ($data === 'menu') {
+    set_step($chat, null);
     count_visit($chat, 'menu');
     send_text($T, $chat, $C['fallback'], menu_markup($C));
-  } elseif (str_starts_with($data, 's:') && isset($C['sections'][substr($data, 2)])) {
-    count_visit($chat, substr($data, 2));
-    show_section($T, $chat, $C, substr($data, 2));
+  } elseif (str_starts_with($data, 's:') && in_array(substr($data, 2), ['syllabus', 'about', 'signup'], true)) {
+    open_section($T, $chat, $C, substr($data, 2));
   } elseif ($from === $adminId && str_starts_with($data, 'vn:')) {
     // Admin chose where the video message they just sent goes.
     $key = substr($data, 3);
@@ -175,7 +298,7 @@ if ($cmd === 'admin') {
   $code = (string) ($cfg['admin_code'] ?? '');
   if ($code !== '' && hash_equals($code, $arg)) {
     bot_store(function (&$d) use ($from) { $d['config']['admin_id'] = $from; });
-    send_text($T, $chat, "✅ از این به بعد تو ادمین ربات هستی.\n\n• برای اضافه کردن ویدیو: یه ویدیو مسیج (یا ویدیو) همین‌جا بفرست و بخشش رو انتخاب کن.\n• /videos ویدیوهای فعلی و حذفشون\n• /stats آمار ربات\n• جواب پشتیبانی: روی پیام کاربر ریپلای کن.");
+    send_text($T, $chat, "✅ از این به بعد تو ادمین ربات هستی.\n\n• برای اضافه کردن ویدیو: یه ویدیو مسیج (یا ویدیو) همین‌جا بفرست و بخشش رو انتخاب کن.\n• /videos ویدیوهای فعلی و حذفشون\n• /stats آمار ربات\n• هر ثبت‌نام جدید همین‌جا برات فرستاده میشه.");
   } else {
     send_text($T, $chat, 'کد درست نیست.');
   }
@@ -183,7 +306,7 @@ if ($cmd === 'admin') {
 }
 
 if ($from === $adminId && $adminId) {
-  // Admin sent a video message or video: ask which section it is for.
+  // Admin sent a video message or video: ask where it goes.
   $vid = $m['video_note'] ?? $m['video'] ?? null;
   if ($vid) {
     $type = isset($m['video_note']) ? 'video_note' : 'video';
@@ -211,54 +334,24 @@ if ($from === $adminId && $adminId) {
     $d = bot_store();
     $lines = ['👥 کاربرها: ' . count($d['users'] ?? [])];
     $lines[] = '▶️ استارت: ' . ($d['stats']['start'] ?? 0);
-    foreach ($C['sections'] as $key => $s) $lines[] = $s['button'] . ': ' . ($d['stats'][$key] ?? 0);
+    foreach (['syllabus', 'about', 'signup'] as $key) $lines[] = $C['menu'][$key] . ': ' . ($d['stats'][$key] ?? 0);
+    $lines[] = '✅ ثبت‌نام کامل: ' . ($d['stats']['signed_up'] ?? 0);
     send_text($T, $chat, implode("\n", $lines));
     exit;
-  }
-  // Admin replied to a user's support message: send the reply to that user.
-  $reply = $m['reply_to_message']['message_id'] ?? null;
-  if ($reply) {
-    $user = (int) (bot_store()['support_map'][(string) $reply] ?? 0);
-    if ($user) {
-      send_text($T, $user, $C['support_reply_title']);
-      $r = tg($T, 'copyMessage', ['chat_id' => $user, 'from_chat_id' => $chat, 'message_id' => $m['message_id']]);
-      send_text($T, $chat, !empty($r['ok']) ? '✅ جوابت برای کاربر فرستاده شد.' : '❌ ارسال نشد (شاید کاربر ربات رو بلاک کرده).');
-      exit;
-    }
   }
 }
 
 if ($cmd === 'start' || $cmd === 'menu') {
+  set_step($chat, null);
   count_visit($chat, 'start');
   show_start($T, $chat, $C);
   exit;
 }
-if ($cmd !== '' && isset($C['sections'][$cmd])) {
-  count_visit($chat, $cmd);
-  show_section($T, $chat, $C, $cmd);
+if (in_array($cmd, ['syllabus', 'about', 'signup'], true)) {
+  set_step($chat, null);
+  open_section($T, $chat, $C, $cmd);
   exit;
 }
-
-// A message right after opening "support" goes to the admin.
-$waiting = (int) (bot_store()['awaiting'][(string) $chat] ?? 0);
-if ($cmd === '' && $waiting && time() - $waiting < 3600 && $from !== $adminId) {
-  if (!$adminId) { send_text($T, $chat, $C['support_offline']); exit; }
-  $r = tg($T, 'forwardMessage', ['chat_id' => $adminId, 'from_chat_id' => $chat, 'message_id' => $m['message_id']]);
-  if (!empty($r['ok'])) {
-    $name = trim(($m['from']['first_name'] ?? '') . ' ' . ($m['from']['last_name'] ?? ''));
-    $user = isset($m['from']['username']) ? ' @' . $m['from']['username'] : '';
-    $note = tg($T, 'sendMessage', ['chat_id' => $adminId, 'text' => "📩 پیام پشتیبانی از $name$user\nبرای جواب، روی پیام بالا یا همین پیام ریپلای کن."]);
-    $ids = [$r['result']['message_id'], $note['result']['message_id'] ?? null];
-    bot_store(function (&$d) use ($ids, $chat) {
-      foreach (array_filter($ids) as $id) $d['support_map'][(string) $id] = $chat;
-      // keep the newest 2000 links only
-      if (count($d['support_map']) > 2000) $d['support_map'] = array_slice($d['support_map'], -2000, null, true);
-    });
-    send_text($T, $chat, $C['support_sent']);
-  } else {
-    send_text($T, $chat, $C['support_offline']);
-  }
-  exit;
-}
+if ($cmd === '' && signup_answer($T, $chat, $C, $m, $adminId)) exit;
 
 send_text($T, $chat, $C['fallback'], menu_markup($C));

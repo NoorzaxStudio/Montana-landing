@@ -316,8 +316,8 @@ page_start('پنل آمار مونتانا'); ?>
   <?php if (!$byCamp) echo '<tr><td colspan="2">هنوز ثبت‌نامی نیست.</td></tr>'; foreach (array_slice($byCamp, 0, 20, true) as $k => $v) echo '<tr><td class="ltr">' . h($k) . '</td><td>' . fa_num($v) . '</td></tr>'; ?></table></div>
 <div class="card"><h2>ثبت‌نام‌ها</h2>
   <p class="sub"><?= fa_num($nl) ?> ثبت‌نام در این بازه. <?php if (is_file($LEADS)) echo '<a href="?export=leads">دانلود همه ثبت‌نام‌ها (فایل اکسل CSV)</a>'; ?></p>
-  <div style="overflow-x:auto"><table><tr><th>زمان</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>سال تولد</th><th>منبع (utm)</th></tr>
-  <?php foreach (array_slice(array_reverse($leads), 0, 200) as $l) echo '<tr><td class="ltr">' . h($l[0]) . '</td><td>' . h($l[1]) . '</td><td class="ltr">' . h($l[2]) . '</td><td class="ltr">' . h($l[3]) . '</td><td>' . h($l[4]) . '</td><td class="ltr">' . h(implode(' / ', array_filter([$l[5] ?? '', $l[10] ?? '', $l[7] ?? '', $l[6] ?? '', $l[11] ?? ''], 'strlen'))) . '</td></tr>'; ?></table></div></div>
+  <div style="overflow-x:auto"><table><tr><th>زمان</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>سال تولد</th><th>شهر</th><th>منبع (utm)</th></tr>
+  <?php foreach (array_slice(array_reverse($leads), 0, 200) as $l) echo '<tr><td class="ltr">' . h($l[0]) . '</td><td>' . h($l[1]) . '</td><td class="ltr">' . h($l[2]) . '</td><td class="ltr">' . h($l[3]) . '</td><td>' . h($l[4]) . '</td><td>' . h($l[12] ?? '') . '</td><td class="ltr">' . h(implode(' / ', array_filter([$l[5] ?? '', $l[10] ?? '', $l[7] ?? '', $l[6] ?? '', $l[11] ?? ''], 'strlen'))) . '</td></tr>'; ?></table></div></div>
 <?php endif; ?>
 <div class="card"><h2>گوگل شیت ثبت‌نام‌ها</h2>
   <p class="sub">ثبت‌نام‌های صفحه فرم علاوه بر این پنل، به این گوگل شیت هم فرستاده می‌شوند. آدرس Web app و توکن را از Apps Script همان شیت بردارید.</p>
