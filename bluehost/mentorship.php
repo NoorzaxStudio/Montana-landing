@@ -57,21 +57,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   }
   if ($dup) $err['phone'] = 'قبلا با این شماره ثبت‌نام کرده‌اید.';
   $bot = !empty($_POST['website']);
+  // Ad tags (Yektanet adds utm_* to the landing URL). The page copies them into hidden
+  // fields, so they survive even if the visitor lost the query string before submitting.
+  $utm = [];
+  foreach (['utm_source' => 40, 'utm_medium' => 40, 'utm_campaign' => 60, 'utm_content' => 80, 'utm_term' => 80] as $k => $max)
+    $utm[$k] = mb_substr(trim((string) (($_POST[$k] ?? '') !== '' ? $_POST[$k] : ($_GET[$k] ?? ''))), 0, $max);
   if (!$err) {
     if (!$bot) {
       $f = $statsDir . "/leads.csv";
       $new = !is_file($f);
       if ($h = @fopen($f, "a")) {
         flock($h, LOCK_EX);
-        if ($new) fputcsv($h, ['time', 'name', 'phone', 'email', 'birth_year', 'source', 'app', 'campaign', 'user_agent']);
+        if ($new) fputcsv($h, ['time', 'name', 'phone', 'email', 'birth_year', 'source', 'app', 'campaign', 'user_agent', 'page', 'medium', 'term']);
         $cell = fn($v) => preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v;
         fputcsv($h, [date("Y-m-d H:i:s"), $cell($val['name']), $phone, '', $val['year'],
-          substr((string) ($_GET['utm_source'] ?? 'mentorship'), 0, 40), substr((string) ($_GET['utm_content'] ?? ''), 0, 80),
-          substr((string) ($_GET['utm_campaign'] ?? 'mentorship'), 0, 60), substr($_SERVER["HTTP_USER_AGENT"] ?? '', 0, 200), 'mentor']);
+          $cell($utm['utm_source'] ?: 'mentorship'), $cell($utm['utm_content']), $cell($utm['utm_campaign'] ?: 'mentorship'),
+          substr($_SERVER["HTTP_USER_AGENT"] ?? '', 0, 200), 'mentor', $cell($utm['utm_medium']), $cell($utm['utm_term'])]);
         flock($h, LOCK_UN); fclose($h);
       }
       require_once __DIR__ . "/lib-sheet.php";
-      $src = trim(($_GET['utm_source'] ?? '') . ' / ' . ($_GET['utm_content'] ?? ''), ' /');
+      $src = implode(' / ', array_filter([$utm['utm_source'], $utm['utm_medium'], $utm['utm_campaign'], $utm['utm_content'], $utm['utm_term']], 'strlen'));
       montana_sheet_send($statsDir, ['name' => $val['name'], 'phone' => $phone, 'email' => '',
         'birth_year' => $val['year'], 'source' => mb_substr('mentorship' . ($src !== '' ? ' / ' . $src : ''), 0, 200)]);
     }
@@ -494,6 +499,7 @@ footer small{display:block;margin-bottom:10px}
     <form id="lead" method="post" action="#form" novalidate>
       <input type="hidden" name="cap" value="<?php echo $capToken; ?>">
       <div class="hp" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+      <?php foreach (['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as $k) echo '<input type="hidden" name="' . $k . '" value="' . htmlspecialchars((string) ($_POST[$k] ?? ''), ENT_QUOTES) . '">'; ?>
       <label class="f"><span data-en="Full name">نام و نام خانوادگی</span>
         <input type="text" name="name" required maxlength="60" autocomplete="name" value="<?php echo $e('name'); ?>"></label>
       <?php echo $errHtml('name'); ?>
@@ -536,6 +542,16 @@ footer small{display:block;margin-bottom:10px}
   var R = document.documentElement;
   var f = document.getElementById("lead"), btn = f.querySelector("button[type=submit]");
   var name = f.elements.name, phone = f.elements.phone;
+
+  // Keep the ad's utm_* tags for the whole visit and send them with the form.
+  var qs = new URLSearchParams(location.search), utm = {};
+  try { utm = JSON.parse(sessionStorage.getItem("mt-utm") || "{}"); } catch (e) {}
+  if (["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].some(function (k) { return qs.get(k); })) {
+    utm = {};
+    qs.forEach(function (v, k) { if (/^utm_(source|medium|campaign|content|term)$/.test(k)) utm[k] = v; });
+    try { sessionStorage.setItem("mt-utm", JSON.stringify(utm)); } catch (e) {}
+  }
+  Object.keys(utm).forEach(function (k) { if (f.elements[k] && !f.elements[k].value) f.elements[k].value = utm[k]; });
   var digits = { "۰":0,"۱":1,"۲":2,"۳":3,"۴":4,"۵":5,"۶":6,"۷":7,"۸":8,"۹":9,"٠":0,"١":1,"٢":2,"٣":3,"٤":4,"٥":5,"٦":6,"٧":7,"٨":8,"٩":9 };
   function en(s) { return String(s).replace(/[۰-۹٠-٩]/g, function (d) { return digits[d]; }); }
   function mobile(s) {

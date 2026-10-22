@@ -149,7 +149,9 @@ if (isset($_GET['export']) && $_GET['export'] === 'leads') {
   header('Content-Type: text/csv; charset=utf-8');
   header('Content-Disposition: attachment; filename="montana-leads-' . date('Y-m-d') . '.csv"');
   echo "\xEF\xBB\xBF";  // so Excel shows Persian text correctly
-  readfile($LEADS);
+  // The file's own header predates the page/medium/term columns, so write the full one.
+  echo "time,name,phone,email,birth_year,utm_source,utm_content,utm_campaign,user_agent,page,utm_medium,utm_term\n";
+  $fh = fopen($LEADS, 'r'); fgets($fh); fpassthru($fh); fclose($fh);
   exit;
 }
 // Outcome after the join click (go.log): "open" = Telegram took over, "stuck" = page stayed on screen.
@@ -306,11 +308,16 @@ page_start('پنل آمار مونتانا'); ?>
     <table><tr><th>منبع</th><th>بازدید</th></tr>
     <?php foreach (array_slice($refs, 0, 12, true) as $k => $v) echo '<tr><td class="ltr">' . h($k) . '</td><td>' . fa_num($v) . '</td></tr>'; ?></table></div>
 </div>
-<?php if ($FORM): ?>
+<?php if ($FORM): $byCamp = [];
+  foreach ($leads as $l) { $k = implode(' / ', array_filter([$l[5] ?? '', $l[10] ?? '', $l[7] ?? ''], 'strlen')); $byCamp[$k] = ($byCamp[$k] ?? 0) + 1; }
+  arsort($byCamp); ?>
+<div class="card"><h2>ثبت‌نام بر اساس کمپین</h2><p class="sub">utm_source / utm_medium / utm_campaign</p>
+  <table><tr><th>کمپین</th><th>ثبت‌نام</th></tr>
+  <?php if (!$byCamp) echo '<tr><td colspan="2">هنوز ثبت‌نامی نیست.</td></tr>'; foreach (array_slice($byCamp, 0, 20, true) as $k => $v) echo '<tr><td class="ltr">' . h($k) . '</td><td>' . fa_num($v) . '</td></tr>'; ?></table></div>
 <div class="card"><h2>ثبت‌نام‌ها</h2>
   <p class="sub"><?= fa_num($nl) ?> ثبت‌نام در این بازه. <?php if (is_file($LEADS)) echo '<a href="?export=leads">دانلود همه ثبت‌نام‌ها (فایل اکسل CSV)</a>'; ?></p>
-  <div style="overflow-x:auto"><table><tr><th>زمان</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>سال تولد</th><th>منبع / اپ تبلیغ</th></tr>
-  <?php foreach (array_slice(array_reverse($leads), 0, 200) as $l) echo '<tr><td class="ltr">' . h($l[0]) . '</td><td>' . h($l[1]) . '</td><td class="ltr">' . h($l[2]) . '</td><td class="ltr">' . h($l[3]) . '</td><td>' . h($l[4]) . '</td><td class="ltr">' . h(trim(($l[5] ?? '') . ' / ' . ($l[6] ?? ''), ' /')) . '</td></tr>'; ?></table></div></div>
+  <div style="overflow-x:auto"><table><tr><th>زمان</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>سال تولد</th><th>منبع (utm)</th></tr>
+  <?php foreach (array_slice(array_reverse($leads), 0, 200) as $l) echo '<tr><td class="ltr">' . h($l[0]) . '</td><td>' . h($l[1]) . '</td><td class="ltr">' . h($l[2]) . '</td><td class="ltr">' . h($l[3]) . '</td><td>' . h($l[4]) . '</td><td class="ltr">' . h(implode(' / ', array_filter([$l[5] ?? '', $l[10] ?? '', $l[7] ?? '', $l[6] ?? '', $l[11] ?? ''], 'strlen'))) . '</td></tr>'; ?></table></div></div>
 <?php endif; ?>
 <div class="card"><h2>گوگل شیت ثبت‌نام‌ها</h2>
   <p class="sub">ثبت‌نام‌های صفحه فرم علاوه بر این پنل، به این گوگل شیت هم فرستاده می‌شوند. آدرس Web app و توکن را از Apps Script همان شیت بردارید.</p>
