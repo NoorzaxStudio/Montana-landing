@@ -88,41 +88,41 @@ if (!$preview && $_SERVER["REQUEST_METHOD"] !== "POST") {
 $ga = $preview ? '' : trim((string) @file_get_contents($statsDir . "/ga.txt"));
 $errHtml = fn($k) => isset($err[$k]) ? '<span class="err">' . $err[$k] . '</span>' : '';
 $h = fn($v) => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
-// Followers' messages, word for word from Telegram (same as /lead). Only real messages go here.
+// Followers' messages, word for word from Telegram, with an English translation. Only real messages go here.
 $thanks = [
-  ['آرش', 'آقا مرسی واقعا، من دوره زیاد دیدم ولی چیزایی که شما آموزش میدید اصن هیچ جایی نشدیدم چطور این همه وقت هیچس درموردشون صحبت نمیکرده!!'],
-  ['حسن', 'واقعا بی ادعا، کار درست، خفن، بدون هیچ زرق و برقی حرفه ای ترین تریدری هستی که تا حالا دیدم، زنده باشی'],
-  ['صدرا', 'مونتانای عزیز، این دوره مثل یه تولد دوباره بود تو ترید، اصن چشمام باز شدش، واقعیت ها رو تازه فهمیدم، همیشه یه حسی داشتم یه چیزایی مشکوکه ولی الان فهمیدمشون، عاشقتم'],
-  ['شهرام', 'استاد من سود زیاد دیدم تو مارکت، ولی همه نهایت دو روز سه روز سود میکنن، اصن فکرش هم نمیکردم به صورت مستمر اینجوری بشه سود ده موند'],
-  ['نازنین', 'کاش همه تحلیلگر ها و اساتید از شما یاد بگیرن، و تکنیک ها و استراتژی های کارآمد آموزش بدن، درسته سبک شما یه مقدار پیچیده هستش، اما تنها سبکی هستش که واقعا سود میده'],
-  ['علی', 'خاک زیر پاتم دمت گرم بخاطر سود های قشنگی که بدست میاری'],
-  ['بابک', 'دارم روی چارت نگا میکنم چجوری باز میکنی میبینیدی و سودهارو درو میکنی دمتگرم واقعاااا❤️'],
-  ['احمد', 'آقا دمت گرم دیگه از استرس و اعصاب خوردی ترید راحت شدم کاش زودتر با شما آشنا شده بودم'],
-  ['کیارش', 'اینجا خداییش تنها جایی که همه سود و ضرر ها رو میشه دید، همه کانال های دیگه سیگنال های دو پهلو هستن دیگه'],
-  ['یکی از دنبال‌کنندگان', 'یه چیزی که خیلی با سیستم شما حال میکنم اینه که سود دهی مستمر هستش و واقعا رشد اکانت رو دارم حس میکنم'],
+  ['آرش', 'آقا مرسی واقعا، من دوره زیاد دیدم ولی چیزایی که شما آموزش میدید اصن هیچ جایی نشدیدم چطور این همه وقت هیچس درموردشون صحبت نمیکرده!!', 'Arash', 'Thank you, really. I\'ve seen plenty of courses, but I\'ve never heard the things you teach anywhere. How has nobody talked about them all this time?!'],
+  ['حسن', 'واقعا بی ادعا، کار درست، خفن، بدون هیچ زرق و برقی حرفه ای ترین تریدری هستی که تا حالا دیدم، زنده باشی', 'Hassan', 'Truly humble, the real deal, brilliant, with no flash at all. You\'re the most professional trader I\'ve ever seen. Bless you.'],
+  ['صدرا', 'مونتانای عزیز، این دوره مثل یه تولد دوباره بود تو ترید، اصن چشمام باز شدش، واقعیت ها رو تازه فهمیدم، همیشه یه حسی داشتم یه چیزایی مشکوکه ولی الان فهمیدمشون، عاشقتم', 'Sadra', 'Dear Montana, this course was like a rebirth in trading. My eyes were opened and I finally understood the realities. I always felt something was off, and now I get it. Love you.'],
+  ['شهرام', 'استاد من سود زیاد دیدم تو مارکت، ولی همه نهایت دو روز سه روز سود میکنن، اصن فکرش هم نمیکردم به صورت مستمر اینجوری بشه سود ده موند', 'Shahram', 'I\'ve seen plenty of profit in the market, but everyone only makes money for two or three days at most. I never imagined you could stay profitable this consistently.'],
+  ['نازنین', 'کاش همه تحلیلگر ها و اساتید از شما یاد بگیرن، و تکنیک ها و استراتژی های کارآمد آموزش بدن، درسته سبک شما یه مقدار پیچیده هستش، اما تنها سبکی هستش که واقعا سود میده', 'Nazanin', 'I wish every analyst and teacher would learn from you and teach techniques and strategies that actually work. Your style is a bit complex, but it\'s the only one that really makes money.'],
+  ['علی', 'خاک زیر پاتم دمت گرم بخاطر سود های قشنگی که بدست میاری', 'Ali', 'Huge respect, man. Thank you for the beautiful profits you make.'],
+  ['بابک', 'دارم روی چارت نگا میکنم چجوری باز میکنی میبینیدی و سودهارو درو میکنی دمتگرم واقعاااا❤️', 'Babak', 'I\'m watching the chart, seeing how you open trades, close them and reap the profits. Seriously, thank you ❤️'],
+  ['احمد', 'آقا دمت گرم دیگه از استرس و اعصاب خوردی ترید راحت شدم کاش زودتر با شما آشنا شده بودم', 'Ahmad', 'Thank you, I\'m finally free of the stress and frustration of trading. I wish I\'d found you sooner.'],
+  ['کیارش', 'اینجا خداییش تنها جایی که همه سود و ضرر ها رو میشه دید، همه کانال های دیگه سیگنال های دو پهلو هستن دیگه', 'Kiarash', 'Honestly, this is the only place where you can see every profit and every loss. All the other channels give two-faced signals.'],
+  ['یکی از دنبال‌کنندگان', 'یه چیزی که خیلی با سیستم شما حال میکنم اینه که سود دهی مستمر هستش و واقعا رشد اکانت رو دارم حس میکنم', 'A follower', 'What I really love about your system is that the profit is consistent. I can genuinely feel my account growing.'],
 ];
 // Result images shown in the phone after the statement video (images/results/, 576x1248).
 $results = [
-  ['weekly-signal-report', 'گزارش هفتگی کانال سیگنال مونتانا'],
-  ['copytrade-report-4-days', 'نتایج ۴ روز معاملات زنده کپی‌ترید'],
-  ['metatrader-history', 'تاریخچه معاملات در متاتریدر'],
-  ['eurusd-trade-chart', 'معامله یورو/دلار روی چارت'],
-  ['eurusd-trade-mobile', 'معامله یورو/دلار در تریدینگ‌ویو'],
+  ['weekly-signal-report', 'گزارش هفتگی کانال سیگنال مونتانا', 'Montana signal channel weekly report'],
+  ['copytrade-report-4-days', 'نتایج ۴ روز معاملات زنده کپی‌ترید', '4 days of live copy-trading results'],
+  ['metatrader-history', 'تاریخچه معاملات در متاتریدر', 'Trade history in MetaTrader'],
+  ['eurusd-trade-chart', 'معامله یورو/دلار روی چارت', 'EUR/USD trade on the chart'],
+  ['eurusd-trade-mobile', 'معامله یورو/دلار در تریدینگ‌ویو', 'EUR/USD trade in TradingView'],
 ];
 $faq = [
-  ['ثبت‌نام در منتورشیپ واقعا رایگانه؟', 'بله. ثبت‌نام و شرکت در جلسه‌های منتورشیپ هزینه‌ای نداره.'],
-  ['جلسه‌ها چطور برگزار میشه؟', 'آنلاین و زنده. سر کلاس می‌تونی سوالت رو بپرسی و همون‌جا جواب بگیری. لینک و زمان جلسه‌ها بعد از ثبت‌نام برات فرستاده میشه.'],
-  ['هیچ تجربه‌ای از ترید ندارم، می‌تونم شرکت کنم؟', 'بله. مسیر از پایه شروع میشه: بازار جهانی و طلا چطور کار می‌کنه، مدیریت ریسک، روانشناسی ترید و بعد استراتژی.'],
-  ['برای شروع باید سرمایه داشته باشم؟', 'نه. اول یاد می‌گیری و تمرین می‌کنی. ورود با پول واقعی فقط وقتی معنی داره که مدیریت ریسک رو بلد باشی.'],
-  ['بعد از ثبت‌نام چه اتفاقی می‌افته؟', 'وارد کانال تلگرام مونتانا میشی و کارشناس‌های ما برای هماهنگی جلسه‌ها باهات تماس می‌گیرن.'],
-  ['منتورشیپ تضمین سود میده؟', 'نه، و هر کسی تضمین سود بده داره دروغ میگه. ترید ریسک داره؛ هدف ما اینه که یاد بگیری اون ریسک رو درست مدیریت کنی.'],
+  ['ثبت‌نام در منتورشیپ واقعا رایگانه؟', 'بله. ثبت‌نام و شرکت در جلسه‌های منتورشیپ هزینه‌ای نداره.', 'Is signing up for the mentorship really free?', 'Yes. Signing up and attending the mentorship sessions costs nothing.'],
+  ['جلسه‌ها چطور برگزار میشه؟', 'آنلاین و زنده. سر کلاس می‌تونی سوالت رو بپرسی و همون‌جا جواب بگیری. لینک و زمان جلسه‌ها بعد از ثبت‌نام برات فرستاده میشه.', 'How are the sessions held?', 'Online and live. You can ask your questions in class and get answers on the spot. The session link and times are sent to you after you sign up.'],
+  ['هیچ تجربه‌ای از ترید ندارم، می‌تونم شرکت کنم؟', 'بله. مسیر از پایه شروع میشه: بازار جهانی و طلا چطور کار می‌کنه، مدیریت ریسک، روانشناسی ترید و بعد استراتژی.', 'I have no trading experience. Can I join?', 'Yes. It starts from the basics: how global markets and gold work, risk management, trading psychology, then strategy.'],
+  ['برای شروع باید سرمایه داشته باشم؟', 'نه. اول یاد می‌گیری و تمرین می‌کنی. ورود با پول واقعی فقط وقتی معنی داره که مدیریت ریسک رو بلد باشی.', 'Do I need capital to start?', 'No. First you learn and practise. Trading real money only makes sense once you know risk management.'],
+  ['بعد از ثبت‌نام چه اتفاقی می‌افته؟', 'وارد کانال تلگرام مونتانا میشی و کارشناس‌های ما برای هماهنگی جلسه‌ها باهات تماس می‌گیرن.', 'What happens after I sign up?', 'You join Montana\'s Telegram channel and our team will contact you to arrange the sessions.'],
+  ['منتورشیپ تضمین سود میده؟', 'نه، و هر کسی تضمین سود بده داره دروغ میگه. ترید ریسک داره؛ هدف ما اینه که یاد بگیری اون ریسک رو درست مدیریت کنی.', 'Does the mentorship guarantee profits?', 'No, and anyone who guarantees profits is lying. Trading carries risk; our goal is to teach you to manage that risk properly.'],
 ];
 ?><!DOCTYPE html>
 <html lang="fa" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#f6f8fb">
-<script>try{if(localStorage.getItem("mt-theme")==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
+<script>try{if(localStorage.getItem("mt-theme")==="dark")document.documentElement.setAttribute("data-theme","dark");if(localStorage.getItem("mt-lang")==="en"){document.documentElement.lang="en";document.documentElement.dir="ltr"}}catch(e){}</script>
 <title>منتورشیپ رایگان مونتانا | یادگیری کسب درآمد از بازار جهانی و طلا</title>
 <meta name="description" content="منتورشیپ آنلاین و زنده مونتانا با پرسش و پاسخ: یادگیری کسب درآمد مستمر از بازار جهانی و طلا در کنار تحلیلگر سابق موسسات مالی. ثبت‌نام رایگان.">
 <link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -145,8 +145,9 @@ p{margin:0}
 .top{position:sticky;top:0;z-index:20;background:rgba(var(--ink-rgb),.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .top .wrap{display:flex;align-items:center;gap:10px;height:56px}
 .logo{font-family:"Cinzel","Times New Roman",serif;font-weight:700;letter-spacing:.2em;font-size:1.1rem;color:var(--text)}
-.top .btn{margin-inline-start:auto;padding:7px 16px;font-size:.88rem;box-shadow:none}
-.tgl{font:inherit;width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;display:inline-grid;place-items:center}
+.tgls{display:flex;gap:8px;margin-inline-start:auto;align-items:center}
+.top .btn{padding:7px 16px;font-size:.88rem;box-shadow:none}
+.tgl{font:inherit;font-size:.82rem;font-weight:700;min-width:36px;height:36px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;display:inline-grid;place-items:center}
 .tgl svg{width:16px;height:16px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;font:inherit;font-weight:800;font-size:1.05rem;color:#fff;background:var(--gain);border-radius:999px;padding:14px 30px;text-decoration:none;box-shadow:0 8px 22px rgba(var(--gain-rgb),.3);transition:transform .15s,background .15s}
 .btn:hover{background:var(--gain-hi);transform:translateY(-1px)}
@@ -331,67 +332,76 @@ footer small{display:block;margin-bottom:10px}
   .sticky{display:none}
   footer{padding-bottom:30px}
 }
-@media (max-width:859px){.top .btn{display:none}.top .tgl{margin-inline-start:auto}.hero-copy>.btn{width:100%}}
+@media (max-width:859px){.top .btn{display:none}.hero-copy>.btn{width:100%}}
+/* English (left to right) */
+[dir=ltr] .bub{border-radius:18px 18px 4px 18px}
+[lang=en] .hero h1{font-size:clamp(2rem,4.8vw,3.4rem)}
+[lang=en] h1,[lang=en] h2,[lang=en] .bold,[lang=en] .hero .sub{font-family:var(--body);font-weight:800;letter-spacing:-.01em}
+@media (min-width:860px){
+  [dir=ltr] .hero-media{inset:0 0 0 auto}
+  [dir=ltr] .hero-media:after{background:linear-gradient(to right,var(--ink) 0,rgba(var(--ink-rgb),.85) 28%,rgba(var(--ink-rgb),.15) 65%,transparent 100%),linear-gradient(180deg,transparent 75%,var(--ink))}
+  [dir=ltr] .photos:after{background:linear-gradient(to right,transparent 0,transparent 45%,var(--panel) 100%),linear-gradient(180deg,rgba(var(--panel-rgb),.25),transparent 20%,transparent 80%,rgba(var(--panel-rgb),.25))}
+}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.scr>.go{transition:none}.hero-media img{animation:none}.tag i{animation:none}.photos img{animation:none}.bubs-track{animation:none}.bubs{overflow-y:auto}}
 </style>
 <?php if (preg_match("/^G-[A-Z0-9]{4,15}$/", $ga)) echo "<script async src=\"https://www.googletagmanager.com/gtag/js?id=$ga\"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag(\"js\",new Date());gtag(\"config\",\"$ga\");</script>"; ?>
 </head><body>
-<header class="top"><div class="wrap"><span class="logo">MONTANA</span><a class="btn" href="#form" data-go data-b="1">ثبت‌نام رایگان</a><button class="tgl" id="themeBtn" type="button"></button></div></header>
+<header class="top"><div class="wrap"><span class="logo">MONTANA</span><div class="tgls"><a class="btn" href="#form" data-go data-b="1" data-en="Sign up free">ثبت‌نام رایگان</a><button class="tgl" id="langBtn" type="button"></button><button class="tgl" id="themeBtn" type="button"></button></div></div></header>
 
 <!-- 1. hero -->
 <section class="hero" id="hero">
   <div class="hero-media">
-    <img src="/images/new-york-stock-exchange-trading-floor.jpg" alt="تالار معاملات بورس نیویورک" fetchpriority="high">
-    <img decoding="async" src="/images/mojtaba-hosseini-montana-cafe-laptop.jpg" alt="مجتبی حسینی (مونتانا) در کافه پشت لپ‌تاپ">
-    <img decoding="async" src="/images/gold-trading-xauusd.jpg" alt="ترید طلا: نمودار انس طلا و شمش طلا">
+    <img src="/images/new-york-stock-exchange-trading-floor.jpg" alt="تالار معاملات بورس نیویورک" data-en-alt="New York Stock Exchange trading floor" fetchpriority="high">
+    <img decoding="async" src="/images/mojtaba-hosseini-montana-cafe-laptop.jpg" alt="مجتبی حسینی (مونتانا) در کافه پشت لپ‌تاپ" data-en-alt="Mojtaba Hosseini (Montana) with his laptop at a café">
+    <img decoding="async" src="/images/gold-trading-xauusd.jpg" alt="ترید طلا: نمودار انس طلا و شمش طلا" data-en-alt="Gold trading: XAU/USD chart and gold bars">
   </div>
   <div class="wrap"><div class="hero-copy">
-    <span class="tag"><i></i>منتورشیپ آنلاین و زنده · ثبت‌نام رایگان</span>
-    <h1>یادگیری کسب درآمد مستمر از <span>بازار جهانی و طلا</span></h1>
-    <p class="sub">در کنار تحلیلگر سابق موسسات مالی</p>
-    <a class="btn" href="#form" data-go data-b="2">ثبت‌نام رایگان در منتورشیپ</a>
-    <ul class="facts"><li>کلاس آنلاین و زنده</li><li>پرسش و پاسخ و رفع اشکال</li><li>از پایه، بدون نیاز به تجربه</li></ul>
+    <span class="tag" data-en="&lt;i&gt;&lt;/i&gt;Live online mentorship · Free sign-up"><i></i>منتورشیپ آنلاین و زنده · ثبت‌نام رایگان</span>
+    <h1 data-en="Learn to earn a steady income from &lt;span&gt;global markets and gold&lt;/span&gt;">یادگیری کسب درآمد مستمر از <span>بازار جهانی و طلا</span></h1>
+    <p class="sub" data-en="Alongside a former financial-institution analyst">در کنار تحلیلگر سابق موسسات مالی</p>
+    <a class="btn" href="#form" data-go data-b="2" data-en="Sign up free for the mentorship">ثبت‌نام رایگان در منتورشیپ</a>
+    <ul class="facts"><li data-en="Live online classes">کلاس آنلاین و زنده</li><li data-en="Q&amp;A and troubleshooting">پرسش و پاسخ و رفع اشکال</li><li data-en="From scratch, no experience needed">از پایه، بدون نیاز به تجربه</li></ul>
   </div></div>
 </section>
 
 <!-- live prices, as on the main site -->
-<div class="tape" id="tv" aria-label="قیمت دارایی‌های جهانی"></div>
-<div class="irr" id="irr" aria-label="قیمت‌ها به تومان">
-  <div><b>دلار</b><span data-k="0"></span><small>تومان</small></div>
-  <div><b>یورو</b><span data-k="1"></span><small>تومان</small></div>
-  <div><b>یک گرم طلای آب‌شده</b><span data-k="2"></span><small>تومان</small></div>
-  <div><b>بیت‌کوین</b><span data-k="3"></span><small>تومان</small></div>
+<div class="tape" id="tv" aria-label="قیمت دارایی‌های جهانی" data-en-aria-label="Global asset prices"></div>
+<div class="irr" id="irr" aria-label="قیمت‌ها به تومان" data-en-aria-label="Prices in toman">
+  <div><b data-en="US dollar">دلار</b><span data-k="0"></span><small data-en="toman">تومان</small></div>
+  <div><b data-en="Euro">یورو</b><span data-k="1"></span><small data-en="toman">تومان</small></div>
+  <div><b data-en="1 g melted gold">یک گرم طلای آب‌شده</b><span data-k="2"></span><small data-en="toman">تومان</small></div>
+  <div><b data-en="Bitcoin">بیت‌کوین</b><span data-k="3"></span><small data-en="toman">تومان</small></div>
 </div>
-<p class="tape-note">قیمت‌های تومانی: بازار آزاد تهران (tgju)، هر یک دقیقه به‌روز میشه. بیت‌کوین با نرخ دلار آزاد حساب شده.</p>
+<p class="tape-note" data-en="Toman prices: Tehran open market (tgju), updated every minute. Bitcoin is converted at the open-market dollar rate.">قیمت‌های تومانی: بازار آزاد تهران (tgju)، هر یک دقیقه به‌روز میشه. بیت‌کوین با نرخ دلار آزاد حساب شده.</p>
 
 <!-- 2. why it's easy with Montana -->
 <section class="blk why"><div class="wrap">
-  <span class="kick">چرا مونتانا؟</span>
-  <h2>ترید شغلی <em>بسیار سخت و پرریسکه</em>، اما در کنار مونتانا <b>آسان</b>. چرا؟</h2>
-  <p class="lead">چون یاد می‌گیری مثل موسسات مالی فکر کنی: با ابزار درست، ذهن آروم و قانون‌های مشخص.</p>
+  <span class="kick" data-en="Why Montana?">چرا مونتانا؟</span>
+  <h2 data-en="Trading is a &lt;em&gt;very hard, high-risk&lt;/em&gt; profession, but &lt;b&gt;easy&lt;/b&gt; alongside Montana. Why?">ترید شغلی <em>بسیار سخت و پرریسکه</em>، اما در کنار مونتانا <b>آسان</b>. چرا؟</h2>
+  <p class="lead" data-en="Because you learn to think like a financial institution: with the right tools, a calm mind and clear rules.">چون یاد می‌گیری مثل موسسات مالی فکر کنی: با ابزار درست، ذهن آروم و قانون‌های مشخص.</p>
   <div class="pillars">
-    <div class="pillar"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="M9 9h6v6H9zM9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div><h3>ابزارهای هوش مصنوعی</h3><p>یاد می‌گیری استراتژیت رو با هوش مصنوعی تست و بهینه کنی، تا تصمیم‌هات بر پایه داده باشه نه حدس.</p></div>
-    <div class="pillar"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9.3-9A5.2 5.2 0 0 1 12 6.3 5.2 5.2 0 0 1 21.3 12C19 16.6 12 21 12 21Z"/><path d="M7.5 12h2.5l1.5-3 2 6 1.5-3h1.5"/></svg></div><h3>روانشناسی ترید و کنترل احساسات</h3><p>ترس و طمع بیشتر از هر چیزی سرمایه می‌سوزونه. یاد می‌گیری با ذهن آروم و طبق برنامه معامله کنی.</p></div>
-    <div class="pillar"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6l-8-3Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></div><h3>تکنیک‌های مدیریت ریسک</h3><p>حجم هر معامله، حد ضرر و اینکه کِی اصلا نباید وارد بازار شد. اولویت اول، حفظ سرمایه‌ست.</p></div>
-    <div class="pillar"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10M9.5 21V10M14.5 21V10M19 21V10M2 10l10-6 10 6"/></svg></div><h3>استراتژی موسسات مالی</h3><p>همون اصولی که بروکرها و موسسات مالی باهاش بازار رو می‌چرخونن، از کسی که سال‌ها داخلشون کار کرده.</p></div>
+    <div class="pillar"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="M9 9h6v6H9zM9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div><h3 data-en="AI tools">ابزارهای هوش مصنوعی</h3><p data-en="You learn to test and optimise your strategy with AI, so your decisions rest on data, not guesswork.">یاد می‌گیری استراتژیت رو با هوش مصنوعی تست و بهینه کنی، تا تصمیم‌هات بر پایه داده باشه نه حدس.</p></div>
+    <div class="pillar"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9.3-9A5.2 5.2 0 0 1 12 6.3 5.2 5.2 0 0 1 21.3 12C19 16.6 12 21 12 21Z"/><path d="M7.5 12h2.5l1.5-3 2 6 1.5-3h1.5"/></svg></div><h3 data-en="Trading psychology and emotional control">روانشناسی ترید و کنترل احساسات</h3><p data-en="Fear and greed burn more capital than anything else. You learn to trade calmly and by plan.">ترس و طمع بیشتر از هر چیزی سرمایه می‌سوزونه. یاد می‌گیری با ذهن آروم و طبق برنامه معامله کنی.</p></div>
+    <div class="pillar"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6l-8-3Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></div><h3 data-en="Risk management techniques">تکنیک‌های مدیریت ریسک</h3><p data-en="Position size, stop loss, and when not to enter the market at all. Protecting capital comes first.">حجم هر معامله، حد ضرر و اینکه کِی اصلا نباید وارد بازار شد. اولویت اول، حفظ سرمایه‌ست.</p></div>
+    <div class="pillar"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10M9.5 21V10M14.5 21V10M19 21V10M2 10l10-6 10 6"/></svg></div><h3 data-en="Financial-institution strategies">استراتژی موسسات مالی</h3><p data-en="The same principles brokers and financial institutions use to move the market, from someone who worked inside them for years.">همون اصولی که بروکرها و موسسات مالی باهاش بازار رو می‌چرخونن، از کسی که سال‌ها داخلشون کار کرده.</p></div>
   </div>
 </div></section>
 
 <!-- 3. the course -->
 <section class="blk course"><div class="wrap">
-  <span class="kick">معرفی منتورشیپ</span>
-  <h2>یکی از سخت‌ترین کارهای دنیا رو <span>با دوره‌های بی‌کیفیت</span> یاد نگیر</h2>
-  <div class="cost"><i>⚠️</i><p>هزینه آموزش بد فقط وقت نیست: <b>از دست دادن سرمایه‌ست.</b> بیشتر ضررها از ویدیوهای پراکنده و دوره‌های بدون پشتیبانی شروع میشه.</p></div>
+  <span class="kick" data-en="The mentorship">معرفی منتورشیپ</span>
+  <h2 data-en="Don&#x27;t learn one of the hardest jobs in the world &lt;span&gt;from low-quality courses&lt;/span&gt;">یکی از سخت‌ترین کارهای دنیا رو <span>با دوره‌های بی‌کیفیت</span> یاد نگیر</h2>
+  <div class="cost"><i>⚠️</i><p data-en="Bad training doesn&#x27;t just cost time: &lt;b&gt;it costs your capital.&lt;/b&gt; Most losses start with scattered videos and courses with no support.">هزینه آموزش بد فقط وقت نیست: <b>از دست دادن سرمایه‌ست.</b> بیشتر ضررها از ویدیوهای پراکنده و دوره‌های بدون پشتیبانی شروع میشه.</p></div>
   <div class="cmp">
-    <div class="bad"><h3>دوره‌های معمولی</h3><ul><li>ویدیوی ضبط‌شده و قدیمی</li><li>سوالت بی‌جواب می‌مونه</li><li>مدرسی که خودش معامله‌هاش رو نشون نمیده</li><li>تمرکز روی سیگنال، نه مهارت</li></ul></div>
-    <div class="good"><h3>منتورشیپ مونتانا</h3><ul><li>کلاس آنلاین و زنده</li><li>پرسش و پاسخ و رفع اشکال سر کلاس</li><li>استادی که سود و ضررش رو شفاف نشون میده</li><li>یادگیری مهارت، قدم به قدم در کنار استاد</li></ul></div>
+    <div class="bad"><h3 data-en="Typical courses">دوره‌های معمولی</h3><ul><li data-en="Old pre-recorded videos">ویدیوی ضبط‌شده و قدیمی</li><li data-en="Your questions go unanswered">سوالت بی‌جواب می‌مونه</li><li data-en="Teachers who don&#x27;t show their own trades">مدرسی که خودش معامله‌هاش رو نشون نمیده</li><li data-en="Focus on signals, not skills">تمرکز روی سیگنال، نه مهارت</li></ul></div>
+    <div class="good"><h3 data-en="Montana mentorship">منتورشیپ مونتانا</h3><ul><li data-en="Live online classes">کلاس آنلاین و زنده</li><li data-en="Q&amp;A and troubleshooting in class">پرسش و پاسخ و رفع اشکال سر کلاس</li><li data-en="A teacher who shows his profits and losses openly">استادی که سود و ضررش رو شفاف نشون میده</li><li data-en="Learn the skill step by step alongside the teacher">یادگیری مهارت، قدم به قدم در کنار استاد</li></ul></div>
   </div>
   <div class="feats">
-    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg></div><div><h3>آنلاین و زنده</h3></div></div>
-    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5M12 16h.01"/></svg></div><div><h3>پرسش و پاسخ و رفع اشکال</h3></div></div>
-    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div><h3>رشد در کنار استاد</h3></div></div>
+    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg></div><div><h3 data-en="Online and live">آنلاین و زنده</h3></div></div>
+    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5M12 16h.01"/></svg></div><div><h3 data-en="Q&amp;A and troubleshooting">پرسش و پاسخ و رفع اشکال</h3></div></div>
+    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div><h3 data-en="Grow alongside the teacher">رشد در کنار استاد</h3></div></div>
   </div>
-  <div class="cta"><a class="btn" href="#form" data-go data-b="3">رزرو جای رایگان در منتورشیپ</a></div>
+  <div class="cta"><a class="btn" href="#form" data-go data-b="3" data-en="Reserve your free spot">رزرو جای رایگان در منتورشیپ</a></div>
 </div></section>
 
 <!-- 4. reviews and results -->
@@ -399,22 +409,22 @@ footer small{display:block;margin-bottom:10px}
   <div class="res">
     <div>
       <div class="phone"><div class="scr" id="scr">
-        <video class="on" id="stmt" poster="/images/mt-statement.jpg" muted playsinline loop preload="none" data-cap="تاریخچه واقعی یک هفته معامله در متاتریدر" aria-label="تاریخچه معاملات در متاتریدر"><source src="/images/mt-statement.mp4" type='video/mp4; codecs="avc1.64001E"'><source src="/images/mt-statement.webm" type='video/webm; codecs="vp9"'></video>
-        <?php foreach ($results as [$img, $cap]) echo '<img loading="lazy" decoding="async" src="/images/results/' . $img . '.jpg" alt="' . $h($cap) . '" data-cap="' . $h($cap) . '">'; ?>
+        <video class="on" id="stmt" poster="/images/mt-statement.jpg" muted playsinline loop preload="none" data-cap="تاریخچه واقعی یک هفته معامله در متاتریدر" data-cap-en="One real week of trades in MetaTrader" aria-label="تاریخچه معاملات در متاتریدر" data-en-aria-label="Trade history in MetaTrader"><source src="/images/mt-statement.mp4" type='video/mp4; codecs="avc1.64001E"'><source src="/images/mt-statement.webm" type='video/webm; codecs="vp9"'></video>
+        <?php foreach ($results as [$img, $cap, $capEn]) echo '<img loading="lazy" decoding="async" src="/images/results/' . $img . '.jpg" alt="' . $h($cap) . '" data-en-alt="' . $h($capEn) . '" data-cap="' . $h($cap) . '" data-cap-en="' . $h($capEn) . '">'; ?>
       </div></div>
       <p class="phone-cap" id="scrCap" aria-live="polite">تاریخچه واقعی یک هفته معامله در متاتریدر</p>
       <div class="dots" id="dots" aria-hidden="true"><i class="on"></i><?php echo str_repeat('<i></i>', count($results)); ?></div>
     </div>
     <div>
-      <span class="kick">نظرات کاربران و نتایج</span>
-      <h2>حرف نمی‌زنیم، نتیجه نشون میدیم</h2>
-      <p class="lead">این‌ها پیام‌های واقعی دنبال‌کننده‌های مونتانا تو تلگرامه، بدون ویرایش.</p>
+      <span class="kick" data-en="Reviews and results">نظرات کاربران و نتایج</span>
+      <h2 data-en="We don&#x27;t talk, we show results">حرف نمی‌زنیم، نتیجه نشون میدیم</h2>
+      <p class="lead" data-en="These are real Telegram messages from Montana&#x27;s followers, unedited.">این‌ها پیام‌های واقعی دنبال‌کننده‌های مونتانا تو تلگرامه، بدون ویرایش.</p>
       <div class="bubs"><div class="bubs-track">
         <?php // The set repeats so the roll loops without a gap; the copy is hidden from screen readers.
-        for ($i = 0; $i < 2; $i++) foreach ($thanks as [$who, $msg]) echo '<figure class="bub"' . ($i ? ' aria-hidden="true"' : '') . '><blockquote>' . $h($msg) . '</blockquote><figcaption>' . $h($who) . '</figcaption></figure>'; ?>
+        for ($i = 0; $i < 2; $i++) foreach ($thanks as [$who, $msg, $whoEn, $msgEn]) echo '<figure class="bub"' . ($i ? ' aria-hidden="true"' : '') . '><blockquote data-en="' . $h($h($msgEn)) . '">' . $h($msg) . '</blockquote><figcaption data-en="' . $h($h($whoEn)) . '">' . $h($who) . '</figcaption></figure>'; ?>
       </div>
       </div>
-      <div class="chips"><span>سود و ضرر، هر دو</span><span>بدون حذف معامله‌های ضررده</span><span>تاریخچه واقعی متاتریدر</span></div>
+      <div class="chips"><span data-en="Profits and losses, both">سود و ضرر، هر دو</span><span data-en="No losing trades hidden">بدون حذف معامله‌های ضررده</span><span data-en="Real MetaTrader history">تاریخچه واقعی متاتریدر</span></div>
     </div>
   </div>
 </div></section>
@@ -422,19 +432,19 @@ footer small{display:block;margin-bottom:10px}
 <!-- 5. Montana -->
 <section class="blk me" style="padding-top:0"><div class="wrap">
   <div class="photos">
-    <img decoding="async" src="/images/mojtaba-hosseini-montana-trading-desk.jpg" alt="مجتبی حسینی (مونتانا) پشت سیستم معاملاتی">
-    <img decoding="async" src="/images/mojtaba-hosseini-montana-podcast.jpg" alt="مجتبی حسینی (مونتانا) در استودیوی پادکست">
-    <img decoding="async" src="/images/mojtaba-hosseini-graduation-university-of-tehran.jpg" alt="مجتبی حسینی در فارغ‌التحصیلی دانشگاه تهران">
+    <img decoding="async" src="/images/mojtaba-hosseini-montana-trading-desk.jpg" alt="مجتبی حسینی (مونتانا) پشت سیستم معاملاتی" data-en-alt="Mojtaba Hosseini (Montana) at his trading desk">
+    <img decoding="async" src="/images/mojtaba-hosseini-montana-podcast.jpg" alt="مجتبی حسینی (مونتانا) در استودیوی پادکست" data-en-alt="Mojtaba Hosseini (Montana) in a podcast studio">
+    <img decoding="async" src="/images/mojtaba-hosseini-graduation-university-of-tehran.jpg" alt="مجتبی حسینی در فارغ‌التحصیلی دانشگاه تهران" data-en-alt="Mojtaba Hosseini at his University of Tehran graduation">
   </div>
   <div>
-    <span class="kick">معرفی استاد</span>
-    <h2>چرا مونتانا؟</h2>
-    <p class="bold">تنها تحلیلگر ایران که <span>جسارتش رو داره</span> معامله‌هاش رو به صورت شفاف به همه نشون بده.</p>
+    <span class="kick" data-en="Meet the teacher">معرفی استاد</span>
+    <h2 data-en="Why Montana?">چرا مونتانا؟</h2>
+    <p class="bold" data-en="The only analyst in Iran with &lt;span&gt;the nerve&lt;/span&gt; to show his trades transparently to everyone.">تنها تحلیلگر ایران که <span>جسارتش رو داره</span> معامله‌هاش رو به صورت شفاف به همه نشون بده.</p>
     <ol class="timeline">
-      <li><b>ورود به بازار ارز دیجیتال</b><span>من مجتبی حسینی هستم. ۸ سال پیش مسیرم رو با ارز دیجیتال شروع کردم و همین‌جا فهمیدم ثبات و پشتوانه یک دارایی، مهم‌ترین عامل بازدهی بلندمدته.</span></li>
-      <li><b>فارغ‌التحصیلی از دانشگاه تهران</b><span>در گرایش مالی مهندسی صنایع فارغ‌التحصیل شدم و از پایان‌نامه‌م در الگوریتمیک ترید دفاع کردم.</span></li>
-      <li><b>تحلیلگر بروکرها و موسسات مالی</b><span>هزاران حساب معامله‌گر زیر دستم بود. از نزدیک دیدم معامله‌گرهای ضررده چه عادت‌هایی دارن و رمز موفقیت پایدار سودده‌ها چیه.</span></li>
-      <li><b>ترید با هوش مصنوعی</b><span>امروز از قدرت هوش مصنوعی در مدل‌سازی و شبیه‌سازی استفاده می‌کنم و همین رو تو منتورشیپ یاد میدم.</span></li>
+      <li><b data-en="Getting into crypto">ورود به بازار ارز دیجیتال</b><span data-en="I&#x27;m Mojtaba Hosseini. I started out in crypto 8 years ago, and that&#x27;s where I learned that an asset&#x27;s stability and backing are the biggest drivers of long-term returns.">من مجتبی حسینی هستم. ۸ سال پیش مسیرم رو با ارز دیجیتال شروع کردم و همین‌جا فهمیدم ثبات و پشتوانه یک دارایی، مهم‌ترین عامل بازدهی بلندمدته.</span></li>
+      <li><b data-en="Graduating from the University of Tehran">فارغ‌التحصیلی از دانشگاه تهران</b><span data-en="I graduated in Industrial Engineering with a finance focus and defended my thesis on algorithmic trading.">در گرایش مالی مهندسی صنایع فارغ‌التحصیل شدم و از پایان‌نامه‌م در الگوریتمیک ترید دفاع کردم.</span></li>
+      <li><b data-en="Analyst at brokers and financial institutions">تحلیلگر بروکرها و موسسات مالی</b><span data-en="Thousands of trader accounts passed through my hands. I saw up close the habits of losing traders, and the secret behind the lasting success of profitable ones.">هزاران حساب معامله‌گر زیر دستم بود. از نزدیک دیدم معامله‌گرهای ضررده چه عادت‌هایی دارن و رمز موفقیت پایدار سودده‌ها چیه.</span></li>
+      <li><b data-en="Trading with AI">ترید با هوش مصنوعی</b><span data-en="Today I use AI&#x27;s power in modelling and simulation, and that&#x27;s what I teach in the mentorship.">امروز از قدرت هوش مصنوعی در مدل‌سازی و شبیه‌سازی استفاده می‌کنم و همین رو تو منتورشیپ یاد میدم.</span></li>
     </ol>
   </div>
 </div></section>
@@ -442,52 +452,52 @@ footer small{display:block;margin-bottom:10px}
 <!-- 6. sign-up form -->
 <section class="blk signup" id="form"><div class="wrap">
   <div class="join">
-    <h2>ثبت‌نام <span class="free">رایگان</span> در منتورشیپ مونتانا</h2>
-    <p class="lead" style="margin:0 auto">اطلاعاتت رو وارد کن تا لینک و زمان جلسه‌های آنلاین برات فرستاده بشه.</p>
+    <h2 data-en="Sign up &lt;span class=&quot;free&quot;&gt;free&lt;/span&gt; for the Montana mentorship">ثبت‌نام <span class="free">رایگان</span> در منتورشیپ مونتانا</h2>
+    <p class="lead" style="margin:0 auto" data-en="Enter your details and we&#x27;ll send you the link and times of the online sessions.">اطلاعاتت رو وارد کن تا لینک و زمان جلسه‌های آنلاین برات فرستاده بشه.</p>
     <form id="lead" method="post" action="#form" novalidate>
       <input type="hidden" name="cap" value="<?php echo $capToken; ?>">
       <div class="hp" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
-      <label class="f"><span>نام و نام خانوادگی</span>
+      <label class="f"><span data-en="Full name">نام و نام خانوادگی</span>
         <input type="text" name="name" required maxlength="60" autocomplete="name" value="<?php echo $e('name'); ?>"></label>
       <?php echo $errHtml('name'); ?>
-      <label class="f"><span>شماره موبایل</span>
+      <label class="f"><span data-en="Mobile number">شماره موبایل</span>
         <input type="tel" name="phone" required inputmode="tel" dir="ltr" autocomplete="tel" placeholder="09123456789" value="<?php echo $e('phone'); ?>"></label>
       <?php echo $errHtml('phone'); ?>
-      <label class="f"><span>سال تولد</span>
-        <select name="year" required class="sel"><option value="">انتخاب کنید</option><?php for ($y = 1390; $y >= 1320; $y--) echo '<option value="' . $y . '"' . ($val['year'] === (string) $y ? ' selected' : '') . '>' . $faNum($y) . '</option>'; ?></select></label>
+      <label class="f"><span data-en="Year of birth (Solar Hijri)">سال تولد</span>
+        <select name="year" required class="sel"><option value="" data-en="Choose">انتخاب کنید</option><?php for ($y = 1390; $y >= 1320; $y--) echo '<option value="' . $y . '"' . ($val['year'] === (string) $y ? ' selected' : '') . '>' . $faNum($y) . '</option>'; ?></select></label>
       <?php echo $errHtml('year'); ?>
-      <label class="f"><span>سوال امنیتی: <?php echo $faNum($capA) . ' + ' . $faNum($capB); ?> چند می‌شود؟</span>
+      <label class="f"><span data-en="Security question: <?php echo $capA . ' + ' . $capB; ?> = ?">سوال امنیتی: <?php echo $faNum($capA) . ' + ' . $faNum($capB); ?> چند می‌شود؟</span>
         <input type="text" name="cap_ans" required inputmode="numeric" maxlength="3" autocomplete="off" dir="ltr"></label>
       <?php echo $errHtml('cap'); ?>
       <?php echo $errHtml('form'); ?>
-      <?php if ($dup) echo '<p class="opt">قبلا ثبت‌نام کرده‌اید؛ کارشناسان ما به‌زودی تماس می‌گیرند. <a href="/go?l=1&amp;m=1" rel="nofollow">ورود به کانال تلگرام</a></p>'; ?>
-      <button class="btn" type="submit"><span>ثبت‌نام رایگان در منتورشیپ</span><small>و ورود به کانال تلگرام</small></button>
-      <p class="opt">اطلاعاتت فقط برای هماهنگی جلسه‌ها استفاده میشه و در اختیار کسی قرار نمی‌گیره.</p>
+      <?php if ($dup) echo '<p class="opt" data-en="You have already signed up; our team will call you soon. &lt;a href=&quot;/go?l=1&amp;amp;m=1&quot; rel=&quot;nofollow&quot;&gt;Join the Telegram channel&lt;/a&gt;">قبلا ثبت‌نام کرده‌اید؛ کارشناسان ما به‌زودی تماس می‌گیرند. <a href="/go?l=1&amp;m=1" rel="nofollow">ورود به کانال تلگرام</a></p>'; ?>
+      <button class="btn" type="submit" data-en="&lt;span&gt;Sign up free for the mentorship&lt;/span&gt;&lt;small&gt;and join the Telegram channel&lt;/small&gt;"><span>ثبت‌نام رایگان در منتورشیپ</span><small>و ورود به کانال تلگرام</small></button>
+      <p class="opt" data-en="Your details are only used to arrange the sessions and are never shared.">اطلاعاتت فقط برای هماهنگی جلسه‌ها استفاده میشه و در اختیار کسی قرار نمی‌گیره.</p>
     </form>
-    <ul class="gets"><li>آنلاین و زنده</li><li>پرسش و پاسخ</li><li>بدون هزینه</li></ul>
+    <ul class="gets"><li data-en="Online and live">آنلاین و زنده</li><li data-en="Q&amp;A">پرسش و پاسخ</li><li data-en="Free of charge">بدون هزینه</li></ul>
   </div>
 </div></section>
 
 <!-- 7. FAQ -->
 <section class="blk" style="padding-top:20px"><div class="wrap">
-  <div class="c"><span class="kick">پرسش‌های متداول</span><h2>سوالی داری؟</h2><p class="lead">جواب سوال‌های رایج قبل از ثبت‌نام.</p></div>
+  <div class="c"><span class="kick" data-en="FAQ">پرسش‌های متداول</span><h2 data-en="Have a question?">سوالی داری؟</h2><p class="lead" data-en="Answers to common questions before you sign up.">جواب سوال‌های رایج قبل از ثبت‌نام.</p></div>
   <div class="faq">
-    <?php foreach ($faq as $i => [$q, $a]) echo '<details' . ($i ? '' : ' open') . '><summary>' . $h($q) . '</summary><p>' . $h($a) . '</p></details>'; ?>
+    <?php foreach ($faq as $i => [$q, $a, $qEn, $aEn]) echo '<details' . ($i ? '' : ' open') . '><summary data-en="' . $h($h($qEn)) . '">' . $h($q) . '</summary><p data-en="' . $h($h($aEn)) . '">' . $h($a) . '</p></details>'; ?>
   </div>
-  <div class="c" style="margin-top:30px"><a class="btn" href="#form" data-go data-b="4">ثبت‌نام رایگان در منتورشیپ</a></div>
+  <div class="c" style="margin-top:30px"><a class="btn" href="#form" data-go data-b="4" data-en="Sign up free for the mentorship">ثبت‌نام رایگان در منتورشیپ</a></div>
 </div></section>
 
 <footer><div class="wrap">
-  <span class="logo">MONTANA</span><small>تحلیلگر سازمانی بازارهای جهانی</small>
-  <span>معامله در بازارهای مالی ریسک از دست دادن سرمایه داره و نتایج گذشته تضمینی برای آینده نیست. محتوای این صفحه آموزشیه و توصیه سرمایه‌گذاری نیست.</span>
+  <span class="logo">MONTANA</span><small data-en="Institutional Global Markets Analyst">تحلیلگر سازمانی بازارهای جهانی</small>
+  <span data-en="Trading in financial markets carries a risk of losing capital, and past results do not guarantee future results. This page is educational and is not investment advice.">معامله در بازارهای مالی ریسک از دست دادن سرمایه داره و نتایج گذشته تضمینی برای آینده نیست. محتوای این صفحه آموزشیه و توصیه سرمایه‌گذاری نیست.</span>
 </div></footer>
 
-<div class="sticky" id="sticky"><a class="btn" href="#form" data-go data-b="5">ثبت‌نام رایگان در منتورشیپ</a></div>
+<div class="sticky" id="sticky"><a class="btn" href="#form" data-go data-b="5" data-en="Sign up free for the mentorship">ثبت‌نام رایگان در منتورشیپ</a></div>
 
 <script>
 (function () {
   var R = document.documentElement;
-  var f = document.getElementById("lead"), btn = f.querySelector("button[type=submit]"), btnHtml = btn.innerHTML;
+  var f = document.getElementById("lead"), btn = f.querySelector("button[type=submit]");
   var name = f.elements.name, phone = f.elements.phone;
   var digits = { "۰":0,"۱":1,"۲":2,"۳":3,"۴":4,"۵":5,"۶":6,"۷":7,"۸":8,"۹":9,"٠":0,"١":1,"٢":2,"٣":3,"٤":4,"٥":5,"٦":6,"٧":7,"٨":8,"٩":9 };
   function en(s) { return String(s).replace(/[۰-۹٠-٩]/g, function (d) { return digits[d]; }); }
@@ -503,19 +513,24 @@ footer small{display:block;margin-bottom:10px}
   }
   [phone, f.elements.cap_ans].forEach(function (el) { el.addEventListener("input", function () { var v = en(el.value); if (v !== el.value) el.value = v; }); });
   // Check in the browser first, with the same messages as the server.
+  var MSG = {
+    fa: { name: "نام و نام خانوادگی را وارد کنید.", phone: "شماره موبایل را درست وارد کنید، مثل ۰۹۱۲۳۴۵۶۷۸۹", year: "سال تولد را انتخاب کنید.", cap: "جواب سوال امنیتی را بنویسید.", sending: "در حال ثبت…" },
+    en: { name: "Please enter your full name.", phone: "Enter a valid mobile number, like 09123456789.", year: "Please choose your year of birth.", cap: "Please answer the security question.", sending: "Submitting…" }
+  };
+  var L = function () { return MSG[R.lang === "en" ? "en" : "fa"]; };
   f.addEventListener("submit", function (ev) {
     var first = null, chk = function (el, msg) { mark(el, msg); if (msg && !first) first = el; };
-    chk(name, name.value.trim().length < 2 ? "نام و نام خانوادگی را وارد کنید." : "");
+    chk(name, name.value.trim().length < 2 ? L().name : "");
     var m = mobile(phone.value);
-    chk(phone, /^09\d{9}$/.test(m) ? "" : "شماره موبایل را درست وارد کنید، مثل ۰۹۱۲۳۴۵۶۷۸۹");
+    chk(phone, /^09\d{9}$/.test(m) ? "" : L().phone);
     if (!first) phone.value = m;
-    chk(f.elements.year, f.elements.year.value ? "" : "سال تولد را انتخاب کنید.");
-    chk(f.elements.cap_ans, f.elements.cap_ans.value.trim() ? "" : "جواب سوال امنیتی را بنویسید.");
+    chk(f.elements.year, f.elements.year.value ? "" : L().year);
+    chk(f.elements.cap_ans, f.elements.cap_ans.value.trim() ? "" : L().cap);
     if (first) { ev.preventDefault(); first.focus(); return; }
-    btn.disabled = true; btn.textContent = "در حال ثبت…";
+    btn.disabled = true; btn.textContent = L().sending;
     if (window.gtag) gtag("event", "generate_lead", { page: "mentorship", transport_type: "beacon" });
   });
-  window.addEventListener("pageshow", function () { btn.disabled = false; btn.innerHTML = btnHtml; });
+  window.addEventListener("pageshow", function () { btn.disabled = false; btn.innerHTML = R.lang === "en" ? btn.getAttribute("data-en") : (btn.getAttribute("data-fa") || btn.innerHTML); });
 
   // Buttons scroll to the form and put the cursor in it.
   document.querySelectorAll("[data-go]").forEach(function (a) {
@@ -544,10 +559,11 @@ footer small{display:block;margin-bottom:10px}
     a.classList.add("go"); a.classList.remove("on"); a.style.transform = calm ? "" : "translateX(100%)";
     setTimeout(function () { if (!a.classList.contains("on")) { a.classList.remove("go"); a.style.transform = ""; } }, 850);
     dots[si].classList.remove("on"); dots[n].classList.add("on");
-    si = n; cap.textContent = b.getAttribute("data-cap");
+    si = n; capText();
     if (si === 0) { v.currentTime = 0; v.play().catch(function () {}); } else v.pause();
     hold();
   };
+  var capText = function () { cap.textContent = sl[si].getAttribute(R.lang === "en" ? "data-cap-en" : "data-cap"); };
   var next = function () { show((si + 1) % sl.length); };
   // Warm the images once the section is near, so a slide never comes in blank.
   if ("IntersectionObserver" in window) new IntersectionObserver(function (es) {
@@ -561,7 +577,7 @@ footer small{display:block;margin-bottom:10px}
   var drawIR = function () {
     irs.forEach(function (e) {
       var x = PR && PR[KEYS[+e.dataset.k]];
-      if (x) { e.textContent = Math.round(x).toLocaleString("fa-IR"); e.classList.remove("na"); } else { e.textContent = "—"; e.classList.add("na"); }
+      if (x) { e.textContent = Math.round(x).toLocaleString(R.lang === "en" ? "en-US" : "fa-IR"); e.classList.remove("na"); } else { e.textContent = "—"; e.classList.add("na"); }
     });
   };
   var getPrices = function () {
@@ -575,28 +591,33 @@ footer small{display:block;margin-bottom:10px}
   };
   drawIR(); getPrices(); setInterval(getPrices, 60000);
   var tv = document.getElementById("tv"), tvKey = "";
-  var SYM = [["OANDA:XAUUSD", "طلا"], ["TVC:UKOIL", "نفت برنت"], ["FX:EURUSD", "یورو / دلار"], ["OANDA:XAGUSD", "نقره"], ["BITSTAMP:BTCUSD", "بیت‌کوین"], ["FX:GBPUSD", "پوند / دلار"], ["FOREXCOM:SPXUSD", "S&P 500"], ["FX:USDJPY", "دلار / ین"]];
+  var SYM = [["OANDA:XAUUSD", "طلا", "Gold"], ["TVC:UKOIL", "نفت برنت", "Brent oil"], ["FX:EURUSD", "یورو / دلار", "EUR / USD"], ["OANDA:XAGUSD", "نقره", "Silver"], ["BITSTAMP:BTCUSD", "بیت‌کوین", "Bitcoin"], ["FX:GBPUSD", "پوند / دلار", "GBP / USD"], ["FOREXCOM:SPXUSD", "S&P 500", "S&P 500"], ["FX:USDJPY", "دلار / ین", "USD / JPY"]];
   var drawTV = function () {
-    var dark = R.getAttribute("data-theme") === "dark";
-    if (tvKey === (dark ? "d" : "l")) return;
-    tvKey = dark ? "d" : "l";
+    var dark = R.getAttribute("data-theme") === "dark", isEn = R.lang === "en", key = (dark ? "d" : "l") + (isEn ? "en" : "fa");
+    if (tvKey === key) return;
+    tvKey = key;
     tv.innerHTML = '<div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div>';
     var tvs = document.createElement("script");
     tvs.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js"; tvs.async = true;
     tvs.innerHTML = JSON.stringify({
-      symbols: SYM.map(function (x) { return { proName: x[0], title: x[1] }; }),
-      showSymbolLogo: true, isTransparent: true, displayMode: "adaptive", colorTheme: dark ? "dark" : "light", locale: "fa_IR"
+      symbols: SYM.map(function (x) { return { proName: x[0], title: isEn ? x[2] : x[1] }; }),
+      showSymbolLogo: true, isTransparent: true, displayMode: "adaptive", colorTheme: dark ? "dark" : "light", locale: isEn ? "en" : "fa_IR"
     });
     tv.firstChild.appendChild(tvs);
   };
   drawTV();
 
-  // Light/dark, remembered in this browser (same key as the main site).
-  var tb = document.getElementById("themeBtn");
+  // Light/dark and Persian/English, remembered in this browser (same keys as the main site).
+  var tb = document.getElementById("themeBtn"), lb = document.getElementById("langBtn");
+  var TXT = {
+    fa: { light: "حالت روشن", dark: "حالت تیره", lang: "EN", langAria: "English", title: "منتورشیپ رایگان مونتانا | یادگیری کسب درآمد از بازار جهانی و طلا" },
+    en: { light: "Light mode", dark: "Dark mode", lang: "فا", langAria: "فارسی", title: "Montana free mentorship | Learn to earn from global markets and gold" }
+  };
+  var T = function () { return TXT[R.lang === "en" ? "en" : "fa"]; };
   var SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
   var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>';
   var paint = function () {
-    var dark = R.getAttribute("data-theme") === "dark", l = dark ? "حالت روشن" : "حالت تیره";
+    var dark = R.getAttribute("data-theme") === "dark", l = dark ? T().light : T().dark;
     tb.innerHTML = dark ? SUN : MOON; tb.setAttribute("aria-label", l); tb.title = l;
     document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#0d1016" : "#f6f8fb");
   };
@@ -606,7 +627,28 @@ footer small{display:block;margin-bottom:10px}
     try { localStorage.setItem("mt-theme", dark ? "dark" : "light"); } catch (e) {}
     paint(); drawTV();
   });
-  paint();
+  var applyLang = function (lang) {
+    R.lang = lang; R.dir = lang === "en" ? "ltr" : "rtl";
+    document.querySelectorAll("[data-en]").forEach(function (e) {
+      if (!e.hasAttribute("data-fa")) e.setAttribute("data-fa", e.innerHTML);
+      e.innerHTML = lang === "en" ? e.getAttribute("data-en") : e.getAttribute("data-fa");
+    });
+    ["alt", "aria-label"].forEach(function (a) {
+      document.querySelectorAll("[data-en-" + a + "]").forEach(function (e) {
+        if (!e.hasAttribute("data-fa-" + a)) e.setAttribute("data-fa-" + a, e.getAttribute(a) || "");
+        e.setAttribute(a, e.getAttribute(lang === "en" ? "data-en-" + a : "data-fa-" + a));
+      });
+    });
+    document.querySelectorAll("#lead .err").forEach(function (e) { e.remove(); });
+    document.title = T().title; lb.textContent = T().lang; lb.setAttribute("aria-label", T().langAria);
+    capText(); drawIR(); paint(); drawTV();
+  };
+  lb.addEventListener("click", function () {
+    var l = R.lang === "en" ? "fa" : "en";
+    try { localStorage.setItem("mt-lang", l); } catch (e) {}
+    applyLang(l);
+  });
+  applyLang(R.lang === "en" ? "en" : "fa");
   <?php if ($err): ?>f.scrollIntoView({ block: "start" });<?php endif; ?>
 })();
 </script>
