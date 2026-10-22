@@ -213,10 +213,15 @@ h2{font-size:clamp(1.85rem,4.2vw,2.7rem);margin-bottom:10px}
 .course .cta{margin-top:30px;text-align:center}
 
 /* 5. Montana */
-.me .wrap{display:grid;gap:26px}
-.photos{display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr;gap:10px;aspect-ratio:1/.85}
-.photos img{width:100%;height:100%;object-fit:cover;border-radius:16px}
-.photos img:first-child{grid-row:1/3;object-position:30% 50%}
+/* photo slider like /lead: each photo 3 s, cross-fading under a soft gradient */
+.me{background:var(--panel);border-block:1px solid var(--line)}
+.photos{position:relative;width:100%;aspect-ratio:1/.9;overflow:hidden;margin-bottom:8px}
+.photos img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 30%;opacity:0;animation:slide3 9s infinite;will-change:transform,opacity}
+.photos img:nth-child(1){opacity:1}
+.photos img:nth-child(2){animation-delay:3s}
+.photos img:nth-child(3){animation-delay:6s}
+.photos:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 0,transparent 62%,var(--panel) 100%)}
+@keyframes slide3{0%{opacity:0;transform:scale(1.04)}4%{opacity:1}31%{opacity:1}38%{opacity:0;transform:scale(1.12) translateX(-2%)}to{opacity:0;transform:scale(1.04)}}
 .bold{font-family:var(--display);font-size:clamp(1.6rem,3.4vw,2.3rem);font-weight:700;line-height:1.45;margin-bottom:14px}
 .bold span{color:var(--acc)}
 .timeline{list-style:none;margin:18px 0 0;padding:0;display:grid;border-inline-start:1px solid rgba(var(--acc-rgb),.3)}
@@ -268,13 +273,17 @@ footer small{display:block;margin-bottom:10px}
   .res{grid-template-columns:330px 1fr;gap:56px}
   .cmp{grid-template-columns:1fr 1fr}
   .feats{grid-template-columns:repeat(3,1fr)}
-  .me .wrap{grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+  section.me{padding:0;overflow:hidden}
+  .me .wrap{display:grid;max-width:none;padding:0;grid-template-columns:1.1fr 1fr;gap:44px;align-items:center}
+  .me .wrap>div:last-child{padding:60px 16px;max-width:560px}
+  .photos{margin:0;height:100%;min-height:560px;aspect-ratio:auto}
+  .photos:after{background:linear-gradient(to left,transparent 0,transparent 45%,var(--panel) 100%),linear-gradient(180deg,rgba(var(--panel-rgb),.25),transparent 20%,transparent 80%,rgba(var(--panel-rgb),.25))}
   .top .btn{display:inline-flex}
   .sticky{display:none}
   footer{padding-bottom:30px}
 }
 @media (max-width:859px){.top .btn{display:none}.top .tgl{margin-inline-start:auto}.hero-copy>.btn{width:100%}}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tag i{animation:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tag i{animation:none}.photos img{animation:none}}
 </style>
 <?php if (preg_match("/^G-[A-Z0-9]{4,15}$/", $ga)) echo "<script async src=\"https://www.googletagmanager.com/gtag/js?id=$ga\"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag(\"js\",new Date());gtag(\"config\",\"$ga\");</script>"; ?>
 </head><body>
@@ -342,11 +351,11 @@ footer small{display:block;margin-bottom:10px}
 </div></section>
 
 <!-- 5. Montana -->
-<section class="blk me"><div class="wrap">
+<section class="blk me" style="padding-top:0"><div class="wrap">
   <div class="photos">
-    <img loading="lazy" decoding="async" src="/images/mojtaba-hosseini-montana-trading-desk.jpg" alt="مجتبی حسینی (مونتانا) پشت سیستم معاملاتی">
-    <img loading="lazy" decoding="async" src="/images/mojtaba-hosseini-montana-podcast.jpg" alt="مجتبی حسینی (مونتانا) در استودیوی پادکست">
-    <img loading="lazy" decoding="async" src="/images/mojtaba-hosseini-graduation-university-of-tehran.jpg" alt="مجتبی حسینی در فارغ‌التحصیلی دانشگاه تهران">
+    <img decoding="async" src="/images/mojtaba-hosseini-montana-trading-desk.jpg" alt="مجتبی حسینی (مونتانا) پشت سیستم معاملاتی">
+    <img decoding="async" src="/images/mojtaba-hosseini-montana-podcast.jpg" alt="مجتبی حسینی (مونتانا) در استودیوی پادکست">
+    <img decoding="async" src="/images/mojtaba-hosseini-graduation-university-of-tehran.jpg" alt="مجتبی حسینی در فارغ‌التحصیلی دانشگاه تهران">
   </div>
   <div>
     <span class="kick">معرفی استاد</span>
