@@ -229,7 +229,7 @@ h2{font-size:clamp(1.85rem,4.2vw,2.7rem);margin-bottom:10px}
 /* 6. form */
 .signup{background:linear-gradient(180deg,var(--ink),rgba(var(--acc-rgb),.06))}
 .join{max-width:500px;margin-inline:auto;text-align:center}
-.free{display:inline-block;background:var(--gain);color:#fff;font-weight:800;border-radius:8px;padding:0 10px;font-size:.9rem;margin-bottom:10px}
+.free{display:inline-block;background:var(--gain);color:#fff;border-radius:10px;padding:0 12px;line-height:1.35;transform:rotate(-2deg)}
 #lead{background:var(--panel);border:1px solid rgba(var(--acc-rgb),.28);border-radius:22px;padding:24px 20px;box-shadow:0 14px 40px rgba(var(--fg-rgb),.08),0 0 0 6px rgba(var(--acc-rgb),.05);margin-top:22px;text-align:start;display:grid;gap:10px;position:relative}
 @media (max-width:420px){#lead{padding:20px 16px}}
 label.f{display:grid;gap:6px;font-size:.9rem;color:var(--muted)}
@@ -364,8 +364,7 @@ footer small{display:block;margin-bottom:10px}
 <!-- 6. sign-up form -->
 <section class="blk signup" id="form"><div class="wrap">
   <div class="join">
-    <span class="free">رایگان</span>
-    <h2>ثبت‌نام در منتورشیپ مونتانا</h2>
+    <h2>ثبت‌نام <span class="free">رایگان</span> در منتورشیپ مونتانا</h2>
     <p class="lead" style="margin:0 auto">اطلاعاتت رو وارد کن تا لینک و زمان جلسه‌های آنلاین برات فرستاده بشه.</p>
     <form id="lead" method="post" action="#form" novalidate>
       <input type="hidden" name="cap" value="<?php echo $capToken; ?>">
