@@ -188,12 +188,15 @@ h2{font-size:clamp(1.85rem,4.2vw,2.7rem);margin-bottom:10px}
 
 /* 4. the course */
 .course{background:var(--deep);color:#ece6d8}
-.course .kick{color:#d6b46a}
+.course .kick{color:#d6b46a;text-align:center}
+.course h2{text-align:center}
 .course h2{color:#fff}
 .course h2 span{color:#d6b46a}
-.cost{display:flex;gap:12px;align-items:flex-start;background:rgba(236,90,95,.1);border:1px solid rgba(236,90,95,.35);border-radius:16px;padding:16px 18px;margin:20px 0 34px;max-width:640px}
-.cost i{font-style:normal;font-size:1.5rem;line-height:1.4}
+.cost{display:flex;gap:12px;align-items:center;justify-content:center;background:rgba(236,90,95,.1);border:1px solid rgba(236,90,95,.35);border-radius:16px;padding:14px 20px;margin:22px 0 34px;text-align:center}
+.cost i{font-style:normal;font-size:1.4rem;line-height:1}
+@media (max-width:859px){.cost{text-align:start;justify-content:flex-start}}
 .cost b{color:#f19a9d}
+.cost p{font-size:1.05rem}
 .cmp{display:grid;gap:14px;margin-bottom:34px}
 .cmp>div{border-radius:18px;padding:20px}
 .cmp h3{font-size:1.05rem;margin-bottom:10px}
@@ -337,7 +340,7 @@ footer small{display:block;margin-bottom:10px}
 <section class="blk course"><div class="wrap">
   <span class="kick">معرفی منتورشیپ</span>
   <h2>یکی از سخت‌ترین کارهای دنیا رو <span>با دوره‌های بی‌کیفیت</span> یاد نگیر</h2>
-  <div class="cost"><i>⚠️</i><p>هزینه آموزش بد فقط وقت نیست: <b>از دست دادن سرمایه‌ست.</b> بیشتر کسایی که تو ترید ضرر می‌کنن، از روی ویدیوهای پراکنده و دوره‌های ضبط‌شده بدون پشتیبانی شروع کردن.</p></div>
+  <div class="cost"><i>⚠️</i><p>هزینه آموزش بد فقط وقت نیست: <b>از دست دادن سرمایه‌ست.</b> بیشتر ضررها از ویدیوهای پراکنده و دوره‌های بدون پشتیبانی شروع میشه.</p></div>
   <div class="cmp">
     <div class="bad"><h3>دوره‌های معمولی</h3><ul><li>ویدیوی ضبط‌شده و قدیمی</li><li>سوالت بی‌جواب می‌مونه</li><li>مدرسی که خودش معامله‌هاش رو نشون نمیده</li><li>تمرکز روی سیگنال، نه مهارت</li></ul></div>
     <div class="good"><h3>منتورشیپ مونتانا</h3><ul><li>کلاس آنلاین و زنده</li><li>پرسش و پاسخ و رفع اشکال سر کلاس</li><li>استادی که سود و ضررش رو شفاف نشون میده</li><li>یادگیری مهارت، قدم به قدم در کنار استاد</li></ul></div>
