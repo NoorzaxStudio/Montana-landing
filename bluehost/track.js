@@ -38,7 +38,7 @@
       seen: Object.keys(seen).map(Number).sort(function (a, b) { return a - b; }),
       total: secs.length, join: join, btn: joinBtn, w: window.innerWidth,
       ref: document.referrer || "", utm: q.get("utm_source") || q.get("utm_campaign") || "",
-      lang: document.documentElement.lang, pg: /^\/(lead|signal)/.test(location.pathname) ? "lead" : "main", clk: clicks.splice(0)
+      lang: document.documentElement.lang, pg: /^\/(lead|mentorship)/i.test(location.pathname) ? "lead" : /^\/(ct|signal)/i.test(location.pathname) ? "ct" : "main", clk: clicks.splice(0)
     });
   }
   function send(ev) {

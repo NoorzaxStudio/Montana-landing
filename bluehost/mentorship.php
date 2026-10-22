@@ -1,5 +1,6 @@
 <?php
-// Educational landing for the free online mentorship (montanafx.com/mentorship).
+// Educational landing for the free online mentorship, served at montanafx.com/lead
+// (and /mentorship). The previous /lead page (signal.php) moved to /CT.
 // The only action on the page is signing up for the mentorship. Leads use the
 // same form, checks, ~/montana-stats/leads.csv and Google Sheet as /lead; the
 // sheet's source column says "montanafx.com/mentorship" when there's no utm.
@@ -82,7 +83,7 @@ $e = fn($k) => htmlspecialchars($val[$k], ENT_QUOTES, 'UTF-8');
 [$capA, $capB, $capToken] = $capNew();
 $preview = isset($_GET["preview"]);
 if (!$preview && $_SERVER["REQUEST_METHOD"] !== "POST") {
-  @file_put_contents($statsDir . "/views-mentorship.log", date("Y-m-d H:i:s") . "\t" . ($_SERVER["HTTP_REFERER"] ?? "-") . "\t" . ($_SERVER["HTTP_USER_AGENT"] ?? "-") . "\n", FILE_APPEND | LOCK_EX);
+  @file_put_contents($statsDir . "/views-lead.log", date("Y-m-d H:i:s") . "\t" . ($_SERVER["HTTP_REFERER"] ?? "-") . "\t" . ($_SERVER["HTTP_USER_AGENT"] ?? "-") . "\n", FILE_APPEND | LOCK_EX);
 }
 $ga = $preview ? '' : trim((string) @file_get_contents($statsDir . "/ga.txt"));
 $errHtml = fn($k) => isset($err[$k]) ? '<span class="err">' . $err[$k] . '</span>' : '';
@@ -335,7 +336,7 @@ footer small{display:block;margin-bottom:10px}
 </style>
 <?php if (preg_match("/^G-[A-Z0-9]{4,15}$/", $ga)) echo "<script async src=\"https://www.googletagmanager.com/gtag/js?id=$ga\"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag(\"js\",new Date());gtag(\"config\",\"$ga\");</script>"; ?>
 </head><body>
-<header class="top"><div class="wrap"><span class="logo">MONTANA</span><a class="btn" href="#form" data-go>ثبت‌نام رایگان</a><button class="tgl" id="themeBtn" type="button"></button></div></header>
+<header class="top"><div class="wrap"><span class="logo">MONTANA</span><a class="btn" href="#form" data-go data-b="1">ثبت‌نام رایگان</a><button class="tgl" id="themeBtn" type="button"></button></div></header>
 
 <!-- 1. hero -->
 <section class="hero" id="hero">
@@ -348,7 +349,7 @@ footer small{display:block;margin-bottom:10px}
     <span class="tag"><i></i>منتورشیپ آنلاین و زنده · ثبت‌نام رایگان</span>
     <h1>یادگیری کسب درآمد مستمر از <span>بازار جهانی و طلا</span></h1>
     <p class="sub">در کنار تحلیلگر سابق موسسات مالی</p>
-    <a class="btn" href="#form" data-go>ثبت‌نام رایگان در منتورشیپ</a>
+    <a class="btn" href="#form" data-go data-b="2">ثبت‌نام رایگان در منتورشیپ</a>
     <ul class="facts"><li>کلاس آنلاین و زنده</li><li>پرسش و پاسخ و رفع اشکال</li><li>از پایه، بدون نیاز به تجربه</li></ul>
   </div></div>
 </section>
@@ -390,7 +391,7 @@ footer small{display:block;margin-bottom:10px}
     <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5M12 16h.01"/></svg></div><div><h3>پرسش و پاسخ و رفع اشکال</h3></div></div>
     <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div><h3>رشد در کنار استاد</h3></div></div>
   </div>
-  <div class="cta"><a class="btn" href="#form" data-go>رزرو جای رایگان در منتورشیپ</a></div>
+  <div class="cta"><a class="btn" href="#form" data-go data-b="3">رزرو جای رایگان در منتورشیپ</a></div>
 </div></section>
 
 <!-- 4. reviews and results -->
@@ -473,7 +474,7 @@ footer small{display:block;margin-bottom:10px}
   <div class="faq">
     <?php foreach ($faq as $i => [$q, $a]) echo '<details' . ($i ? '' : ' open') . '><summary>' . $h($q) . '</summary><p>' . $h($a) . '</p></details>'; ?>
   </div>
-  <div class="c" style="margin-top:30px"><a class="btn" href="#form" data-go>ثبت‌نام رایگان در منتورشیپ</a></div>
+  <div class="c" style="margin-top:30px"><a class="btn" href="#form" data-go data-b="4">ثبت‌نام رایگان در منتورشیپ</a></div>
 </div></section>
 
 <footer><div class="wrap">
@@ -481,7 +482,7 @@ footer small{display:block;margin-bottom:10px}
   <span>معامله در بازارهای مالی ریسک از دست دادن سرمایه داره و نتایج گذشته تضمینی برای آینده نیست. محتوای این صفحه آموزشیه و توصیه سرمایه‌گذاری نیست.</span>
 </div></footer>
 
-<div class="sticky" id="sticky"><a class="btn" href="#form" data-go>ثبت‌نام رایگان در منتورشیپ</a></div>
+<div class="sticky" id="sticky"><a class="btn" href="#form" data-go data-b="5">ثبت‌نام رایگان در منتورشیپ</a></div>
 
 <script>
 (function () {

@@ -10,8 +10,8 @@ $statsDir = dirname(__DIR__, 2) . "/montana-stats";
 if (!is_dir($statsDir)) @mkdir($statsDir, 0755, true);
 $fa2en = fn($v) => strtr(trim((string) $v), ['۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9','٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9']);
 $faNum = fn($n) => strtr((string) $n, ['0'=>'۰','1'=>'۱','2'=>'۲','3'=>'۳','4'=>'۴','5'=>'۵','6'=>'۶','7'=>'۷','8'=>'۸','9'=>'۹']);
-// Served at /lead (it replaced the old lead page) and at /signal.
-$page = preg_match('#^/lead(/|\?|$)#', $_SERVER['REQUEST_URI'] ?? '') ? 'lead' : 'signal';
+// Served at /CT (it was /lead until the mentorship page took that address) and at /signal.
+$page = preg_match('#^/ct(/|\?|$)#i', $_SERVER['REQUEST_URI'] ?? '') ? 'CT' : 'signal';
 
 // The same sign-up form as /lead: name, mobile, optional email, birth year and
 // a small sum as the security question (signed with a server secret so a bot
@@ -99,9 +99,9 @@ $e = fn($k) => htmlspecialchars($val[$k], ENT_QUOTES, 'UTF-8');
 [$capA, $capB, $capToken] = $capNew();
 $preview = isset($_GET["preview"]);
 if (!$preview && $_SERVER["REQUEST_METHOD"] !== "POST") {
-  // Same view log as the old /lead page, so the admin panel's /lead tab counts this page.
+  // Its own view log now that /lead is the mentorship page.
   if (!is_dir($statsDir)) @mkdir($statsDir, 0755, true);
-  @file_put_contents($statsDir . "/views-lead.log", date("Y-m-d H:i:s") . "\t" . ($_SERVER["HTTP_REFERER"] ?? "-") . "\t" . ($_SERVER["HTTP_USER_AGENT"] ?? "-") . "\n", FILE_APPEND | LOCK_EX);
+  @file_put_contents($statsDir . "/views-ct.log", date("Y-m-d H:i:s") . "\t" . ($_SERVER["HTTP_REFERER"] ?? "-") . "\t" . ($_SERVER["HTTP_USER_AGENT"] ?? "-") . "\n", FILE_APPEND | LOCK_EX);
 }
 $ga = $preview ? '' : trim((string) @file_get_contents($statsDir . "/ga.txt"));
 $errHtml = fn($k) => isset($err[$k]) ? '<span class="err">' . $err[$k] . '</span>' : '';
