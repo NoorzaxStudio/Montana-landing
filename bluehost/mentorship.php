@@ -92,12 +92,21 @@ $thanks = [
   ['آرش', 'آقا مرسی واقعا، من دوره زیاد دیدم ولی چیزایی که شما آموزش میدید اصن هیچ جایی نشدیدم چطور این همه وقت هیچس درموردشون صحبت نمیکرده!!'],
   ['حسن', 'واقعا بی ادعا، کار درست، خفن، بدون هیچ زرق و برقی حرفه ای ترین تریدری هستی که تا حالا دیدم، زنده باشی'],
   ['صدرا', 'مونتانای عزیز، این دوره مثل یه تولد دوباره بود تو ترید، اصن چشمام باز شدش، واقعیت ها رو تازه فهمیدم، همیشه یه حسی داشتم یه چیزایی مشکوکه ولی الان فهمیدمشون، عاشقتم'],
+  ['شهرام', 'استاد من سود زیاد دیدم تو مارکت، ولی همه نهایت دو روز سه روز سود میکنن، اصن فکرش هم نمیکردم به صورت مستمر اینجوری بشه سود ده موند'],
   ['نازنین', 'کاش همه تحلیلگر ها و اساتید از شما یاد بگیرن، و تکنیک ها و استراتژی های کارآمد آموزش بدن، درسته سبک شما یه مقدار پیچیده هستش، اما تنها سبکی هستش که واقعا سود میده'],
   ['علی', 'خاک زیر پاتم دمت گرم بخاطر سود های قشنگی که بدست میاری'],
   ['بابک', 'دارم روی چارت نگا میکنم چجوری باز میکنی میبینیدی و سودهارو درو میکنی دمتگرم واقعاااا❤️'],
   ['احمد', 'آقا دمت گرم دیگه از استرس و اعصاب خوردی ترید راحت شدم کاش زودتر با شما آشنا شده بودم'],
   ['کیارش', 'اینجا خداییش تنها جایی که همه سود و ضرر ها رو میشه دید، همه کانال های دیگه سیگنال های دو پهلو هستن دیگه'],
   ['یکی از دنبال‌کنندگان', 'یه چیزی که خیلی با سیستم شما حال میکنم اینه که سود دهی مستمر هستش و واقعا رشد اکانت رو دارم حس میکنم'],
+];
+// Result images shown in the phone after the statement video (images/results/, 576x1248).
+$results = [
+  ['weekly-signal-report', 'گزارش هفتگی کانال سیگنال مونتانا'],
+  ['copytrade-report-4-days', 'نتایج ۴ روز معاملات زنده کپی‌ترید'],
+  ['metatrader-history', 'تاریخچه معاملات در متاتریدر'],
+  ['eurusd-trade-chart', 'معامله یورو/دلار روی چارت'],
+  ['eurusd-trade-mobile', 'معامله یورو/دلار در تریدینگ‌ویو'],
 ];
 $faq = [
   ['ثبت‌نام در منتورشیپ واقعا رایگانه؟', 'بله. ثبت‌نام و شرکت در جلسه‌های منتورشیپ هزینه‌ای نداره.'],
@@ -118,7 +127,7 @@ $faq = [
 <link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/fonts/vazirmatn-arabic-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/vazirmatn-arabic-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/images/mojtaba-hosseini-montana-dubai-office.jpg" as="image">
+<link rel="preload" href="/images/new-york-stock-exchange-trading-floor.jpg" as="image">
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 /* Same palette and type as the main site and /lead. */
@@ -150,8 +159,12 @@ h2{font-size:clamp(1.85rem,4.2vw,2.7rem);margin-bottom:10px}
 
 /* 1. hero */
 .hero{position:relative;isolation:isolate;overflow:hidden}
-.hero-media{position:relative;width:100%;aspect-ratio:1/.78}
-.hero-media img{width:100%;height:100%;object-fit:cover;object-position:35% 40%}
+.hero-media{position:relative;width:100%;aspect-ratio:1/.78;overflow:hidden}
+/* three photos, 3 s each, cross-fading with a slow zoom (same motion as the teacher slider) */
+.hero-media img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 40%;opacity:0;animation:slide3 9s infinite;will-change:transform,opacity}
+.hero-media img:nth-child(1){opacity:1}
+.hero-media img:nth-child(2){animation-delay:3s;object-position:60% 30%}
+.hero-media img:nth-child(3){animation-delay:6s;object-position:20% 60%}
 .hero-media:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 0,transparent 55%,var(--ink) 100%)}
 .hero .wrap{position:relative;margin-top:-70px;padding-bottom:40px}
 .tag{display:inline-flex;align-items:center;gap:8px;background:var(--panel);color:var(--gain-hi);border:1px solid rgba(var(--gain-rgb),.3);border-radius:999px;padding:4px 14px;font-size:.86rem;font-weight:800;margin-bottom:14px}
@@ -193,8 +206,16 @@ h2{font-size:clamp(1.85rem,4.2vw,2.7rem);margin-bottom:10px}
 /* 3. reviews and results */
 .res{display:grid;gap:30px;align-items:center}
 .phone{width:min(270px,68vw);margin:0 auto;border-radius:42px;padding:10px;background:#1d1f22;box-shadow:0 0 0 2px #3a3d42,0 30px 70px rgba(15,27,45,.25)}
-.phone video{width:100%;height:auto;aspect-ratio:288/624;object-fit:cover;border-radius:33px;background:#fff}
-.phone-cap{text-align:center;font-size:.88rem;color:var(--muted);font-weight:700;margin-top:10px}
+/* phone screen: the statement video, then result images sliding in from the left */
+.scr{position:relative;aspect-ratio:288/624;border-radius:33px;overflow:hidden;background:#0d1016}
+.scr>*{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:translateX(-100%);will-change:transform}
+.scr>.on{transform:none}
+.scr>.go{transition:transform .8s cubic-bezier(.12,.9,.2,1)}
+.scr video{background:#fff}
+.phone-cap{text-align:center;font-size:.88rem;color:var(--muted);font-weight:700;margin-top:10px;min-height:1.6em}
+.dots{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.dots i{width:6px;height:6px;border-radius:999px;background:rgba(var(--fg-rgb),.2);transition:width .3s,background .3s}
+.dots i.on{width:18px;background:var(--gain)}
 /* reviews roll slowly upward like a shutter; hover pauses */
 .bubs{height:460px;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(180deg,transparent,#000 12%,#000 88%,transparent)}
 .bubs-track{display:grid;gap:12px;padding-bottom:12px;animation:vroll 70s linear infinite}
@@ -310,7 +331,7 @@ footer small{display:block;margin-bottom:10px}
   footer{padding-bottom:30px}
 }
 @media (max-width:859px){.top .btn{display:none}.top .tgl{margin-inline-start:auto}.hero-copy>.btn{width:100%}}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tag i{animation:none}.photos img{animation:none}.bubs-track{animation:none}.bubs{overflow-y:auto}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.scr>.go{transition:none}.hero-media img{animation:none}.tag i{animation:none}.photos img{animation:none}.bubs-track{animation:none}.bubs{overflow-y:auto}}
 </style>
 <?php if (preg_match("/^G-[A-Z0-9]{4,15}$/", $ga)) echo "<script async src=\"https://www.googletagmanager.com/gtag/js?id=$ga\"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag(\"js\",new Date());gtag(\"config\",\"$ga\");</script>"; ?>
 </head><body>
@@ -318,7 +339,11 @@ footer small{display:block;margin-bottom:10px}
 
 <!-- 1. hero -->
 <section class="hero" id="hero">
-  <div class="hero-media"><img src="/images/mojtaba-hosseini-montana-dubai-office.jpg" alt="مجتبی حسینی (مونتانا) در حال آموزش پشت سیستم" fetchpriority="high"></div>
+  <div class="hero-media">
+    <img src="/images/new-york-stock-exchange-trading-floor.jpg" alt="تالار معاملات بورس نیویورک" fetchpriority="high">
+    <img decoding="async" src="/images/mojtaba-hosseini-montana-cafe-laptop.jpg" alt="مجتبی حسینی (مونتانا) در کافه پشت لپ‌تاپ">
+    <img decoding="async" src="/images/gold-trading-xauusd.jpg" alt="ترید طلا: نمودار انس طلا و شمش طلا">
+  </div>
   <div class="wrap"><div class="hero-copy">
     <span class="tag"><i></i>منتورشیپ آنلاین و زنده · ثبت‌نام رایگان</span>
     <h1>یادگیری کسب درآمد مستمر از <span>بازار جهانی و طلا</span></h1>
@@ -355,8 +380,12 @@ footer small{display:block;margin-bottom:10px}
 <section class="blk"><div class="wrap">
   <div class="res">
     <div>
-      <div class="phone"><video id="stmt" poster="/images/mt-statement.jpg" muted playsinline loop preload="none" aria-label="تاریخچه معاملات در متاتریدر"><source src="/images/mt-statement.mp4" type='video/mp4; codecs="avc1.64001E"'><source src="/images/mt-statement.webm" type='video/webm; codecs="vp9"'></video></div>
-      <p class="phone-cap">تاریخچه واقعی یک هفته معامله در متاتریدر</p>
+      <div class="phone"><div class="scr" id="scr">
+        <video class="on" id="stmt" poster="/images/mt-statement.jpg" muted playsinline loop preload="none" data-cap="تاریخچه واقعی یک هفته معامله در متاتریدر" aria-label="تاریخچه معاملات در متاتریدر"><source src="/images/mt-statement.mp4" type='video/mp4; codecs="avc1.64001E"'><source src="/images/mt-statement.webm" type='video/webm; codecs="vp9"'></video>
+        <?php foreach ($results as [$img, $cap]) echo '<img loading="lazy" decoding="async" src="/images/results/' . $img . '.jpg" alt="' . $h($cap) . '" data-cap="' . $h($cap) . '">'; ?>
+      </div></div>
+      <p class="phone-cap" id="scrCap" aria-live="polite">تاریخچه واقعی یک هفته معامله در متاتریدر</p>
+      <div class="dots" id="dots" aria-hidden="true"><i class="on"></i><?php echo str_repeat('<i></i>', count($results)); ?></div>
     </div>
     <div>
       <span class="kick">نظرات کاربران و نتایج</span>
@@ -498,12 +527,33 @@ footer small{display:block;margin-bottom:10px}
     var upd = function () { st.classList.toggle("on", !heroOn && !formOn); };
     new IntersectionObserver(function (es) { heroOn = es[0].isIntersecting; upd(); }).observe(document.getElementById("hero"));
     new IntersectionObserver(function (es) { formOn = es[0].isIntersecting; upd(); }).observe(document.getElementById("form"));
-    // The statement video plays only while it's on screen.
-    var v = document.getElementById("stmt");
-    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) new IntersectionObserver(function (es) {
-      if (es[0].isIntersecting) { v.preload = "auto"; v.play().catch(function () {}); } else v.pause();
-    }, { threshold: .4 }).observe(v);
   }
+
+  // Phone slider: the statement video (8 s), then each result image (3.5 s).
+  // The next slide comes in fast from the left and brakes; it only runs while on screen.
+  var scr = document.getElementById("scr"), sl = scr.children, si = 0, seen = false, tmr = 0;
+  var v = document.getElementById("stmt"), cap = document.getElementById("scrCap"), dots = document.getElementById("dots").children;
+  var calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var hold = function () { clearTimeout(tmr); if (seen) tmr = setTimeout(next, si ? 3500 : 8000); };
+  var show = function (n) {
+    var a = sl[si], b = sl[n];
+    if (!b.complete && b.tagName === "IMG") b.loading = "eager";
+    b.classList.remove("go"); b.style.transform = calm ? "none" : ""; void b.offsetWidth;
+    b.classList.add("go", "on");
+    a.classList.add("go"); a.classList.remove("on"); a.style.transform = calm ? "" : "translateX(100%)";
+    setTimeout(function () { if (!a.classList.contains("on")) { a.classList.remove("go"); a.style.transform = ""; } }, 850);
+    dots[si].classList.remove("on"); dots[n].classList.add("on");
+    si = n; cap.textContent = b.getAttribute("data-cap");
+    if (si === 0) { v.currentTime = 0; v.play().catch(function () {}); } else v.pause();
+    hold();
+  };
+  var next = function () { show((si + 1) % sl.length); };
+  // Warm the images once the section is near, so a slide never comes in blank.
+  if ("IntersectionObserver" in window) new IntersectionObserver(function (es) {
+    seen = es[0].isIntersecting;
+    if (seen) { [].forEach.call(scr.querySelectorAll("img"), function (i) { i.loading = "eager"; }); if (si === 0) { v.preload = "auto"; v.play().catch(function () {}); } hold(); }
+    else { clearTimeout(tmr); v.pause(); }
+  }, { threshold: .4 }).observe(scr);
 
   // Live prices under the hero: toman row from /api/prices, global tape from TradingView.
   var KEYS = ["usd", "eur", "goldGram", "btc"], irs = document.querySelectorAll("#irr [data-k]"), PR = null;
