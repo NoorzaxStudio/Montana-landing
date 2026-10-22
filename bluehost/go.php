@@ -16,7 +16,7 @@ $clean = fn($s) => str_replace(["\t", "\n", "\r"], ' ', $s);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $o = $_POST['o'] ?? '';
   if (in_array($o, ['open', 'stuck'], true)) {
-    $src = ($_POST['l'] ?? '') === '1' ? 'lead' : 'main';
+    $src = ($_POST['l'] ?? '') !== '1' ? 'main' : (($_POST['m'] ?? '') === '1' ? 'mentor' : 'lead');
     @file_put_contents($dir . '/go.log', date('Y-m-d H:i:s') . "\t" . $o . "\t" . $clean($ua) . "\t" . $src . "\n", FILE_APPEND | LOCK_EX);
   }
   http_response_code(204);
@@ -81,7 +81,7 @@ small{display:block;color:#8a93a3;margin-top:14px;line-height:1.8}
   var link = <?php echo json_encode($tme); ?>, sent = {};
   function report(o) {
     if (sent[o]) return; sent[o] = 1;
-    var d = new URLSearchParams({ o: o, l: <?php echo $fromLead ? '"1"' : '"0"'; ?> });
+    var d = new URLSearchParams({ o: o, l: <?php echo $fromLead ? '"1"' : '"0"'; ?>, m: <?php echo ($_GET['m'] ?? '') === '1' ? '"1"' : '"0"'; ?> });
     if (!(navigator.sendBeacon && navigator.sendBeacon("/go.php", d))) {
       try { fetch("/go.php", { method: "POST", body: d, keepalive: true }); } catch (e) {}
     }

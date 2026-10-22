@@ -16,7 +16,7 @@ $row = [
   'btn' => isset($d['btn']) ? (int) $d['btn'] : null,
   'w' => (int) ($d['w'] ?? 0),
   'ref' => substr((string) ($d['ref'] ?? ''), 0, 200),
-  'pg' => in_array($d['pg'] ?? '', ['lead', 'ct'], true) ? $d['pg'] : 'main',
+  'pg' => in_array($d['pg'] ?? '', ['lead', 'mentor'], true) ? $d['pg'] : 'main',
   'utm' => substr((string) ($d['utm'] ?? ''), 0, 60),
   'clk' => array_slice(array_values(array_filter(array_map(fn($c) => is_array($c) && count($c) === 2 ? [round(max(0, min(1, (float) $c[0])), 3), round(max(0, min(1, (float) $c[1])), 3)] : null, (array) ($d['clk'] ?? [])))), 0, 60),
   'ua' => substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 200),

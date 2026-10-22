@@ -113,7 +113,10 @@ if (empty($_SESSION['ok'])) {
 }
 
 // ---------- data ----------
-$PG = ($_GET['pg'] ?? '') === 'lead' ? 'lead' : 'main';  // main landing or the lead-form page (/lead)
+// main landing, the mentorship page at /lead ("mentor") or the signal page now at /CT ("lead":
+// it was /lead until 2026-10-22, so its history in views-lead.log and engage.log keeps that name).
+$PG = in_array($_GET['pg'] ?? '', ['lead', 'mentor'], true) ? $_GET['pg'] : 'main';
+$FORM = $PG !== 'main';  // pages with the sign-up form
 $range = $_GET['r'] ?? '7';
 $ranges = ['1' => 'امروز', '7' => '۷ روز', '30' => '۳۰ روز', 'all' => 'همه'];
 if (!isset($ranges[$range])) $range = '7';
@@ -130,16 +133,16 @@ function read_tsv(string $f, string $from, string $bot): array {
   }
   return $out;
 }
-$views = read_tsv($PG === 'lead' ? "$DIR/views-lead.log" : "$DIR/views.log", $from, $BOT);
+$views = read_tsv(['main' => "$DIR/views.log", 'lead' => "$DIR/views-lead.log", 'mentor' => "$DIR/views-mentorship.log"][$PG], $from, $BOT);
 // Telegram clicks, split by the page they came from (/lead sends people to /go after the form).
-$jumps = array_values(array_filter(read_tsv("$DIR/clicks.log", $from, $BOT), fn($j) => (strpos($j['ref'], '/lead') !== false) === ($PG === 'lead')));
+$jumps = array_values(array_filter(read_tsv("$DIR/clicks.log", $from, $BOT), fn($j) => (preg_match('#/(lead|ct|signal)\b#i', $j['ref']) === 1) === $FORM));
 
-// Leads from the form on /lead.
+// Leads from the form pages, in one file; mentorship rows carry "mentor" in a 10th column.
 $LEADS = "$DIR/leads.csv";
 $leads = [];
 if (is_file($LEADS) && ($fh = fopen($LEADS, 'r'))) {
   fgetcsv($fh);
-  while (($row = fgetcsv($fh)) !== false) if (count($row) >= 5 && substr($row[0], 0, 10) >= $from) $leads[] = $row;
+  while (($row = fgetcsv($fh)) !== false) if (count($row) >= 5 && substr($row[0], 0, 10) >= $from && (($row[9] ?? '') === 'mentor') === ($PG === 'mentor')) $leads[] = $row;
   fclose($fh);
 }
 if (isset($_GET['export']) && $_GET['export'] === 'leads') {
@@ -150,7 +153,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'leads') {
   exit;
 }
 // Outcome after the join click (go.log): "open" = Telegram took over, "stuck" = page stayed on screen.
-$goOut = array_values(array_filter(read_tsv("$DIR/go.log", $from, $BOT), fn($g) => ($g['x'] === 'lead') === ($PG === 'lead')));
+$goOut = array_values(array_filter(read_tsv("$DIR/go.log", $from, $BOT), fn($g) => ($g['x'] ?: 'main') === $PG));
 $nOpen = count(array_filter($goOut, fn($g) => $g['ref'] === 'open'));
 $nStuck = count(array_filter($goOut, fn($g) => $g['ref'] === 'stuck'));
 $nInApp = count(array_filter($jumps, fn($j) => preg_match('/; wv\)|Version\/4\.0 .*Chrome\//', $j['ua'])));
@@ -182,7 +185,12 @@ $nv = count($views); $nj = count($jumps); $nl = count($leads);
 $SECTIONS = [1 => 'بالای صفحه (هیرو)', 2 => 'داستان و معرفی', 3 => 'آمار و اعداد', 4 => 'روش موسسات مالی', 5 => 'منتور', 6 => 'سیگنال / مقایسه', 7 => 'سه قدم', 8 => 'سوالات متداول', 9 => 'پایین صفحه (فوتر)'];
 $BUTTONS = [1 => 'هدر: کانال تلگرام', 2 => 'هیرو: عضویت رایگان', 3 => 'بخش روش: شروع آموزش در تلگرام', 4 => 'بخش سیگنال: عضویت', 5 => 'فوتر: کانال تلگرام', 6 => 'فوتر: پشتیبانی', 7 => 'دکمه چسبان موبایل'];
 if ($PG === 'lead') {
-  // /lead now serves the mentorship landing (mentorship.php); the signal landing moved to /CT.
+  // The automatic-signal landing (signal.php), now at /CT.
+  $SECTIONS = [1 => 'بالای صفحه (هیرو)', 2 => 'کارت‌های اثبات', 3 => 'استیتمنت و نظرات', 4 => 'مشکل کانال‌های سیگنال', 5 => 'سیگنال اتوماتیک', 6 => 'مونتانا و درباره من', 7 => 'فرم ثبت‌نام', 8 => 'پایین صفحه (فوتر)'];
+  $BUTTONS = [1 => 'هیرو: می‌خوام شروع کنم', 2 => 'دکمه چسبان پایین موبایل: می‌خوام شروع کنم'];
+}
+if ($PG === 'mentor') {
+  // The mentorship landing (mentorship.php) at /lead.
   $SECTIONS = [1 => 'بالای صفحه (هیرو)', 2 => 'چرا مونتانا', 3 => 'معرفی دوره', 4 => 'نظرات و نتایج', 5 => 'معرفی استاد', 6 => 'فرم ثبت‌نام', 7 => 'سوالات متداول', 8 => 'پایین صفحه (فوتر)'];
   $BUTTONS = [1 => 'هدر: ثبت‌نام رایگان', 2 => 'هیرو: ثبت‌نام رایگان در منتورشیپ', 3 => 'معرفی دوره: رزرو جای رایگان', 4 => 'سوالات متداول: ثبت‌نام رایگان', 5 => 'دکمه چسبان پایین موبایل'];
 }
@@ -194,7 +202,7 @@ $clkD = []; $clkM = [];
 foreach ($S as $s) foreach ($s['clk'] as $c) { if ($s['w'] < 768) $clkM[] = $c; else $clkD[] = $c; }
 $daily = [];
 foreach ($views as $v) { $d = substr($v['t'], 0, 10); $daily[$d]['v'] = ($daily[$d]['v'] ?? 0) + 1; }
-foreach ($PG === 'lead' ? array_map(fn($l) => ['t' => $l[0]], $leads) : $jumps as $v) { $d = substr($v['t'], 0, 10); $daily[$d]['j'] = ($daily[$d]['j'] ?? 0) + 1; }
+foreach ($FORM ? array_map(fn($l) => ['t' => $l[0]], $leads) : $jumps as $v) { $d = substr($v['t'], 0, 10); $daily[$d]['j'] = ($daily[$d]['j'] ?? 0) + 1; }
 krsort($daily);
 $refs = [];
 foreach ($views as $v) { $host = $v['ref'] === '-' ? 'مستقیم / نامشخص' : (parse_url($v['ref'], PHP_URL_HOST) ?: $v['ref']); $refs[$host] = ($refs[$host] ?? 0) + 1; }
@@ -249,14 +257,14 @@ page_start('پنل آمار مونتانا'); ?>
 <div class="wrap">
 <header class="top">
   <div><div class="brand">MONTANA</div><h1>پنل آمار سایت</h1></div>
-  <div class="tabs"><?php foreach (['main' => 'صفحه اصلی', 'lead' => 'صفحه فرم (/lead)'] as $k => $lbl) echo '<a class="' . ($k === $PG ? 'on' : '') . '" href="?pg=' . h($k) . '&r=' . h($range) . '">' . h($lbl) . '</a>'; ?></div>
+  <div class="tabs"><?php foreach (['main' => 'صفحه اصلی', 'mentor' => 'منتورشیپ (/lead)', 'lead' => 'سیگنال (/CT)'] as $k => $lbl) echo '<a class="' . ($k === $PG ? 'on' : '') . '" href="?pg=' . h($k) . '&r=' . h($range) . '">' . h($lbl) . '</a>'; ?></div>
   <div class="tabs"><?php foreach ($ranges as $k => $lbl) echo '<a class="' . ($k === $range ? 'on' : '') . '" href="?pg=' . h($PG) . '&r=' . h($k) . '">' . h($lbl) . '</a>'; ?>
     <a href="?logout=1">خروج</a></div>
 </header>
 
 <div class="kpis">
   <div class="kpi"><b><?= fa_num($nv) ?></b><span>بازدید صفحه</span></div>
-<?php if ($PG === 'lead'): ?>
+<?php if ($FORM): ?>
   <div class="kpi"><b><?= fa_num($nl) ?></b><span>فرم ثبت‌نام پر شده</span></div>
   <div class="kpi"><b><?= fa_num($pct($nl, $nv)) ?>٪</b><span>نرخ ثبت‌نام</span></div>
 <?php else: ?>
@@ -278,7 +286,7 @@ page_start('پنل آمار مونتانا'); ?>
     <a href="#" class="on" data-dev="m">موبایل (<?= fa_num(count($clkM)) ?> کلیک)</a>
     <a href="#" data-dev="d">دسکتاپ (<?= fa_num(count($clkD)) ?> کلیک)</a>
   </div>
-  <div class="heatwrap"><div class="heat" id="heat"><iframe id="pv" src="<?= $PG === 'lead' ? '/lead?preview=1' : '/?preview=1' ?>" title="پیش‌نمایش صفحه" loading="lazy"></iframe><canvas id="cv"></canvas></div></div>
+  <div class="heatwrap"><div class="heat" id="heat"><iframe id="pv" src="<?= ['main' => '/?preview=1', 'lead' => '/CT?preview=1', 'mentor' => '/lead?preview=1'][$PG] ?>" title="پیش‌نمایش صفحه" loading="lazy"></iframe><canvas id="cv"></canvas></div></div>
   <div class="legend"><span>کم</span><i></i><span>زیاد</span></div>
 </div>
 
@@ -289,20 +297,20 @@ page_start('پنل آمار مونتانا'); ?>
     <?php foreach ($SECTIONS as $i => $lbl) echo bar($lbl, $reach[$i], max(1, $n), fa_num($pct($reach[$i], $n)) . '٪'); ?></div>
   <div class="card"><h2>چقدر مانده‌اند</h2><p class="sub">زمانی که صفحه واقعاً جلوی چشم بازدیدکننده بوده</p>
     <?php foreach ($tbuckets as $lbl => [$a, $b]) { $v = count(array_filter($S, fn($s) => $s['sec'] >= $a && $s['sec'] < $b)); echo bar($lbl, $v, max(1, $n), fa_num($pct($v, $n)) . '٪'); } ?></div>
-  <div class="card"><h2><?= $PG === 'lead' ? 'کدام دکمه ثبت‌نام زده شده' : 'کدام دکمه عضویت زده شده' ?></h2><p class="sub">از <?= fa_num($joinVisits) ?> بازدیدی که روی دکمه عضویت زده‌اند</p>
+  <div class="card"><h2><?= $FORM ? 'کدام دکمه ثبت‌نام زده شده' : 'کدام دکمه عضویت زده شده' ?></h2><p class="sub">از <?= fa_num($joinVisits) ?> بازدیدی که روی دکمه عضویت زده‌اند</p>
     <?php if (!$btn) echo '<p class="sub">هنوز کلیکی ثبت نشده.</p>'; foreach ($btn as $b => $v) echo bar($BUTTONS[$b] ?? ('دکمه ' . fa_num($b)), $v, max($btn)); ?></div>
   <div class="card"><h2>هر روز</h2>
-    <table><tr><th>تاریخ</th><th>بازدید</th><th><?= $PG === 'lead' ? 'ثبت‌نام' : 'کلیک عضویت' ?></th><th>نرخ</th></tr>
+    <table><tr><th>تاریخ</th><th>بازدید</th><th><?= $FORM ? 'ثبت‌نام' : 'کلیک عضویت' ?></th><th>نرخ</th></tr>
     <?php foreach (array_slice($daily, 0, 31, true) as $d => $r) { $v = $r['v'] ?? 0; $j = $r['j'] ?? 0; echo '<tr><td>' . h($d) . '</td><td>' . fa_num($v) . '</td><td>' . fa_num($j) . '</td><td>' . fa_num($pct($j, $v)) . '٪</td></tr>'; } ?></table></div>
   <div class="card"><h2>از کجا آمده‌اند</h2>
     <table><tr><th>منبع</th><th>بازدید</th></tr>
     <?php foreach (array_slice($refs, 0, 12, true) as $k => $v) echo '<tr><td class="ltr">' . h($k) . '</td><td>' . fa_num($v) . '</td></tr>'; ?></table></div>
 </div>
-<?php if ($PG === 'lead'): ?>
+<?php if ($FORM): ?>
 <div class="card"><h2>ثبت‌نام‌ها</h2>
   <p class="sub"><?= fa_num($nl) ?> ثبت‌نام در این بازه. <?php if (is_file($LEADS)) echo '<a href="?export=leads">دانلود همه ثبت‌نام‌ها (فایل اکسل CSV)</a>'; ?></p>
-  <div style="overflow-x:auto"><table><tr><th>زمان</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>سال تولد</th><th>اپ / سایت تبلیغ</th></tr>
-  <?php foreach (array_slice(array_reverse($leads), 0, 200) as $l) echo '<tr><td class="ltr">' . h($l[0]) . '</td><td>' . h($l[1]) . '</td><td class="ltr">' . h($l[2]) . '</td><td class="ltr">' . h($l[3]) . '</td><td>' . h($l[4]) . '</td><td class="ltr">' . h($l[6] ?? '') . '</td></tr>'; ?></table></div></div>
+  <div style="overflow-x:auto"><table><tr><th>زمان</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>سال تولد</th><th>منبع / اپ تبلیغ</th></tr>
+  <?php foreach (array_slice(array_reverse($leads), 0, 200) as $l) echo '<tr><td class="ltr">' . h($l[0]) . '</td><td>' . h($l[1]) . '</td><td class="ltr">' . h($l[2]) . '</td><td class="ltr">' . h($l[3]) . '</td><td>' . h($l[4]) . '</td><td class="ltr">' . h(trim(($l[5] ?? '') . ' / ' . ($l[6] ?? ''), ' /')) . '</td></tr>'; ?></table></div></div>
 <?php endif; ?>
 <div class="card"><h2>گوگل شیت ثبت‌نام‌ها</h2>
   <p class="sub">ثبت‌نام‌های صفحه فرم علاوه بر این پنل، به این گوگل شیت هم فرستاده می‌شوند. آدرس Web app و توکن را از Apps Script همان شیت بردارید.</p>
