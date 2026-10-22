@@ -205,10 +205,10 @@ h2{font-size:clamp(1.85rem,4.2vw,2.7rem);margin-bottom:10px}
 .good h3{color:#f1dca6}
 .good li:before{content:"✓";color:#42c287;font-weight:800}
 .feats{display:grid;gap:12px}
-.feat{display:flex;gap:14px;align-items:flex-start;padding:18px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.feat{display:flex;gap:14px;align-items:center;padding:18px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
 .feat .ic{flex:0 0 auto;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(214,180,106,.14);color:#d6b46a}
 .feat .ic svg{width:22px;height:22px}
-.feat h3{font-size:1.02rem;color:#fff;margin-bottom:2px}
+.feat h3{font-size:1.05rem;color:#fff}
 .feat p{color:#a29e93;font-size:.93rem}
 .course .cta{margin-top:30px;text-align:center}
 
@@ -334,9 +334,9 @@ footer small{display:block;margin-bottom:10px}
     <div class="good"><h3>منتورشیپ مونتانا</h3><ul><li>کلاس آنلاین و زنده</li><li>پرسش و پاسخ و رفع اشکال سر کلاس</li><li>استادی که سود و ضررش رو شفاف نشون میده</li><li>یادگیری مهارت، قدم به قدم در کنار استاد</li></ul></div>
   </div>
   <div class="feats">
-    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg></div><div><h3>آنلاین و زنده</h3><p>هر جا که هستی، از گوشی یا لپ‌تاپ سر کلاس باش.</p></div></div>
-    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5M12 16h.01"/></svg></div><div><h3>پرسش و پاسخ و رفع اشکال</h3><p>سوالت رو همون لحظه می‌پرسی و جواب می‌گیری، نه اینکه تنها بمونی.</p></div></div>
-    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div><h3>رشد در کنار استاد</h3><p>مسیرت رو تنها نمیری؛ قدم به قدم کنار کسی پیش میری که خودش هر روز معامله می‌کنه.</p></div></div>
+    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg></div><div><h3>آنلاین و زنده</h3></div></div>
+    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5M12 16h.01"/></svg></div><div><h3>پرسش و پاسخ و رفع اشکال</h3></div></div>
+    <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div><h3>رشد در کنار استاد</h3></div></div>
   </div>
   <div class="cta"><a class="btn" href="#form" data-go>رزرو جای رایگان در منتورشیپ</a></div>
 </div></section>
