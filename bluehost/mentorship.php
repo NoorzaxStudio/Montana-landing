@@ -379,7 +379,7 @@ footer small{display:block;margin-bottom:10px}
   <div class="hero-media">
     <img src="/images/new-york-stock-exchange-trading-floor.jpg" alt="تالار معاملات بورس نیویورک" data-en-alt="New York Stock Exchange trading floor" fetchpriority="high">
     <img decoding="async" src="/images/mojtaba-hosseini-montana-cafe-laptop.jpg" alt="مجتبی حسینی (مونتانا) در کافه پشت لپ‌تاپ" data-en-alt="Mojtaba Hosseini (Montana) with his laptop at a café">
-    <img decoding="async" src="/images/gold-trading-xauusd.jpg" alt="ترید طلا: نمودار انس طلا و شمش طلا" data-en-alt="Gold trading: XAU/USD chart and gold bars">
+    <img decoding="async" src="/images/gold-trading-xauusd.jpg" alt="ترید طلا: شمش طلا، سکه و نمودار بازار جهانی" data-en-alt="Gold trading: gold bars, coins and a global market chart">
   </div>
   <div class="wrap"><div class="hero-copy">
     <span class="tag" data-en="&lt;i&gt;&lt;/i&gt;Live online mentorship · Free sign-up"><i></i>منتورشیپ آنلاین و زنده · ثبت‌نام رایگان</span>
