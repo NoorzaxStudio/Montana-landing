@@ -5,6 +5,8 @@
 // name, mobile, city and birth year, one at a time, and saves the lead with the
 // site's mentorship sign-ups (~/montana-stats/leads.csv, the admin panel and the Google Sheet).
 // Setup (token, webhook, bot description): open /bot/setup.php once.
+// Each user gets Persian or English (see user_lang) and can switch with the button under
+// the menu or /language. Texts of both are in lib-content.php.
 declare(strict_types=1);
 require __DIR__ . '/lib-bot.php';
 
@@ -27,8 +29,46 @@ else { header('Connection: close'); header('Content-Length: 0'); flush(); }
 
 if (!is_array($update)) exit;
 $T = (string) $cfg['token'];
-$C = bot_content();
 $adminId = (int) ($cfg['admin_id'] ?? 0);
+bot_flag_existing_fa();
+$C = bot_content(user_lang($update['callback_query']['from'] ?? $update['message']['from'] ?? []));
+
+// ---------- language ----------
+
+// The user's language. Once given, it sticks until they press the language button.
+// Everyone who started the bot before it had English is marked Persian (see
+// bot_flag_existing_fa); a new user gets Persian if their Telegram app is in Persian,
+// English otherwise. A ?start=fa / ?start=en link or the language button overrides it.
+// Telegram tells bots nothing about the user's country.
+function user_lang(array $from): string {
+  $id = (int) ($from['id'] ?? 0);
+  if (!$id) return 'fa';
+  $d = bot_store();
+  $lang = $d['lang'][(string) $id] ?? '';
+  if (in_array($lang, BOT_LANGS, true)) return $lang;
+  $code = strtolower((string) ($from['language_code'] ?? ''));
+  $lang = isset($d['users'][(string) $id]) || str_starts_with($code, 'fa') ? 'fa' : 'en';
+  set_lang($id, $lang);
+  return $lang;
+}
+
+function set_lang(int $id, string $lang): void {
+  bot_store(function (&$d) use ($id, $lang) { $d['lang'][(string) $id] = $lang; });
+}
+
+// Switch the user to $lang and show the welcome again in it.
+function switch_lang(string $T, int $chat, int $from, string $lang): void {
+  set_lang($from, $lang);
+  set_step($chat, null);
+  bot_store(function (&$d) use ($lang) { $d['stats']["switch_$lang"] = ($d['stats']["switch_$lang"] ?? 0) + 1; });
+  show_start($T, $chat, bot_content($lang));
+}
+
+// Video messages are spoken in one language: Persian ones are saved under the plain
+// key ('welcome'), English ones under 'en:welcome'.
+function vkey(array $C, string $key): string {
+  return $C['lang'] === 'fa' ? $key : $C['lang'] . ':' . $key;
+}
 
 // ---------- sending ----------
 
@@ -36,6 +76,7 @@ function menu_markup(array $C): array {
   $rows = [];
   foreach ($C['menu'] as $key => $label)
     $rows[] = [$key === 'channel' ? ['text' => $label, 'url' => $C['channel_url']] : ['text' => $label, 'callback_data' => "s:$key"]];
+  $rows[] = [['text' => $C['lang_button'], 'callback_data' => 'lang:' . ($C['lang'] === 'en' ? 'fa' : 'en')]];
   return ['inline_keyboard' => $rows];
 }
 
@@ -92,19 +133,19 @@ function send_video(string $T, int $chat, string $key): bool {
 
 // Welcome text, then its video message, then the menu (on the text itself when there's no video).
 function show_start(string $T, int $chat, array $C): void {
-  $hasVideo = isset(bot_store()['videos']['welcome']);
+  $hasVideo = isset(bot_store()['videos'][vkey($C, 'welcome')]);
   send_photo($T, $chat, $C['start']['photo'] ?? '', $C['start']['text'], $hasVideo ? null : menu_markup($C));
   if ($hasVideo) {
-    send_video($T, $chat, 'welcome');
+    send_video($T, $chat, vkey($C, 'welcome'));
     send_text($T, $chat, $C['start']['menu_text'], menu_markup($C));
   }
 }
 
 function show_syllabus(string $T, int $chat, array $C): void {
-  $hasVideo = isset(bot_store()['videos']['syllabus']);
+  $hasVideo = isset(bot_store()['videos'][vkey($C, 'syllabus')]);
   send_photo($T, $chat, $C['syllabus']['photo'], $C['syllabus']['text'], $hasVideo ? null : next_markup($C));
   if ($hasVideo) {
-    send_video($T, $chat, 'syllabus');
+    send_video($T, $chat, vkey($C, 'syllabus'));
     send_text($T, $chat, $C['fallback'], next_markup($C));
   }
 }
@@ -114,21 +155,56 @@ function show_about(string $T, int $chat, array $C): void {
   $last = count($C['about']) - 1;
   foreach ($C['about'] as $i => $step) {
     if ($i) { tg($T, 'sendChatAction', ['chat_id' => $chat, 'action' => 'typing'], 5); sleep($delay); }
-    send_photo($T, $chat, $step['photo'] ?? '', $step['text'], $i === $last && !isset(bot_store()['videos']['about']) ? next_markup($C) : null);
+    send_photo($T, $chat, $step['photo'] ?? '', $step['text'], $i === $last && !isset(bot_store()['videos'][vkey($C, 'about')]) ? next_markup($C) : null);
   }
-  if (send_video($T, $chat, 'about')) send_text($T, $chat, $C['fallback'], next_markup($C));
+  if (send_video($T, $chat, vkey($C, 'about'))) send_text($T, $chat, $C['fallback'], next_markup($C));
+}
+
+// ---------- follow-up messages to everyone of one language (admin) ----------
+
+// Copies the admin's message to every user of $lang, about 25 a second (Telegram's
+// limit is 30). Users who blocked the bot are remembered and skipped next time.
+// Reports the result to the admin when done.
+function broadcast(string $T, int $admin, int $msgId, string $lang): void {
+  set_time_limit(0);
+  $d = bot_store();
+  $ids = array_keys(array_filter($d['lang'] ?? [], fn($l) => $l === $lang));
+  $ids = array_values(array_diff(array_map('strval', $ids), array_map('strval', array_keys($d['blocked'] ?? []))));
+  $ok = 0; $blocked = []; $failed = 0;
+  foreach ($ids as $id) {
+    $r = tg($T, 'copyMessage', ['chat_id' => $id, 'from_chat_id' => $admin, 'message_id' => $msgId], 15);
+    if (($r['error_code'] ?? 0) === 429) { // too fast: wait as told, then once more
+      sleep((int) ($r['parameters']['retry_after'] ?? 5));
+      $r = tg($T, 'copyMessage', ['chat_id' => $id, 'from_chat_id' => $admin, 'message_id' => $msgId], 15);
+    }
+    if (!empty($r['ok'])) $ok++;
+    elseif (($r['error_code'] ?? 0) === 403) $blocked[] = $id;
+    else $failed++;
+    usleep(40000);
+  }
+  bot_store(function (&$d) use ($blocked) { foreach ($blocked as $id) $d['blocked'][$id] = time(); });
+  $name = $lang === 'en' ? 'انگلیسی' : 'فارسی';
+  send_text($T, $admin, "📨 پیام برای کاربرهای $name فرستاده شد.\n\n✅ رسید: $ok\n🚫 ربات رو بلاک کرده بودن: " . count($blocked) . "\n⚠️ خطا: $failed");
 }
 
 function count_visit(int $chat, string $what): void {
   bot_store(function (&$d) use ($chat, $what) {
     $d['users'][(string) $chat] ??= time();
+    unset($d['blocked'][(string) $chat]); // they're back
     $d['stats'][$what] = ($d['stats'][$what] ?? 0) + 1;
   });
 }
 
-// Places a video message can go.
-function video_targets(array $C): array {
-  return ['welcome' => '👋 پیام خوش‌آمد (استارت)', 'syllabus' => $C['menu']['syllabus'], 'about' => $C['menu']['about']];
+// Places a video message can go (admin labels, always Persian).
+function video_targets(): array {
+  return [
+    'welcome' => '👋 خوش‌آمد (استارت) · فارسی',
+    'syllabus' => '📚 سرفصل‌ها · فارسی',
+    'about' => '👤 معرفی استاد · فارسی',
+    'en:welcome' => '👋 خوش‌آمد (استارت) · انگلیسی',
+    'en:syllabus' => '📚 سرفصل‌ها · انگلیسی',
+    'en:about' => '👤 معرفی استاد · انگلیسی',
+  ];
 }
 
 // ---------- sign-up ----------
@@ -143,6 +219,16 @@ function norm_phone(string $v): string {
   $p = preg_replace('/^(\+98|0098|98)(?=9\d{9}$)/', '0', $p);
   if (preg_match('/^9\d{9}$/', $p)) $p = '0' . $p;
   return preg_match('/^09\d{9}$/', $p) ? $p : '';
+}
+
+// For English users: an Iranian mobile as above, otherwise an international number
+// as +<country code><number>. A shared contact has no '+', so it's added.
+function norm_phone_intl(string $v, bool $contact): string {
+  if (($ir = norm_phone($v)) !== '') return $ir;
+  $p = preg_replace('/[\s\-().]/', '', fa2en($v));
+  if ($contact && preg_match('/^\d+$/', $p)) $p = '+' . $p;
+  $p = preg_replace('/^00/', '+', $p);
+  return preg_match('/^\+[1-9]\d{7,14}$/', $p) ? $p : '';
 }
 
 function phone_taken(string $phone): bool {
@@ -166,8 +252,10 @@ function start_signup(string $T, int $chat, array $C): void {
 }
 
 // Saves the lead next to the site's mentorship sign-ups: same CSV (page "mentor",
-// source "telegram-bot", city in the 13th column), so it shows in the admin panel.
-function save_lead(array $r, array $from): void {
+// source "telegram-bot", or "telegram-bot-en" for English users, city in the 13th
+// column), so it shows in the admin panel.
+function save_lead(array $r, array $from, string $lang): void {
+  $source = $lang === 'en' ? 'telegram-bot-en' : 'telegram-bot';
   $f = bot_dir() . '/leads.csv';
   $new = !is_file($f);
   $cell = fn($v) => preg_match('/^[=+\-@]/', (string) $v) ? "'" . $v : (string) $v;
@@ -175,7 +263,7 @@ function save_lead(array $r, array $from): void {
   if ($h = @fopen($f, 'a')) {
     flock($h, LOCK_EX);
     if ($new) fputcsv($h, ['time', 'name', 'phone', 'email', 'birth_year', 'source', 'app', 'campaign', 'user_agent', 'page', 'medium', 'term', 'city']);
-    fputcsv($h, [date('Y-m-d H:i:s'), $cell($r['name']), $r['phone'], '', $r['year'], 'telegram-bot', '', 'mentorship',
+    fputcsv($h, [date('Y-m-d H:i:s'), $cell($r['name']), $r['phone'], '', $r['year'], $source, '', 'mentorship',
       'Telegram ' . $tgUser, 'mentor', '', '', $cell($r['city'])]);
     flock($h, LOCK_UN); fclose($h);
   }
@@ -183,7 +271,7 @@ function save_lead(array $r, array $from): void {
   if (is_file($sheet)) {
     require_once $sheet;
     montana_sheet_send(bot_dir(), ['name' => $r['name'], 'phone' => $r['phone'], 'email' => '', 'birth_year' => $r['year'],
-      'city' => $r['city'], 'source' => mb_substr('mentorship / telegram-bot / ' . $r['city'], 0, 200)]);
+      'city' => $r['city'], 'source' => mb_substr("mentorship / $source / " . $r['city'], 0, 200)]);
   }
   bot_store(function (&$d) { $d['stats']['signed_up'] = ($d['stats']['signed_up'] ?? 0) + 1; });
 }
@@ -202,7 +290,8 @@ function signup_answer(string $T, int $chat, array $C, array $m, int $adminId): 
       send_text($T, $chat, $S['ask_phone'], ['keyboard' => [[['text' => $S['phone_button'], 'request_contact' => true]]], 'resize_keyboard' => true, 'one_time_keyboard' => true]);
       break;
     case 'phone':
-      $phone = norm_phone(isset($m['contact']) ? (string) ($m['contact']['phone_number'] ?? '') : $text);
+      $raw = isset($m['contact']) ? (string) ($m['contact']['phone_number'] ?? '') : $text;
+      $phone = $C['lang'] === 'en' ? norm_phone_intl($raw, isset($m['contact'])) : norm_phone($raw);
       if ($phone === '') { send_text($T, $chat, $S['bad_phone']); break; }
       if (phone_taken($phone)) {
         set_step($chat, null);
@@ -215,22 +304,27 @@ function signup_answer(string $T, int $chat, array $C, array $m, int $adminId): 
       break;
     case 'city':
       $city = trim(preg_replace('/\s+/u', ' ', $text));
-      if (mb_strlen($city) < 2 || mb_strlen($city) > 40 || preg_match('/\d/', fa2en($city)) || str_starts_with($city, '/')) { send_text($T, $chat, $S['bad_city']); break; }
+      if (mb_strlen($city) < 2 || mb_strlen($city) > 60 || preg_match('/\d/', fa2en($city)) || str_starts_with($city, '/')) { send_text($T, $chat, $S['bad_city']); break; }
       set_step($chat, ['city' => $city, 'step' => 'year'] + $reg);
       send_text($T, $chat, $S['ask_year']);
       break;
     case 'year':
       $year = fa2en($text);
-      if (!preg_match('/^1[34]\d\d$/', $year) || (int) $year < 1310 || (int) $year > 1395) { send_text($T, $chat, $S['bad_year']); break; }
+      // Persian: Solar Hijri 1310-1395. English: Gregorian, at least 10 years ago.
+      $okYear = $C['lang'] === 'en'
+        ? preg_match('/^(19|20)\d\d$/', $year) && (int) $year >= 1930 && (int) $year <= (int) date('Y') - 10
+        : preg_match('/^1[34]\d\d$/', $year) && (int) $year >= 1310 && (int) $year <= 1395;
+      if (!$okYear) { send_text($T, $chat, $S['bad_year']); break; }
       $reg['year'] = $year;
       set_step($chat, null);
-      save_lead($reg, $m['from'] ?? []);
+      save_lead($reg, $m['from'] ?? [], $C['lang']);
       send_text($T, $chat, $S['done'], ['inline_keyboard' => [
         [['text' => $S['channel_button'], 'url' => $C['channel_url']]],
         [['text' => $C['menu_button'], 'callback_data' => 'menu']],
       ]]);
       if ($adminId) {
         $u = isset($m['from']['username']) ? ' (@' . $m['from']['username'] . ')' : '';
+        $u .= $C['lang'] === 'en' ? ' 🇬🇧 انگلیسی' : '';
         send_text($T, $adminId, "🆕 ثبت‌نام منتورشیپ از ربات$u\n\n👤 {$reg['name']}\n📱 {$reg['phone']}\n🏙 {$reg['city']}\n🎂 {$reg['year']}");
       }
       break;
@@ -260,12 +354,14 @@ if (isset($update['callback_query'])) {
     set_step($chat, null);
     count_visit($chat, 'menu');
     send_text($T, $chat, $C['fallback'], menu_markup($C));
+  } elseif (str_starts_with($data, 'lang:') && in_array(substr($data, 5), BOT_LANGS, true)) {
+    switch_lang($T, $chat, $from, substr($data, 5));
   } elseif (str_starts_with($data, 's:') && in_array(substr($data, 2), ['syllabus', 'about', 'signup'], true)) {
     open_section($T, $chat, $C, substr($data, 2));
   } elseif ($from === $adminId && str_starts_with($data, 'vn:')) {
     // Admin chose where the video message they just sent goes.
     $key = substr($data, 3);
-    $targets = video_targets($C);
+    $targets = video_targets();
     $msg = bot_store(function (&$d) use ($from, $key, $targets) {
       $p = $d['pending_video'][(string) $from] ?? null;
       unset($d['pending_video'][(string) $from]);
@@ -275,6 +371,19 @@ if (isset($update['callback_query'])) {
       return "✅ ویدیو برای «{$targets[$key]}» ذخیره شد. از این به بعد کاربرها اون رو می‌بینن.";
     });
     send_text($T, $chat, (string) $msg);
+  } elseif ($from === $adminId && str_starts_with($data, 'bc:')) {
+    $p = bot_store(function (&$d) use ($from) {
+      $p = $d['pending_bc'][(string) $from] ?? null;
+      unset($d['pending_bc'][(string) $from]);
+      return $p;
+    });
+    if ($data === 'bc:go' && !empty($p['msg'])) {
+      tg($T, 'editMessageReplyMarkup', ['chat_id' => $chat, 'message_id' => $q['message']['message_id'] ?? 0, 'reply_markup' => ['inline_keyboard' => []]], 5);
+      send_text($T, $chat, '⏳ در حال ارسال… آخرش نتیجه رو برات می‌فرستم.');
+      broadcast($T, $from, (int) $p['msg'], (string) $p['lang']);
+    } else {
+      send_text($T, $chat, 'ارسال لغو شد.');
+    }
   } elseif ($from === $adminId && str_starts_with($data, 'vd:')) {
     $key = substr($data, 3);
     bot_store(function (&$d) use ($key) { unset($d['videos'][$key]); });
@@ -298,7 +407,7 @@ if ($cmd === 'admin') {
   $code = (string) ($cfg['admin_code'] ?? '');
   if ($code !== '' && hash_equals($code, $arg)) {
     bot_store(function (&$d) use ($from) { $d['config']['admin_id'] = $from; });
-    send_text($T, $chat, "✅ از این به بعد تو ادمین ربات هستی.\n\n• برای اضافه کردن ویدیو: یه ویدیو مسیج (یا ویدیو) همین‌جا بفرست و بخشش رو انتخاب کن.\n• /videos ویدیوهای فعلی و حذفشون\n• /stats آمار ربات\n• هر ثبت‌نام جدید همین‌جا برات فرستاده میشه.");
+    send_text($T, $chat, "✅ از این به بعد تو ادمین ربات هستی.\n\n• برای اضافه کردن ویدیو: یه ویدیو مسیج (یا ویدیو) همین‌جا بفرست و بخشش رو انتخاب کن.\n• /videos ویدیوهای فعلی و حذفشون\n• /stats آمار ربات\n• /send_fa یا /send_en پیام همگانی به کاربرهای فارسی یا انگلیسی\n• هر ثبت‌نام جدید همین‌جا برات فرستاده میشه.");
   } else {
     send_text($T, $chat, 'کد درست نیست.');
   }
@@ -306,6 +415,32 @@ if ($cmd === 'admin') {
 }
 
 if ($from === $adminId && $adminId) {
+  // /send_fa or /send_en, then the message to send to everyone of that language.
+  if ($cmd === 'send_fa' || $cmd === 'send_en') {
+    $lang = substr($cmd, 5);
+    bot_store(function (&$d) use ($from, $lang) { $d['pending_bc'][(string) $from] = ['lang' => $lang]; });
+    send_text($T, $chat, '✍️ پیامی که می‌خوای برای همه‌ی کاربرهای ' . ($lang === 'en' ? 'انگلیسی' : 'فارسی') . " فرستاده بشه رو همین‌جا بفرست (متن، عکس، ویدیو یا ویدیو مسیج).\nبرای لغو: /cancel");
+    exit;
+  }
+  $bc = bot_store()['pending_bc'][(string) $from] ?? null;
+  if ($bc && $cmd === 'cancel') {
+    bot_store(function (&$d) use ($from) { unset($d['pending_bc'][(string) $from]); });
+    send_text($T, $chat, 'ارسال لغو شد.');
+    exit;
+  }
+  if ($bc && empty($bc['msg']) && $cmd === '') {
+    $lang = $bc['lang'];
+    $d = bot_store();
+    $n = count(array_diff_key(array_filter($d['lang'] ?? [], fn($l) => $l === $lang), $d['blocked'] ?? []));
+    bot_store(function (&$d) use ($from, $m) { $d['pending_bc'][(string) $from]['msg'] = (int) $m['message_id']; });
+    $name = $lang === 'en' ? 'انگلیسی' : 'فارسی';
+    send_text($T, $chat, "این پیام برای $n کاربر $name فرستاده بشه؟", ['inline_keyboard' => [
+      [['text' => "✅ ارسال به $n نفر", 'callback_data' => 'bc:go']],
+      [['text' => '✖️ لغو', 'callback_data' => 'bc:cancel']],
+    ]]);
+    exit;
+  }
+
   // Admin sent a video message or video: ask where it goes.
   $vid = $m['video_note'] ?? $m['video'] ?? null;
   if ($vid) {
@@ -314,7 +449,7 @@ if ($from === $adminId && $adminId) {
       $d['pending_video'][(string) $from] = ['type' => $type, 'file_id' => $vid['file_id']];
     });
     $rows = [];
-    foreach (video_targets($C) as $key => $label) $rows[] = [['text' => $label, 'callback_data' => "vn:$key"]];
+    foreach (video_targets() as $key => $label) $rows[] = [['text' => $label, 'callback_data' => "vn:$key"]];
     $rows[] = [['text' => '✖️ لغو', 'callback_data' => 'vn:cancel']];
     send_text($T, $chat, 'این ویدیو برای کدوم بخش باشه؟', ['inline_keyboard' => $rows]);
     exit;
@@ -323,7 +458,7 @@ if ($from === $adminId && $adminId) {
     $videos = bot_store()['videos'] ?? [];
     $rows = [];
     $lines = [];
-    foreach (video_targets($C) as $key => $label) {
+    foreach (video_targets() as $key => $label) {
       $lines[] = (isset($videos[$key]) ? '🎥 ' : '▫️ ') . $label;
       if (isset($videos[$key])) $rows[] = [['text' => "🗑 حذف: $label", 'callback_data' => "vd:$key"]];
     }
@@ -334,13 +469,24 @@ if ($from === $adminId && $adminId) {
     $d = bot_store();
     $lines = ['👥 کاربرها: ' . count($d['users'] ?? [])];
     $lines[] = '▶️ استارت: ' . ($d['stats']['start'] ?? 0);
-    foreach (['syllabus', 'about', 'signup'] as $key) $lines[] = $C['menu'][$key] . ': ' . ($d['stats'][$key] ?? 0);
+    foreach (['syllabus', 'about', 'signup'] as $key) $lines[] = bot_content('fa')['menu'][$key] . ': ' . ($d['stats'][$key] ?? 0);
     $lines[] = '✅ ثبت‌نام کامل: ' . ($d['stats']['signed_up'] ?? 0);
+    $langs = array_count_values(array_values($d['lang'] ?? []));
+    $lines[] = '🌐 زبان: فارسی ' . ($langs['fa'] ?? 0) . ' · انگلیسی ' . ($langs['en'] ?? 0) . '';
     send_text($T, $chat, implode("\n", $lines));
     exit;
   }
 }
 
+// t.me/Montanatraderbot?start=fa (or =en) opens the bot in that language, for ad links.
+if ($cmd === 'start' && in_array($arg, BOT_LANGS, true) && $arg !== $C['lang']) {
+  set_lang($from, $arg);
+  $C = bot_content($arg);
+}
+if ($cmd === 'language') {
+  switch_lang($T, $chat, $from, $C['lang'] === 'en' ? 'fa' : 'en');
+  exit;
+}
 if ($cmd === 'start' || $cmd === 'menu') {
   set_step($chat, null);
   count_visit($chat, 'start');
