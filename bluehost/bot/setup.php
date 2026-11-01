@@ -1,7 +1,8 @@
 <?php
 // One-time setup of the Montana Telegram bot: paste the bot token from @BotFather.
 // This saves it outside the public folder, points the bot at /bot/ (webhook),
-// and sets the bot's description, About line and command menu from lib-content.php.
+// and sets the bot's description, About line and command menu from lib-content.php,
+// in English (the default) and in Persian (for Telegram apps set to Persian).
 // Run it again after changing the description or commands. Once a token is saved,
 // only someone who knows that token can run setup again. The /admin code is
 // shown only right after a successful setup.
@@ -41,14 +42,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $d['config']['username'] = $me['result']['username'] ?? '';
         if ($old !== $token) unset($d['photos']); // file ids belong to one bot
       });
-      $C = bot_content();
       $url = 'https://' . ($_SERVER['HTTP_HOST'] ?? '') . '/bot/index.php'; // Telegram only calls https
       $steps = [
         'وب‌هوک' => tg($token, 'setWebhook', ['url' => $url, 'secret_token' => $secret, 'allowed_updates' => ['message', 'callback_query'], 'drop_pending_updates' => 'true']),
-        'توضیحات ربات' => tg($token, 'setMyDescription', ['description' => $C['description']]),
-        'About' => tg($token, 'setMyShortDescription', ['short_description' => $C['short_description']]),
-        'منوی دستورها' => tg($token, 'setMyCommands', ['commands' => array_map(fn($k, $v) => ['command' => $k, 'description' => $v], array_keys($C['commands']), $C['commands'])]),
       ];
+      // English is the default; people whose Telegram app is in Persian see the Persian texts.
+      foreach (['en' => ['', 'انگلیسی (پیش‌فرض)'], 'fa' => ['fa', 'فارسی']] as $lang => [$code, $name]) {
+        $C = bot_content($lang);
+        $l = $code !== '' ? ['language_code' => $code] : [];
+        $steps["توضیحات ربات · $name"] = tg($token, 'setMyDescription', ['description' => $C['description']] + $l);
+        $steps["About · $name"] = tg($token, 'setMyShortDescription', ['short_description' => $C['short_description']] + $l);
+        $steps["منوی دستورها · $name"] = tg($token, 'setMyCommands', ['commands' => array_map(fn($k, $v) => ['command' => $k, 'description' => $v], array_keys($C['commands']), $C['commands'])] + $l);
+      }
       $ok = true;
       foreach ($steps as $label => $r) {
         $msg[] = [!empty($r['ok']) ? 'ok' : 'err', $label . ': ' . (!empty($r['ok']) ? 'انجام شد' : ($r['description'] ?? 'خطا'))];

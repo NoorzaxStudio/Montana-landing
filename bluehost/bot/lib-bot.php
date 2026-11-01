@@ -29,9 +29,15 @@ function bot_store(?callable $fn = null) {
   return $out;
 }
 
-function bot_content(): array {
-  static $c = null;
-  return $c ??= require __DIR__ . '/lib-content.php';
+const BOT_LANGS = ['fa', 'en'];
+
+// Texts of one language: the shared keys of lib-content.php plus that language's block.
+function bot_content(string $lang = 'fa'): array {
+  static $all = null;
+  $all ??= require __DIR__ . '/lib-content.php';
+  if (!in_array($lang, BOT_LANGS, true)) $lang = 'fa';
+  $shared = array_diff_key($all, array_flip(BOT_LANGS));
+  return array_merge($shared, $all[$lang], ['lang' => $lang]);
 }
 
 // Call a Telegram Bot API method. Returns the decoded response.
