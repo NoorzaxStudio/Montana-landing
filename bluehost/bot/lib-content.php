@@ -103,7 +103,7 @@ return [
     // Public Myfxbook page of the bot: shown as a button under "Results" once filled in.
     'results_url' => 'https://www.myfxbook.com/members/Montanatrader/montanagold/12274497',
     // Support account, like https://t.me/MontanaSupport: shown under "Questions and support".
-    'support_url' => '',
+    'support_url' => 'https://t.me/Montanatraderr',
 
     // Shown in Telegram before someone presses Start (max 512 characters).
     'description' => "Hi, I'm Montana, a former broker analyst 👋\n\nTrading is a battle, and the banks bring their strongest bots ⚔️ Our AI trades gold and major pairs 24/7, by the rules, without fear or greed 🤖\n\nYour money never leaves your own account 🔒 Start with a small amount.\n\nPress Start 👇",
