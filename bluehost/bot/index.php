@@ -1,9 +1,12 @@
 <?php
 // Montana Telegram bot (@Montanatraderbot): Telegram sends every message here (webhook).
-// /start shows the welcome (why Montana, the online mentorship) with the menu:
-// syllabus, teacher intro, free sign-up and the analysis channel. Sign-up asks for
-// name, mobile, city and birth year, one at a time, and saves the lead with the
-// site's mentorship sign-ups (~/montana-stats/leads.csv, the admin panel and the Google Sheet).
+// Persian users get the free online mentorship: welcome, syllabus, teacher intro,
+// free sign-up and the analysis channel. English users get the AI trading bot: why
+// manual trading doesn't work, why the AI bot works, results, how to start, support.
+// Each menu section is its text plus an optional video message (added by the admin).
+// Sign-up asks for name, mobile, city and birth year, one at a time, and saves the
+// lead with the site's mentorship sign-ups (~/montana-stats/leads.csv, the admin panel
+// and the Google Sheet).
 // Setup (token, webhook, bot description): open /bot/setup.php once.
 // Each user gets Persian or English (see user_lang) and can switch with the button under
 // the menu or /language. Texts of both are in lib-content.php.
@@ -74,18 +77,23 @@ function vkey(array $C, string $key): string {
 
 function menu_markup(array $C): array {
   $rows = [];
-  foreach ($C['menu'] as $key => $label)
+  foreach ($C['menu'] as $key => $label) {
+    if ($key === 'channel' && empty($C['channel_url'])) continue;
     $rows[] = [$key === 'channel' ? ['text' => $label, 'url' => $C['channel_url']] : ['text' => $label, 'callback_data' => "s:$key"]];
+  }
   $rows[] = [['text' => $C['lang_button'], 'callback_data' => 'lang:' . ($C['lang'] === 'en' ? 'fa' : 'en')]];
   return ['inline_keyboard' => $rows];
 }
 
-// Buttons under a section: sign up, and back to the menu.
-function next_markup(array $C): array {
-  return ['inline_keyboard' => [
-    [['text' => $C['signup_button'], 'callback_data' => 's:signup']],
-    [['text' => $C['menu_button'], 'callback_data' => 'menu']],
-  ]];
+// Buttons under a section: the section's own link (when its url is filled in),
+// sign up, and back to the menu.
+function next_markup(array $C, array $section = []): array {
+  $rows = [];
+  $b = $section['button'] ?? null;
+  if ($b && !empty($C[$b['url_key']])) $rows[] = [['text' => $b['text'], 'url' => $C[$b['url_key']]]];
+  $rows[] = [['text' => $C['signup_button'], 'callback_data' => 's:signup']];
+  $rows[] = [['text' => $C['menu_button'], 'callback_data' => 'menu']];
+  return ['inline_keyboard' => $rows];
 }
 
 // Send a photo (.jpg) or video (.mp4) from bot/img with a caption. Uploads it the
@@ -141,23 +149,23 @@ function show_start(string $T, int $chat, array $C): void {
   }
 }
 
-function show_syllabus(string $T, int $chat, array $C): void {
-  $hasVideo = isset(bot_store()['videos'][vkey($C, 'syllabus')]);
-  send_photo($T, $chat, $C['syllabus']['photo'], $C['syllabus']['text'], $hasVideo ? null : next_markup($C));
-  if ($hasVideo) {
-    send_video($T, $chat, vkey($C, 'syllabus'));
-    send_text($T, $chat, $C['fallback'], next_markup($C));
-  }
-}
-
-function show_about(string $T, int $chat, array $C): void {
+// A menu section: its text (or steps, step_delay seconds apart), then its video
+// message, with the buttons under the last message.
+function show_section(string $T, int $chat, array $C, string $key): void {
+  $sec = $C['sections'][$key];
+  $steps = $sec['steps'] ?? [$sec];
+  $markup = next_markup($C, $sec);
+  $hasVideo = isset(bot_store()['videos'][vkey($C, $key)]);
   $delay = (int) ($C['step_delay'] ?? 3);
-  $last = count($C['about']) - 1;
-  foreach ($C['about'] as $i => $step) {
+  $last = count($steps) - 1;
+  foreach ($steps as $i => $step) {
     if ($i) { tg($T, 'sendChatAction', ['chat_id' => $chat, 'action' => 'typing'], 5); sleep($delay); }
-    send_photo($T, $chat, $step['photo'] ?? '', $step['text'], $i === $last && !isset(bot_store()['videos'][vkey($C, 'about')]) ? next_markup($C) : null);
+    send_photo($T, $chat, $step['photo'] ?? '', $step['text'], $i === $last && !$hasVideo ? $markup : null);
   }
-  if (send_video($T, $chat, vkey($C, 'about'))) send_text($T, $chat, $C['fallback'], next_markup($C));
+  if ($hasVideo) {
+    send_video($T, $chat, vkey($C, $key));
+    send_text($T, $chat, $C['fallback'], $markup);
+  }
 }
 
 // ---------- follow-up messages to everyone of one language (admin) ----------
@@ -195,16 +203,16 @@ function count_visit(int $chat, string $what): void {
   });
 }
 
-// Places a video message can go (admin labels, always Persian).
+// Places a video message can go: the welcome and each menu section, per language.
 function video_targets(): array {
-  return [
-    'welcome' => '👋 خوش‌آمد (استارت) · فارسی',
-    'syllabus' => '📚 سرفصل‌ها · فارسی',
-    'about' => '👤 معرفی استاد · فارسی',
-    'en:welcome' => '👋 خوش‌آمد (استارت) · انگلیسی',
-    'en:syllabus' => '📚 سرفصل‌ها · انگلیسی',
-    'en:about' => '👤 معرفی استاد · انگلیسی',
-  ];
+  $out = [];
+  foreach (BOT_LANGS as $lang) {
+    $C = bot_content($lang);
+    $tag = $lang === 'en' ? ' · انگلیسی' : ' · فارسی';
+    $out[vkey($C, 'welcome')] = '👋 خوش‌آمد (استارت)' . $tag;
+    foreach (array_keys($C['sections']) as $key) $out[vkey($C, $key)] = $C['menu'][$key] . $tag;
+  }
+  return $out;
 }
 
 // ---------- sign-up ----------
@@ -254,7 +262,7 @@ function start_signup(string $T, int $chat, array $C): void {
 // Saves the lead next to the site's mentorship sign-ups: same CSV (page "mentor",
 // source "telegram-bot", or "telegram-bot-en" for English users, city in the 13th
 // column), so it shows in the admin panel.
-function save_lead(array $r, array $from, string $lang): void {
+function save_lead(array $r, array $from, string $lang, string $campaign): void {
   $source = $lang === 'en' ? 'telegram-bot-en' : 'telegram-bot';
   $f = bot_dir() . '/leads.csv';
   $new = !is_file($f);
@@ -263,7 +271,7 @@ function save_lead(array $r, array $from, string $lang): void {
   if ($h = @fopen($f, 'a')) {
     flock($h, LOCK_EX);
     if ($new) fputcsv($h, ['time', 'name', 'phone', 'email', 'birth_year', 'source', 'app', 'campaign', 'user_agent', 'page', 'medium', 'term', 'city']);
-    fputcsv($h, [date('Y-m-d H:i:s'), $cell($r['name']), $r['phone'], '', $r['year'], $source, '', 'mentorship',
+    fputcsv($h, [date('Y-m-d H:i:s'), $cell($r['name']), $r['phone'], '', $r['year'], $source, '', $campaign,
       'Telegram ' . $tgUser, 'mentor', '', '', $cell($r['city'])]);
     flock($h, LOCK_UN); fclose($h);
   }
@@ -271,7 +279,7 @@ function save_lead(array $r, array $from, string $lang): void {
   if (is_file($sheet)) {
     require_once $sheet;
     montana_sheet_send(bot_dir(), ['name' => $r['name'], 'phone' => $r['phone'], 'email' => '', 'birth_year' => $r['year'],
-      'city' => $r['city'], 'source' => mb_substr("mentorship / $source / " . $r['city'], 0, 200)]);
+      'city' => $r['city'], 'source' => mb_substr("$campaign / $source / " . $r['city'], 0, 200)]);
   }
   bot_store(function (&$d) { $d['stats']['signed_up'] = ($d['stats']['signed_up'] ?? 0) + 1; });
 }
@@ -317,15 +325,13 @@ function signup_answer(string $T, int $chat, array $C, array $m, int $adminId): 
       if (!$okYear) { send_text($T, $chat, $S['bad_year']); break; }
       $reg['year'] = $year;
       set_step($chat, null);
-      save_lead($reg, $m['from'] ?? [], $C['lang']);
-      send_text($T, $chat, $S['done'], ['inline_keyboard' => [
-        [['text' => $S['channel_button'], 'url' => $C['channel_url']]],
-        [['text' => $C['menu_button'], 'callback_data' => 'menu']],
-      ]]);
+      save_lead($reg, $m['from'] ?? [], $C['lang'], $S['campaign'] ?? 'mentorship');
+      $rows = empty($C['channel_url']) ? [] : [[['text' => $S['channel_button'], 'url' => $C['channel_url']]]];
+      $rows[] = [['text' => $C['menu_button'], 'callback_data' => 'menu']];
+      send_text($T, $chat, $S['done'], ['inline_keyboard' => $rows]);
       if ($adminId) {
         $u = isset($m['from']['username']) ? ' (@' . $m['from']['username'] . ')' : '';
-        $u .= $C['lang'] === 'en' ? ' 🇬🇧 انگلیسی' : '';
-        send_text($T, $adminId, "🆕 ثبت‌نام منتورشیپ از ربات$u\n\n👤 {$reg['name']}\n📱 {$reg['phone']}\n🏙 {$reg['city']}\n🎂 {$reg['year']}");
+        send_text($T, $adminId, "🆕 {$S['admin_title']}$u\n\n👤 {$reg['name']}\n📱 {$reg['phone']}\n🏙 {$reg['city']}\n🎂 {$reg['year']}");
       }
       break;
     default:
@@ -334,11 +340,14 @@ function signup_answer(string $T, int $chat, array $C, array $m, int $adminId): 
   return true;
 }
 
+function is_section(array $C, string $key): bool {
+  return $key === 'signup' || isset($C['sections'][$key]);
+}
+
 function open_section(string $T, int $chat, array $C, string $key): void {
   count_visit($chat, $key);
-  if ($key === 'syllabus') show_syllabus($T, $chat, $C);
-  elseif ($key === 'about') show_about($T, $chat, $C);
-  elseif ($key === 'signup') start_signup($T, $chat, $C);
+  if ($key === 'signup') start_signup($T, $chat, $C);
+  elseif (isset($C['sections'][$key])) show_section($T, $chat, $C, $key);
 }
 
 // ---------- button presses ----------
@@ -356,7 +365,7 @@ if (isset($update['callback_query'])) {
     send_text($T, $chat, $C['fallback'], menu_markup($C));
   } elseif (str_starts_with($data, 'lang:') && in_array(substr($data, 5), BOT_LANGS, true)) {
     switch_lang($T, $chat, $from, substr($data, 5));
-  } elseif (str_starts_with($data, 's:') && in_array(substr($data, 2), ['syllabus', 'about', 'signup'], true)) {
+  } elseif (str_starts_with($data, 's:') && is_section($C, substr($data, 2))) {
     open_section($T, $chat, $C, substr($data, 2));
   } elseif ($from === $adminId && str_starts_with($data, 'vn:')) {
     // Admin chose where the video message they just sent goes.
@@ -469,7 +478,12 @@ if ($from === $adminId && $adminId) {
     $d = bot_store();
     $lines = ['👥 کاربرها: ' . count($d['users'] ?? [])];
     $lines[] = '▶️ استارت: ' . ($d['stats']['start'] ?? 0);
-    foreach (['syllabus', 'about', 'signup'] as $key) $lines[] = bot_content('fa')['menu'][$key] . ': ' . ($d['stats'][$key] ?? 0);
+    foreach (BOT_LANGS as $lang) {
+      $L = bot_content($lang);
+      $lines[] = $lang === 'en' ? "\n🇬🇧 ربات AI (انگلیسی):" : "\n🇮🇷 منتورشیپ (فارسی):";
+      foreach (array_keys($L['sections']) as $key) $lines[] = $L['menu'][$key] . ': ' . ($d['stats'][$key] ?? 0);
+    }
+    $lines[] = '📝 شروع ثبت‌نام (هر دو): ' . ($d['stats']['signup'] ?? 0);
     $lines[] = '✅ ثبت‌نام کامل: ' . ($d['stats']['signed_up'] ?? 0);
     $langs = array_count_values(array_values($d['lang'] ?? []));
     $lines[] = '🌐 زبان: فارسی ' . ($langs['fa'] ?? 0) . ' · انگلیسی ' . ($langs['en'] ?? 0) . '';
@@ -493,7 +507,7 @@ if ($cmd === 'start' || $cmd === 'menu') {
   show_start($T, $chat, $C);
   exit;
 }
-if (in_array($cmd, ['syllabus', 'about', 'signup'], true)) {
+if ($cmd !== '' && is_section($C, $cmd)) {
   set_step($chat, null);
   open_section($T, $chat, $C, $cmd);
   exit;

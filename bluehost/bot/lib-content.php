@@ -51,21 +51,29 @@ return [
     // Switches this user to the other language.
     'lang_button' => '🇬🇧 English',
 
+    // What each menu button shows: a text (with an optional photo), or several
+    // 'steps' sent step_delay seconds apart. The admin can add a video message to
+    // each one; it's sent after the text.
+    'sections' => [
     'syllabus' => [
       'photo' => 'syllabus.jpg',
       'text' => "📚 سرفصل‌های منتورشیپ مونتانا\n\n۱. تعاریف، مفاهیم و افتتاح حساب 🏦\n۲. ابزارهای معامله‌گری و پایه تحلیل تکنیکال 📊\n۳. رویدادهای اقتصادی و تأثیرات آن 🌍\n۴. شناسایی چارت و مدیریت سرمایه 💰\n۵. تحلیل تکنیکال پیشرفته 📈\n۶. شناسایی مسیر نقدینگی موسسات 🏛\n۷. بهره‌گیری از هوش مصنوعی 🤖\n\nهمه جلسه‌ها آنلاین و زنده‌ست و سر هر جلسه پرسش و پاسخ و رفع اشکال داریم.",
     ],
 
     // The teacher intro, as on the site: separate messages, step_delay seconds apart.
-    'about' => [
+    'about' => ['steps' => [
       ['photo' => 'about-1.jpg', 'text' => "👤 معرفی استاد\n\nمن مجتبی حسینی هستم، معروف به مونتانا؛ تنها تحلیلگر ایران که جسارتش رو داره معامله‌هاش رو به صورت شفاف به همه نشون بده.\n\n🪙 ۸ سال پیش مسیرم رو با ارز دیجیتال شروع کردم و همین‌جا فهمیدم ثبات و پشتوانه یک دارایی، مهم‌ترین عامل بازدهی بلندمدته."],
       ['photo' => 'about-2.jpg', 'text' => "🎓 در گرایش مالی مهندسی صنایع از دانشگاه تهران فارغ‌التحصیل شدم و از پایان‌نامه‌م در الگوریتمیک ترید دفاع کردم."],
       ['photo' => 'about-3.jpg', 'text' => "🏦 بعد تحلیلگر بروکرها و موسسات مالی شدم. هزاران حساب معامله‌گر زیر دستم بود.\n\nاز نزدیک دیدم معامله‌گرهای ضررده چه عادت‌هایی دارن و رمز موفقیت پایدار سودده‌ها چیه."],
       ['photo' => 'about-4.jpg', 'text' => "🤖 امروز از قدرت هوش مصنوعی در مدل‌سازی و شبیه‌سازی استفاده می‌کنم و همین رو تو منتورشیپ یاد میدم."],
+    ]],
     ],
 
     // Sign-up: name, mobile, city, birth year, one question at a time.
     'signup' => [
+      // Saved with the lead (campaign column), to tell the bot's offers apart.
+      'campaign' => 'mentorship',
+      'admin_title' => 'ثبت‌نام منتورشیپ از ربات',
       'photo' => 'signup.jpg',
       'intro' => "📝 ثبت‌نام رایگان در منتورشیپ آنلاین مونتانا\n\nفقط ۴ سوال کوتاه. هر وقت خواستی می‌تونی با /start برگردی به منو.",
       'ask_name' => "۱ از ۴: نام و نام خانوادگیت رو بنویس ✍️",
@@ -86,66 +94,86 @@ return [
     'fallback' => "از دکمه‌های زیر انتخاب کن 👇",
   ],
 
-  // ---------- English (everyone else: new users whose Telegram app isn't in Persian,
-  // a start link ending in ?start=en, or who pressed "English") ----------
+  // ---------- English: the AI trading bot, for the international ads (everyone whose
+  // Telegram app isn't in Persian, a start link ending in ?start=en, or who pressed
+  // "English") ----------
   'en' => [
-    // To send English speakers to another channel, uncomment this:
-    // 'channel_url' => 'https://t.me/...',
+    // No analysis channel for English users yet: put its link here to add the button.
+    'channel_url' => '',
+    // Public Myfxbook page of the bot: shown as a button under "Results" once filled in.
+    'results_url' => '',
+    // Support account, like https://t.me/MontanaSupport: shown under "Questions and support".
+    'support_url' => '',
 
     // Shown in Telegram before someone presses Start (max 512 characters).
-    'description' => "Hi, I'm Montana, a former broker analyst 👋\n\nStill watching pre-recorded trading courses with your questions left unanswered? 🤔\nLearning to trade on your own takes years and a lot of losses 📉\n\nIn Montana's live online mentorship you learn trading step by step, with Q&A and troubleshooting. Sign-up is free 🎓\n\nPress Start 👇",
+    'description' => "Hi, I'm Montana, a former broker analyst 👋\n\nTrading is a battle, and the banks bring their strongest bots ⚔️ Our AI trades gold and major pairs 24/7, by the rules, without fear or greed 🤖\n\nYour money never leaves your own account 🔒 Start with a small amount.\n\nPress Start 👇",
     // The bot's "About" line on its profile (max 120 characters).
-    'short_description' => 'Live online trading mentorship with a former broker analyst | Free sign-up',
+    'short_description' => 'AI trading bot for gold and major pairs, 24/7 | Your money stays in your account',
     'commands' => [
       'start' => 'Main menu',
-      'signup' => 'Free mentorship sign-up',
-      'syllabus' => 'Course syllabus',
+      'howto' => 'How to start',
+      'support' => 'Questions and support',
       'language' => 'فارسی / English',
     ],
 
     'start' => [
-      'photo' => 'welcome.jpg',
-      'text' => "Hey friend 🤝 welcome to the Montana bot.\n\nI'm Mojtaba Hosseini, known as Montana; a former analyst at brokers and financial institutions.\n\nTrading is a very hard, high-risk profession, but easy alongside Montana. Why?\n\n🤖 AI tools: you test and optimise your strategy with AI, so your decisions rest on data, not guesswork.\n🧠 Trading psychology and emotional control: you learn to trade with a calm mind and by plan.\n🛡 Risk management techniques: position size, stop loss, and when not to enter the market at all.\n🏦 Financial-institution strategies: the same principles brokers and institutions use to move the market.\n\n🎓 The mentorship is live and online, with Q&A and troubleshooting in class. Sign-up is free.",
+      'photo' => 'ai-welcome.jpg',
+      'text' => "Hey 👋 welcome to Montana AI Trading.\n\nI'm Mojtaba Hosseini, known as Montana; a former analyst at brokers and financial institutions. I've seen thousands of trader accounts, and why most of them lose.\n\nToday our AI trades gold and major currency pairs for you, 24/7, rule by rule, without fear or greed 🤖\n\nPick a topic below; each one has a short video from me 👇",
       'menu_text' => "Choose from the buttons below 👇",
     ],
 
     'menu' => [
-      'syllabus' => '📚 Course syllabus',
-      'about' => '👤 Meet the teacher',
-      'signup' => '📝 Free mentorship sign-up',
-      'channel' => '📢 Analysis channel',
+      'manual' => "😓 Why manual trading doesn't work",
+      'ai' => '🤖 Why the AI bot works',
+      'results' => '📈 Results',
+      'howto' => '🚀 How to start',
+      'support' => '💬 Questions and support',
     ],
-    'signup_button' => '📝 Sign up free',
+    'signup_button' => "🚀 I want to start",
     'menu_button' => '🔙 Main menu',
     'lang_button' => '🇮🇷 فارسی',
 
-    'syllabus' => [
-      'photo' => 'syllabus.jpg',
-      'text' => "📚 Montana mentorship syllabus\n\n1. Definitions, concepts and opening an account 🏦\n2. Trading tools and the basics of technical analysis 📊\n3. Economic events and their impact 🌍\n4. Reading the chart and money management 💰\n5. Advanced technical analysis 📈\n6. Tracking institutional liquidity 🏛\n7. Making use of AI 🤖\n\nEvery session is live and online, with Q&A and troubleshooting in each one.",
-    ],
-
-    'about' => [
-      ['photo' => 'about-1.jpg', 'text' => "👤 Meet the teacher\n\nI'm Mojtaba Hosseini, known as Montana; an analyst with the nerve to show every one of his trades transparently to everyone.\n\n🪙 I started out in crypto 8 years ago, and that's where I learned that an asset's stability and backing are the biggest drivers of long-term returns."],
-      ['photo' => 'about-2.jpg', 'text' => "🎓 I graduated in Industrial Engineering with a finance focus from the University of Tehran, and defended my thesis on algorithmic trading."],
-      ['photo' => 'about-3.jpg', 'text' => "🏦 Then I became an analyst at brokers and financial institutions. Thousands of trader accounts passed through my hands.\n\nI saw up close the habits of losing traders, and the secret behind the lasting success of profitable ones."],
-      ['photo' => 'about-4.jpg', 'text' => "🤖 Today I use the power of AI in modelling and simulation, and that's what I teach in the mentorship."],
+    'sections' => [
+      'manual' => [
+        'photo' => 'ai-manual.jpg',
+        'text' => "😓 Why manual trading doesn't work\n\nTrading is a battle between you and the banks, and the banks bring their strongest bots ⚔️\n\n⏳ You need minutes to decide on one position. The market moves in seconds.\n😱 Fear and greed make you exit early, skip your stop-loss or revenge-trade.\n📋 The best strategies are mechanical. No human can follow every rule, every time.\n😴 You have to work and sleep. The market never stops.\n\nThat's why most manual traders lose, even with a good strategy.",
+      ],
+      'ai' => [
+        'photo' => 'ai-bot.jpg',
+        'text' => "🤖 Why the AI bot works\n\n⚡ It weighs every factor in one second and takes the position for you.\n🧠 Zero emotion: it follows the plan on trade 1 and on trade 100.\n✅ It executes the strategy exactly, rule by rule, without a single exception.\n🌙 It watches gold and major pairs 24/7, while you work or sleep.\n🎯 It goes after the big moves, not a few pips.\n\n🔒 Your money never leaves your account. The account is with your broker, in your name; the AI only places trades.",
+      ],
+      'results' => [
+        'photo' => 'ai-results.jpg',
+        'text' => "📈 Results\n\nWe aim for consistent profits: steady, rule-based trading, not lucky one-off wins.\n\n✅ The bot's results are public on Myfxbook, an independent site that verifies trading accounts, so you can check every trade yourself.\n\n⚠️ Trading carries risk, and past results don't guarantee future results.",
+        'button' => ['text' => '📊 See the results on Myfxbook', 'url_key' => 'results_url'],
+      ],
+      'howto' => [
+        'photo' => 'ai-start.jpg',
+        'text' => "🚀 How to start\n\n1️⃣ Press \"I want to start\" below and answer 4 short questions.\n2️⃣ Our team contacts you and helps you open a trading account with a broker, in your own name.\n3️⃣ You start with a small amount 💰\n4️⃣ We connect the AI bot to your account, and you follow the results.\n\n🔒 Your money stays in your account the whole time; the AI only places trades.",
+      ],
+      'support' => [
+        'text' => "💬 Questions and support\n\nHave a question about the AI bot, your account or the results? Message our support team and we'll answer you personally 👇",
+        'button' => ['text' => '💬 Message support', 'url_key' => 'support_url'],
+      ],
     ],
 
     'signup' => [
-      'photo' => 'signup.jpg',
-      'intro' => "📝 Free sign-up for Montana's live online mentorship\n\nJust 4 short questions. You can go back to the menu any time with /start.",
+      'campaign' => 'ai-bot',
+      'admin_title' => 'ثبت‌نام ربات AI (انگلیسی) از ربات',
+      'photo' => 'ai-start.jpg',
+      'intro' => "🚀 Start with Montana AI Trading\n\nJust 4 short questions, then our team contacts you. You can go back to the menu any time with /start.",
       'ask_name' => "1 of 4: Write your full name ✍️",
-      'ask_phone' => "2 of 4: Write your mobile number with the country code (like +44 7700 900123), or press the button below 📱",
+      'ask_phone' => "2 of 4: Write your WhatsApp or mobile number with the country code (like +234 803 123 4567), or press the button below 📱",
       'phone_button' => '📱 Share my number',
       'ask_city' => "3 of 4: Which city and country do you live in? 🏙",
       'ask_year' => "4 of 4: Write your year of birth (like 1995) 🎂",
-      'bad_name' => "Please write your name properly, like \"John Smith\".",
-      'bad_phone' => "That number doesn't look right. Write it with the country code, like +44 7700 900123.",
-      'bad_city' => "Please write your city properly, like \"London, UK\".",
+      'bad_name' => "Please write your name properly, like \"John Okafor\".",
+      'bad_phone' => "That number doesn't look right. Write it with the country code, like +234 803 123 4567.",
+      'bad_city' => "Please write your city properly, like \"Lagos, Nigeria\".",
       'bad_year' => "Please write your year of birth as four digits, like 1995.",
-      'duplicate' => "✅ You've already signed up with this number. Our team will contact you with the exact time and the mentorship link.",
-      'done' => "✅ You're signed up.\n\nOur team will contact you with the exact time and the mentorship link.\n\nUntil then, follow the daily gold and currency analysis on Montana's channel 👇",
-      'channel_button' => '📢 Join the analysis channel',
+      'duplicate' => "✅ You've already registered with this number. Our team will contact you soon.",
+      'done' => "✅ You're registered.\n\nOur team will contact you soon to help you open your account and connect the AI bot.\n\nUntil then, check the other topics in the menu 👇",
+      'channel_button' => '📢 Join the channel',
     ],
 
     'fallback' => "Choose from the buttons below 👇",
