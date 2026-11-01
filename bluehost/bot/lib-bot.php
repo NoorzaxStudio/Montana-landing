@@ -31,6 +31,22 @@ function bot_store(?callable $fn = null) {
 
 const BOT_LANGS = ['fa', 'en'];
 
+// One time, when the bilingual bot first runs: everyone who started the bot before
+// (all from the Persian ads) is marked Persian, so follow-up messages to Persian users
+// reach them too. Returns how many were marked (0 after the first time).
+function bot_flag_existing_fa(): int {
+  if (!empty(bot_store()['lang_init'])) return 0;
+  return (int) bot_store(function (&$d) {
+    if (!empty($d['lang_init'])) return 0;
+    $n = 0;
+    foreach (array_keys($d['users'] ?? []) as $id) {
+      if (!isset($d['lang'][(string) $id])) { $d['lang'][(string) $id] = 'fa'; $n++; }
+    }
+    $d['lang_init'] = time();
+    return $n;
+  });
+}
+
 // Texts of one language: the shared keys of lib-content.php plus that language's block.
 function bot_content(string $lang = 'fa'): array {
   static $all = null;

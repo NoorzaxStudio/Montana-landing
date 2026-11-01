@@ -54,6 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $steps["About · $name"] = tg($token, 'setMyShortDescription', ['short_description' => $C['short_description']] + $l);
         $steps["منوی دستورها · $name"] = tg($token, 'setMyCommands', ['commands' => array_map(fn($k, $v) => ['command' => $k, 'description' => $v], array_keys($C['commands']), $C['commands'])] + $l);
       }
+      $flagged = bot_flag_existing_fa();
+      if ($flagged) $msg[] = ['ok', "$flagged کاربر قبلی به‌عنوان فارسی‌زبان علامت خوردن."];
       $ok = true;
       foreach ($steps as $label => $r) {
         $msg[] = [!empty($r['ok']) ? 'ok' : 'err', $label . ': ' . (!empty($r['ok']) ? 'انجام شد' : ($r['description'] ?? 'خطا'))];
