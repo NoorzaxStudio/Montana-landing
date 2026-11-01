@@ -37,15 +37,17 @@ $C = bot_content(user_lang($update['callback_query']['from'] ?? $update['message
 
 // The user's language. Once given, it sticks until they press the language button.
 // Everyone who started the bot before it had English is marked Persian (see
-// bot_flag_existing_fa); every new user gets English, unless they came in through a
-// ?start=fa link or press «فارسی». Telegram tells bots nothing about the user's country.
+// bot_flag_existing_fa); a new user gets Persian if their Telegram app is in Persian,
+// English otherwise. A ?start=fa / ?start=en link or the language button overrides it.
+// Telegram tells bots nothing about the user's country.
 function user_lang(array $from): string {
   $id = (int) ($from['id'] ?? 0);
   if (!$id) return 'fa';
   $d = bot_store();
   $lang = $d['lang'][(string) $id] ?? '';
   if (in_array($lang, BOT_LANGS, true)) return $lang;
-  $lang = isset($d['users'][(string) $id]) ? 'fa' : 'en';
+  $code = strtolower((string) ($from['language_code'] ?? ''));
+  $lang = isset($d['users'][(string) $id]) || str_starts_with($code, 'fa') ? 'fa' : 'en';
   set_lang($id, $lang);
   return $lang;
 }
