@@ -101,7 +101,7 @@ return [
     // No analysis channel for English users yet: put its link here to add the button.
     'channel_url' => '',
     // Public Myfxbook page of the bot: shown as a button under "Results" once filled in.
-    'results_url' => '',
+    'results_url' => 'https://www.myfxbook.com/members/Montanatrader/montanagold/12274497',
     // Support account, like https://t.me/MontanaSupport: shown under "Questions and support".
     'support_url' => '',
 
