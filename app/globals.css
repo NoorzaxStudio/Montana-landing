@@ -1,4 +1,6 @@
 
+@tailwind utilities;
+
 /* Layout: personal-brand page in one RTL column, phone first. Hero and signal sections are full photos with a gradient under the text; the story section mixes a faded scene with a cut-out. Live market tape under the hero. */
 
 :root{
