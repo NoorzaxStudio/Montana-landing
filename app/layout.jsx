@@ -1,4 +1,30 @@
 import "./globals.css";
+import localFont from "next/font/local";
+
+const inter = localFont({
+  src: [
+    { path: "../public/fonts/Inter-Light.woff2", weight: "300", style: "normal" },
+    { path: "../public/fonts/Inter-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../public/fonts/Inter-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../public/fonts/Inter-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "../public/fonts/Inter-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../public/fonts/Inter-Black.woff2", weight: "900", style: "normal" },
+  ],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const iranSans = localFont({
+  src: [
+    { path: "../public/fonts/IRANSansX-Light.woff2", weight: "300", style: "normal" },
+    { path: "../public/fonts/IRANSansX-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../public/fonts/IRANSansX-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../public/fonts/IRANSansX-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../public/fonts/IRANSansX-Black.woff2", weight: "900", style: "normal" },
+  ],
+  variable: "--font-iran-sans",
+  display: "swap",
+});
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -66,14 +92,8 @@ export default function RootLayout({ children }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: earlyTheme }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personLd) }} />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Markazi+Text:wght@500;600;700&family=Vazirmatn:wght@300;400;500;700;800&family=Cinzel:wght@600;700&display=swap"
-        />
       </head>
-      <body>{children}</body>
+      <body className={`${inter.variable} ${iranSans.variable}`}>{children}</body>
     </html>
   );
 }

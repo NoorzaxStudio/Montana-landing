@@ -17,9 +17,9 @@
   --on-acc:#ffffff;
   --tg:#2aa3e0;
   --dir:rtl;
-  --display:"Markazi Text","Vazirmatn",Tahoma,serif;
-  --body:"Vazirmatn",Tahoma,"Segoe UI",sans-serif;
-  --latin:"Cinzel","Times New Roman",serif;
+  --display:"IRANSansX",Tahoma,serif;
+  --body:"IRANSansX",Tahoma,"Segoe UI",sans-serif;
+  --latin:"Inter","Times New Roman",serif;
   --radius:14px;
   color-scheme:light;
 }
@@ -42,7 +42,7 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
-body{margin:0;background:var(--ink);background-image:repeating-linear-gradient(90deg,transparent 0 21px,rgba(var(--fg-rgb),.026) 21px 22px);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.85;overflow-x:hidden}
+body{--display:var(--font-iran-sans),Tahoma,serif;--body:var(--font-iran-sans),Tahoma,"Segoe UI",sans-serif;--latin:var(--font-inter),"Times New Roman",serif;margin:0;background:var(--ink);background-image:repeating-linear-gradient(90deg,transparent 0 21px,rgba(var(--fg-rgb),.026) 21px 22px);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.85;overflow-x:hidden}
 .page{direction:var(--dir);text-align:start;padding-inline:16px;max-width:1140px;margin-inline:auto}
 a{color:inherit}
 :focus-visible{outline:2px solid var(--gold-hi);outline-offset:3px;border-radius:6px}
@@ -380,7 +380,7 @@ footer .page{padding-block:28px 40px;display:grid;gap:14px}
 /* English: left-to-right, photos mirror to the other side */
 :root[lang="en"] label.f input[dir=ltr]{text-align:left}
 :root[lang="en"] .step::before{content:counter(s)}
-:root[lang="en"] body{font-size:16px;line-height:1.7}
+:root[lang="en"] body{--display:var(--font-inter),Arial,sans-serif;--body:var(--font-inter),Arial,sans-serif;--latin:var(--font-inter),Arial,sans-serif;font-size:16px;line-height:1.7}
 @media (min-width:901px){
   :root[lang="en"] .hero-media{left:auto;right:0}
   :root[lang="en"] .hero-band::before{background:linear-gradient(to right,var(--ink) 0,var(--ink) 30%,rgba(var(--ink-rgb),.82) 46%,rgba(var(--ink-rgb),.25) 66%,rgba(var(--ink-rgb),.05) 100%),linear-gradient(180deg,rgba(var(--ink-rgb),.35),transparent 20%,transparent 78%,var(--ink))}
