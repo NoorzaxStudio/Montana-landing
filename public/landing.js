@@ -30,6 +30,7 @@
   var PRICES = null;
   var KEYS = ["usd", "eur", "goldGram", "btc"];
   var irs = document.querySelectorAll("#irr [data-k]");
+  var priceRetryDelay = 5000;
   function drawIR() {
     irs.forEach(function (e) {
       var v = PRICES && PRICES[KEYS[+e.dataset.k]];
@@ -39,7 +40,10 @@
   }
   function fetchPrices() {
     fetch("/api/prices", { cache: "no-store" })
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r.ok) throw new Error("Price request failed");
+        return r.json();
+      })
       .then(function (d) {
         var prev = PRICES; PRICES = d; drawIR();
         if (prev) irs.forEach(function (e) {
@@ -49,15 +53,35 @@
             setTimeout(function () { e.style.color = ""; }, 900);
           }
         });
+        var complete = KEYS.every(function (k) { return !!d[k]; });
+        var delay = complete ? 60000 : priceRetryDelay;
+        priceRetryDelay = complete ? 5000 : Math.min(priceRetryDelay * 2, 60000);
+        setTimeout(fetchPrices, delay);
       })
-      .catch(function () { drawIR(); });
+      .catch(function () {
+        drawIR();
+        var delay = priceRetryDelay;
+        priceRetryDelay = Math.min(priceRetryDelay * 2, 60000);
+        setTimeout(fetchPrices, delay);
+      });
   }
   drawIR();
   fetchPrices();
-  setInterval(fetchPrices, 60000);
 
   /* ---------- TradingView ticker tape (live global prices) ---------- */
   var tv = document.getElementById("tv");
+  var tomanPrices = document.getElementById("irr");
+  var pricesNote = document.querySelector(".tape-note");
+  if (tv && tomanPrices && pricesNote && !tv.closest(".market-section")) {
+    var marketSection = document.createElement("section");
+    marketSection.className = "market-section";
+    marketSection.setAttribute("aria-labelledby", "market-section-title");
+    marketSection.innerHTML = '<div class="market-section-head"><span class="market-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12h4l3-7 4 14 3-7h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h2 id="market-section-title" data-en="Market pulse" data-fa="نبض بازار">نبض بازار</h2></div><div class="market-ticker"></div><div class="market-section-prices"></div><div class="market-section-note"></div>';
+    tv.parentNode.insertBefore(marketSection, tv);
+    marketSection.querySelector(".market-ticker").appendChild(tv);
+    marketSection.querySelector(".market-section-prices").appendChild(tomanPrices);
+    marketSection.querySelector(".market-section-note").appendChild(pricesNote);
+  }
   var SYMBOLS = [
     ["OANDA:XAUUSD", "طلا", "Gold"],
     ["TVC:UKOIL", "نفت برنت", "Brent oil"],
@@ -69,17 +93,12 @@
     ["FX:USDJPY", "دلار / ین", "USD / JPY"]
   ];
   var tvKey = "";
-  function drawTV() {
-    if (!tv) return;
-    var dark = R.getAttribute("data-theme") === "dark", en = LANG() === "en";
-    var key = (dark ? "d" : "l") + (en ? "en" : "fa");
-    if (key === tvKey) return;
-    tvKey = key;
+  function drawLegacyTV(dark, en) {
     tv.innerHTML = '<div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div>';
-    var s = document.createElement("script");
-    s.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
-    s.async = true;
-    s.innerHTML = JSON.stringify({
+    var fallback = document.createElement("script");
+    fallback.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+    fallback.async = true;
+    fallback.innerHTML = JSON.stringify({
       symbols: SYMBOLS.map(function (x) { return { proName: x[0], title: en ? x[2] : x[1] }; }),
       showSymbolLogo: true,
       isTransparent: true,
@@ -87,12 +106,20 @@
       colorTheme: dark ? "dark" : "light",
       locale: en ? "en" : "fa_IR"
     });
-    tv.firstChild.appendChild(s);
+    tv.firstChild.appendChild(fallback);
+  }
+  function drawTV() {
+    if (!tv) return;
+    var dark = R.getAttribute("data-theme") === "dark", en = LANG() === "en";
+    var key = (dark ? "d" : "l") + (en ? "en" : "fa");
+    if (key === tvKey) return;
+    tvKey = key;
+    drawLegacyTV(dark, en);
   }
 
   /* ---------- theme toggle ---------- */
   var SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
-  var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>';
+  var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19.4 14.7A8.2 8.2 0 0 1 9.3 4.6 8.5 8.5 0 1 0 19.4 14.7Z"/><path d="M18 3.5v3M16.5 5h3"/></svg>';
   var tb = document.getElementById("themeBtn"), lb = document.getElementById("langBtn");
   function paintTheme() {
     var dark = R.getAttribute("data-theme") === "dark";
@@ -136,4 +163,48 @@
   });
   applyLang(load("mt-lang") === "en" ? "en" : "fa");
 
+})();
+
+/* Reveal the selected story milestones as they enter view. */
+(function () {
+  var story = document.querySelector(".story-band .timeline");
+  if (!story) return;
+  var items = story.querySelectorAll("li");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion || !("IntersectionObserver" in window)) {
+    items.forEach(function (item) { item.classList.add("is-visible"); });
+    return;
+  }
+  document.documentElement.classList.add("story-motion-ready");
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.25, rootMargin: "0px 0px -8% 0px" });
+  items.forEach(function (item) { observer.observe(item); });
+})();
+
+/* Reveal the selected personal principles as they enter view. */
+(function () {
+  var list = document.querySelector(".story-band + .page .pillars");
+  if (!list) return;
+  var items = list.querySelectorAll(".pillar");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion || !("IntersectionObserver" in window)) {
+    items.forEach(function (item) { item.classList.add("is-visible"); });
+    return;
+  }
+  document.documentElement.classList.add("principles-motion-ready");
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      var index = Array.prototype.indexOf.call(items, entry.target);
+      entry.target.style.setProperty("--principle-delay", Math.min(index, 3) * 55 + "ms");
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.18, rootMargin: "0px 0px -6% 0px" });
+  items.forEach(function (item) { observer.observe(item); });
 })();

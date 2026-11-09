@@ -15,11 +15,11 @@ const pct = (item) => {
   return item.dt === "low" ? -Math.abs(dp) : Math.abs(dp);
 };
 
-async function getJSON(url) {
+async function getJSON(url, timeout = 8000) {
   const r = await fetch(url, {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; MontanaLanding/1.0)", Accept: "application/json" },
     next: { revalidate: 60 },
-    signal: AbortSignal.timeout(8000),
+    signal: AbortSignal.timeout(timeout),
   });
   if (!r.ok) throw new Error(url + " -> " + r.status);
   return r.json();
@@ -27,12 +27,12 @@ async function getJSON(url) {
 
 async function btcUsd() {
   try {
-    const d = await getJSON("https://api.coinbase.com/v2/prices/BTC-USD/spot");
+    const d = await getJSON("https://api.coinbase.com/v2/prices/BTC-USD/spot", 1800);
     const v = num(d?.data?.amount);
     if (v) return v;
   } catch (e) { console.error("prices: coinbase", e.message); }
   try {
-    const d = await getJSON("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd");
+    const d = await getJSON("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", 2500);
     return num(d?.bitcoin?.usd);
   } catch (e) { console.error("prices: coingecko", e.message); }
   return null;
@@ -40,8 +40,14 @@ async function btcUsd() {
 
 export async function GET() {
   const out = { usd: null, eur: null, goldGram: null, btc: null, change: {}, updated: null };
-  try {
-    const t = await getJSON("https://call1.tgju.org/ajax.json");
+  const [t, b] = await Promise.all([
+    getJSON("https://call1.tgju.org/ajax.json").catch((e) => {
+      console.error("prices: tgju", e.message);
+      return null;
+    }),
+    btcUsd(),
+  ]);
+  if (t) {
     const c = t?.current || {};
     const usdR = num(c.price_dollar_rl?.p);
     const eurR = num(c.price_eur?.p);
@@ -51,10 +57,7 @@ export async function GET() {
     if (mesR) out.goldGram = Math.round(mesR / MITHQAL_GRAMS / 10);
     out.change = { usd: pct(c.price_dollar_rl), eur: pct(c.price_eur), goldGram: pct(c.mesghal) };
     out.updated = c.price_dollar_rl?.ts || null;
-  } catch (e) {
-    console.error("prices: tgju", e.message);
   }
-  const b = await btcUsd();
   if (b && out.usd) out.btc = Math.round(b * out.usd);
   return Response.json(out, { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } });
 }
