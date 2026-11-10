@@ -98,8 +98,8 @@ return [
   // Telegram app isn't in Persian, a start link ending in ?start=en, or who pressed
   // "English") ----------
   'en' => [
-    // No analysis channel for English users yet: put its link here to add the button.
-    'channel_url' => '',
+    // Lord of Chart channel: the button at the end of the sign-up.
+    'channel_url' => 'https://t.me/+Wdv39t-7LFc1OWVk',
     // Public Myfxbook page of the bot: shown as a button under "Results" once filled in.
     'results_url' => 'https://www.myfxbook.com/members/Montanatrader/montanagold/12274497',
     // Support account, like https://t.me/MontanaSupport: shown under "Questions and support".
@@ -139,10 +139,8 @@ return [
         'text' => "📈 Results\n\nWe aim for consistent profits: steady, rule-based trading, not lucky one-off wins.\n\n✅ The bot's results are public on Myfxbook, an independent site that verifies trading accounts, so you can check every trade yourself.\n\n⚠️ Trading carries risk, and past results don't guarantee future results.",
         'button' => ['text' => '📊 See the results on Myfxbook', 'url_key' => 'results_url'],
       ],
-      'howto' => [
-        'photo' => 'ai-start.jpg',
-        'text' => "🚀 How to start\n\n1️⃣ Press \"I want to start\" below and answer 4 short questions.\n2️⃣ Our team contacts you and helps you open a trading account with a broker, in your own name.\n3️⃣ You start with a small amount 💰\n4️⃣ We connect the AI bot to your account, and you follow the results.\n\n🔒 Your money stays in your account the whole time; the AI only places trades.",
-      ],
+      // Goes straight into the sign-up (the knight poster, then the first question).
+      'howto' => ['signup' => true],
       'support' => [
         'text' => "💬 Questions and support\n\nHave a question about the AI bot, your account or the results? Message our support team and we'll answer you personally 👇",
         'button' => ['text' => '💬 Message support', 'url_key' => 'support_url'],
@@ -152,19 +150,19 @@ return [
     'signup' => [
       'campaign' => 'ai-bot',
       'admin_title' => 'ثبت‌نام ربات AI (انگلیسی) از ربات',
-      'photo' => 'ai-start.jpg',
-      'intro' => "🚀 Start with Lord of Chart\n\nJust 4 short questions, then our team contacts you. You can go back to the menu any time with /start.",
-      'ask_name' => "1 of 4: Write your full name ✍️",
-      'ask_phone' => "2 of 4: Write your WhatsApp or mobile number with the country code (like +234 803 123 4567), or press the button below 📱",
+      'photo' => 'lord-of-chart-knight.jpg',
+      'intro' => "⚔️ Let's get you started with Lord of Chart 👑\n\nJust 3 quick questions 👇",
+      'steps' => ['name', 'email', 'phone'],
+      'ask_name' => "1 of 3: Write your full name ✍️",
+      'ask_email' => "2 of 3: Write your email address 📧",
+      'ask_phone' => "3 of 3: Write your WhatsApp or mobile number with the country code (like +234 803 123 4567), or press the button below 📱",
       'phone_button' => '📱 Share my number',
-      'ask_city' => "3 of 4: Which city and country do you live in? 🏙",
-      'ask_year' => "4 of 4: Write your year of birth (like 1995) 🎂",
       'bad_name' => "Please write your name properly, like \"John Okafor\".",
+      'bad_email' => "That email doesn't look right. Write it like name@gmail.com",
       'bad_phone' => "That number doesn't look right. Write it with the country code, like +234 803 123 4567.",
-      'bad_city' => "Please write your city properly, like \"Lagos, Nigeria\".",
-      'bad_year' => "Please write your year of birth as four digits, like 1995.",
       'duplicate' => "✅ You've already registered with this number. Our team will contact you soon.",
-      'done' => "✅ You're registered.\n\nOur team will contact you soon to help you open your account and connect the AI bot.\n\nUntil then, check the other topics in the menu 👇",
+      'done' => "✅ You're in! 🎉\n\nOur team will contact you soon 📞",
+      'done_channel' => "📢 Now join the Lord of Chart channel to get the AI signals 👇",
       'channel_button' => '📢 Join the channel',
     ],
 
