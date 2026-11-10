@@ -140,11 +140,16 @@ function send_video(string $T, int $chat, string $key): bool {
 }
 
 // Welcome text, then its video message, then the menu (on the text itself when there's no video).
-function show_start(string $T, int $chat, array $C): void {
+// With start.menu_delay, the menu comes on its own message that many seconds later, so the
+// video gets watched first. /menu skips the wait.
+function show_start(string $T, int $chat, array $C, bool $wait = true): void {
   $hasVideo = isset(bot_store()['videos'][vkey($C, 'welcome')]);
-  send_photo($T, $chat, $C['start']['photo'] ?? '', $C['start']['text'], $hasVideo ? null : menu_markup($C));
-  if ($hasVideo) {
-    send_video($T, $chat, vkey($C, 'welcome'));
+  $delay = $wait ? (int) ($C['start']['menu_delay'] ?? 0) : 0;
+  $later = $hasVideo || $delay > 0;
+  send_photo($T, $chat, $C['start']['photo'] ?? '', $C['start']['text'], $later ? null : menu_markup($C));
+  if ($hasVideo) send_video($T, $chat, vkey($C, 'welcome'));
+  if ($later) {
+    if ($delay > 0) sleep($delay);
     send_text($T, $chat, $C['start']['menu_text'], menu_markup($C));
   }
 }
@@ -504,7 +509,7 @@ if ($cmd === 'language' && !empty($C['lang_button'])) {
 if ($cmd === 'start' || $cmd === 'menu') {
   set_step($chat, null);
   count_visit($chat, 'start');
-  show_start($T, $chat, $C);
+  show_start($T, $chat, $C, $cmd === 'start');
   exit;
 }
 if ($cmd !== '' && is_section($C, $cmd)) {

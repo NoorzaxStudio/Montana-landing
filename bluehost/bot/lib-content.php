@@ -116,15 +116,14 @@ return [
     ],
 
     'start' => [
-      // The Lord of Chart motion video (sent as a video, with the menu under it).
+      // The Lord of Chart motion video. The menu follows on its own message menu_delay seconds later.
       'photo' => 'lord-of-chart-intro.mp4',
-      'text' => "🎬 Watch this video to find out why most traders lose money, and how Lord of Chart changes that 👇",
-      'menu_text' => "Choose from the buttons below 👇",
+      'text' => "🚨🚨 Your WHOLE capital is at risk right now 😱💸\n\n📉 Most traders lose money and never find out why 🤯\n\n🎬 Watch this video till the end 👀 and see how Lord of Chart 🤖👑 flips the game for you 📈💰🔥\n\n👇👇👇",
+      'menu_delay' => 25,
+      'menu_text' => "🔥 Ready to let Lord of Chart 🤖 trade for you? 💰\n\nChoose from the buttons below 👇",
     ],
 
     'menu' => [
-      'manual' => "😓 Why manual trading doesn't work",
-      'ai' => '🤖 Why the AI bot works',
       'results' => '📈 Results',
       'howto' => '🚀 How to start',
       'support' => '💬 Questions and support',
@@ -135,14 +134,6 @@ return [
     'lang_button' => '',
 
     'sections' => [
-      'manual' => [
-        'photo' => 'ai-manual.jpg',
-        'text' => "😓 Why manual trading doesn't work\n\nTrading is a battle between you and the banks, and the banks bring their strongest bots ⚔️\n\n⏳ You need minutes to decide on one position. The market moves in seconds.\n😱 Fear and greed make you exit early, skip your stop-loss or revenge-trade.\n📋 The best strategies are mechanical. No human can follow every rule, every time.\n😴 You have to work and sleep. The market never stops.\n\nThat's why most manual traders lose, even with a good strategy.",
-      ],
-      'ai' => [
-        'photo' => 'ai-bot.jpg',
-        'text' => "🤖 Why the AI bot works\n\n⚡ It weighs every factor in one second and takes the position for you.\n🧠 Zero emotion: it follows the plan on trade 1 and on trade 100.\n✅ It executes the strategy exactly, rule by rule, without a single exception.\n🌙 It watches gold and major pairs 24/7, while you work or sleep.\n🎯 It goes after the big moves, not a few pips.\n\n🔒 Your money never leaves your account. The account is with your broker, in your name; the AI only places trades.",
-      ],
       'results' => [
         'photo' => 'ai-results.jpg',
         'text' => "📈 Results\n\nWe aim for consistent profits: steady, rule-based trading, not lucky one-off wins.\n\n✅ The bot's results are public on Myfxbook, an independent site that verifies trading accounts, so you can check every trade yourself.\n\n⚠️ Trading carries risk, and past results don't guarantee future results.",
