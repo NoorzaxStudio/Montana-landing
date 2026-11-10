@@ -98,8 +98,8 @@ return [
   // Telegram app isn't in Persian, a start link ending in ?start=en, or who pressed
   // "English") ----------
   'en' => [
-    // No analysis channel for English users yet: put its link here to add the button.
-    'channel_url' => '',
+    // Lord of Chart channel: the button at the end of the sign-up.
+    'channel_url' => 'https://t.me/+Wdv39t-7LFc1OWVk',
     // Public Myfxbook page of the bot: shown as a button under "Results" once filled in.
     'results_url' => 'https://www.myfxbook.com/members/Montanatrader/montanagold/12274497',
     // Support account, like https://t.me/MontanaSupport: shown under "Questions and support".
@@ -151,18 +151,18 @@ return [
       'campaign' => 'ai-bot',
       'admin_title' => 'ثبت‌نام ربات AI (انگلیسی) از ربات',
       'photo' => 'lord-of-chart-knight.jpg',
-      'intro' => "⚔️ Let's get you started with Lord of Chart 👑\n\nJust 4 quick questions 👇",
-      'ask_name' => "1 of 4: Write your full name ✍️",
-      'ask_phone' => "2 of 4: Write your WhatsApp or mobile number with the country code (like +234 803 123 4567), or press the button below 📱",
+      'intro' => "⚔️ Let's get you started with Lord of Chart 👑\n\nJust 3 quick questions 👇",
+      'steps' => ['name', 'email', 'phone'],
+      'ask_name' => "1 of 3: Write your full name ✍️",
+      'ask_email' => "2 of 3: Write your email address 📧",
+      'ask_phone' => "3 of 3: Write your WhatsApp or mobile number with the country code (like +234 803 123 4567), or press the button below 📱",
       'phone_button' => '📱 Share my number',
-      'ask_city' => "3 of 4: Which city and country do you live in? 🏙",
-      'ask_year' => "4 of 4: Write your year of birth (like 1995) 🎂",
       'bad_name' => "Please write your name properly, like \"John Okafor\".",
+      'bad_email' => "That email doesn't look right. Write it like name@gmail.com",
       'bad_phone' => "That number doesn't look right. Write it with the country code, like +234 803 123 4567.",
-      'bad_city' => "Please write your city properly, like \"Lagos, Nigeria\".",
-      'bad_year' => "Please write your year of birth as four digits, like 1995.",
       'duplicate' => "✅ You've already registered with this number. Our team will contact you soon.",
-      'done' => "✅ You're in! 🎉\n\nOur team will contact you soon 📞\n\n📢 Now join the Lord of Chart channel to get the AI signals 👇",
+      'done' => "✅ You're in! 🎉\n\nOur team will contact you soon 📞",
+      'done_channel' => "📢 Now join the Lord of Chart channel to get the AI signals 👇",
       'channel_button' => '📢 Join the channel',
     ],
 

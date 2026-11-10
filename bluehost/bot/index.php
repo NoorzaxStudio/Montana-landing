@@ -258,6 +258,22 @@ function set_step(int $chat, ?array $reg): void {
   });
 }
 
+// The questions, in order. A language can set its own list in signup.steps.
+function signup_steps(array $C): array {
+  return $C['signup']['steps'] ?? ['name', 'phone', 'city', 'year'];
+}
+
+// Asks the question after $step, or returns null when $step was the last one.
+function ask_next(string $T, int $chat, array $C, string $step): ?string {
+  $steps = signup_steps($C);
+  $next = $steps[array_search($step, $steps, true) + 1] ?? null;
+  if ($next === null) return null;
+  $S = $C['signup'];
+  if ($next === 'phone') send_text($T, $chat, $S['ask_phone'], ['keyboard' => [[['text' => $S['phone_button'], 'request_contact' => true]]], 'resize_keyboard' => true, 'one_time_keyboard' => true]);
+  else send_text($T, $chat, $S["ask_$next"], ['remove_keyboard' => true]);
+  return $next;
+}
+
 function start_signup(string $T, int $chat, array $C): void {
   set_step($chat, ['step' => 'name']);
   send_photo($T, $chat, $C['signup']['photo'], $C['signup']['intro']);
@@ -276,15 +292,15 @@ function save_lead(array $r, array $from, string $lang, string $campaign): void 
   if ($h = @fopen($f, 'a')) {
     flock($h, LOCK_EX);
     if ($new) fputcsv($h, ['time', 'name', 'phone', 'email', 'birth_year', 'source', 'app', 'campaign', 'user_agent', 'page', 'medium', 'term', 'city']);
-    fputcsv($h, [date('Y-m-d H:i:s'), $cell($r['name']), $r['phone'], '', $r['year'], $source, '', $campaign,
-      'Telegram ' . $tgUser, 'mentor', '', '', $cell($r['city'])]);
+    fputcsv($h, [date('Y-m-d H:i:s'), $cell($r['name']), $r['phone'], $r['email'] ?? '', $r['year'] ?? '', $source, '', $campaign,
+      'Telegram ' . $tgUser, 'mentor', '', '', $cell($r['city'] ?? '')]);
     flock($h, LOCK_UN); fclose($h);
   }
   $sheet = dirname(__DIR__) . '/lib-sheet.php';
   if (is_file($sheet)) {
     require_once $sheet;
-    montana_sheet_send(bot_dir(), ['name' => $r['name'], 'phone' => $r['phone'], 'email' => '', 'birth_year' => $r['year'],
-      'city' => $r['city'], 'source' => mb_substr("$campaign / $source / " . $r['city'], 0, 200)]);
+    montana_sheet_send(bot_dir(), ['name' => $r['name'], 'phone' => $r['phone'], 'email' => $r['email'] ?? '', 'birth_year' => $r['year'] ?? '',
+      'city' => $r['city'] ?? '', 'source' => mb_substr(trim("$campaign / $source / " . ($r['city'] ?? ''), ' /'), 0, 200)]);
   }
   bot_store(function (&$d) { $d['stats']['signed_up'] = ($d['stats']['signed_up'] ?? 0) + 1; });
 }
@@ -295,31 +311,34 @@ function signup_answer(string $T, int $chat, array $C, array $m, int $adminId): 
   if (!$reg || time() - (int) ($reg['t'] ?? 0) > 86400) return false;
   $S = $C['signup'];
   $text = trim((string) ($m['text'] ?? ''));
-  switch ($reg['step']) {
+  $step = (string) ($reg['step'] ?? '');
+  switch ($step) {
     case 'name':
       $name = trim(preg_replace('/\s+/u', ' ', $text));
-      if (mb_strlen($name) < 3 || mb_strlen($name) > 60 || preg_match('/\d/', fa2en($name)) || str_starts_with($name, '/')) { send_text($T, $chat, $S['bad_name']); break; }
-      set_step($chat, ['step' => 'phone', 'name' => $name]);
-      send_text($T, $chat, $S['ask_phone'], ['keyboard' => [[['text' => $S['phone_button'], 'request_contact' => true]]], 'resize_keyboard' => true, 'one_time_keyboard' => true]);
+      if (mb_strlen($name) < 3 || mb_strlen($name) > 60 || preg_match('/\d/', fa2en($name)) || str_starts_with($name, '/')) { send_text($T, $chat, $S['bad_name']); return true; }
+      $reg['name'] = $name;
+      break;
+    case 'email':
+      $email = strtolower(trim($text));
+      if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 100) { send_text($T, $chat, $S['bad_email']); return true; }
+      $reg['email'] = $email;
       break;
     case 'phone':
       $raw = isset($m['contact']) ? (string) ($m['contact']['phone_number'] ?? '') : $text;
       $phone = $C['lang'] === 'en' ? norm_phone_intl($raw, isset($m['contact'])) : norm_phone($raw);
-      if ($phone === '') { send_text($T, $chat, $S['bad_phone']); break; }
+      if ($phone === '') { send_text($T, $chat, $S['bad_phone']); return true; }
       if (phone_taken($phone)) {
         set_step($chat, null);
         send_text($T, $chat, $S['duplicate'], ['remove_keyboard' => true]);
         send_text($T, $chat, $C['fallback'], menu_markup($C));
-        break;
+        return true;
       }
-      set_step($chat, ['phone' => $phone, 'step' => 'city'] + $reg);
-      send_text($T, $chat, $S['ask_city'], ['remove_keyboard' => true]);
+      $reg['phone'] = $phone;
       break;
     case 'city':
       $city = trim(preg_replace('/\s+/u', ' ', $text));
-      if (mb_strlen($city) < 2 || mb_strlen($city) > 60 || preg_match('/\d/', fa2en($city)) || str_starts_with($city, '/')) { send_text($T, $chat, $S['bad_city']); break; }
-      set_step($chat, ['city' => $city, 'step' => 'year'] + $reg);
-      send_text($T, $chat, $S['ask_year']);
+      if (mb_strlen($city) < 2 || mb_strlen($city) > 60 || preg_match('/\d/', fa2en($city)) || str_starts_with($city, '/')) { send_text($T, $chat, $S['bad_city']); return true; }
+      $reg['city'] = $city;
       break;
     case 'year':
       $year = fa2en($text);
@@ -327,20 +346,35 @@ function signup_answer(string $T, int $chat, array $C, array $m, int $adminId): 
       $okYear = $C['lang'] === 'en'
         ? preg_match('/^(19|20)\d\d$/', $year) && (int) $year >= 1930 && (int) $year <= (int) date('Y') - 10
         : preg_match('/^1[34]\d\d$/', $year) && (int) $year >= 1310 && (int) $year <= 1395;
-      if (!$okYear) { send_text($T, $chat, $S['bad_year']); break; }
+      if (!$okYear) { send_text($T, $chat, $S['bad_year']); return true; }
       $reg['year'] = $year;
-      set_step($chat, null);
-      save_lead($reg, $m['from'] ?? [], $C['lang'], $S['campaign'] ?? 'mentorship');
-      $rows = empty($C['channel_url']) ? [] : [[['text' => $S['channel_button'], 'url' => $C['channel_url']]]];
-      $rows[] = [['text' => $C['menu_button'], 'callback_data' => 'menu']];
-      send_text($T, $chat, $S['done'], ['inline_keyboard' => $rows]);
-      if ($adminId) {
-        $u = isset($m['from']['username']) ? ' (@' . $m['from']['username'] . ')' : '';
-        send_text($T, $adminId, "🆕 {$S['admin_title']}$u\n\n👤 {$reg['name']}\n📱 {$reg['phone']}\n🏙 {$reg['city']}\n🎂 {$reg['year']}");
-      }
       break;
     default:
       return false;
+  }
+  $next = ask_next($T, $chat, $C, $step);
+  if ($next !== null) { set_step($chat, ['step' => $next] + $reg); return true; }
+
+  // Last answer: save, thank, and point to the channel.
+  set_step($chat, null);
+  save_lead($reg, $m['from'] ?? [], $C['lang'], $S['campaign'] ?? 'mentorship');
+  $rows = empty($C['channel_url']) ? [] : [[['text' => $S['channel_button'], 'url' => $C['channel_url']]]];
+  $rows[] = [['text' => $C['menu_button'], 'callback_data' => 'menu']];
+  // When the phone was the last question its keyboard is still up: a separate
+  // done_channel message carries the buttons, so the first one can remove it.
+  if (!empty($S['done_channel'])) {
+    send_text($T, $chat, $S['done'], ['remove_keyboard' => true]);
+    send_text($T, $chat, $S['done_channel'], ['inline_keyboard' => $rows]);
+  } else {
+    send_text($T, $chat, $S['done'], ['inline_keyboard' => $rows]);
+  }
+  if ($adminId) {
+    $u = isset($m['from']['username']) ? ' (@' . $m['from']['username'] . ')' : '';
+    $lines = ["👤 {$reg['name']}", "📱 {$reg['phone']}"];
+    if (!empty($reg['email'])) $lines[] = "📧 {$reg['email']}";
+    if (!empty($reg['city'])) $lines[] = "🏙 {$reg['city']}";
+    if (!empty($reg['year'])) $lines[] = "🎂 {$reg['year']}";
+    send_text($T, $adminId, "🆕 {$S['admin_title']}$u\n\n" . implode("\n", $lines));
   }
   return true;
 }
