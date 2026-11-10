@@ -113,6 +113,8 @@ if (empty($_SESSION['ok'])) {
 }
 
 // ---------- data ----------
+// The Telegram bot has its own page.
+if (($_GET['pg'] ?? '') === 'bot') { require __DIR__ . '/admin-bot.php'; exit; }
 // main landing, the mentorship page at /lead ("mentor") or the signal page now at /CT ("lead":
 // it was /lead until 2026-10-22, so its history in views-lead.log and engage.log keeps that name).
 $PG = in_array($_GET['pg'] ?? '', ['lead', 'mentor'], true) ? $_GET['pg'] : 'main';
@@ -259,7 +261,7 @@ page_start('پنل آمار مونتانا'); ?>
 <div class="wrap">
 <header class="top">
   <div><div class="brand">MONTANA</div><h1>پنل آمار سایت</h1></div>
-  <div class="tabs"><?php foreach (['main' => 'صفحه اصلی', 'mentor' => 'منتورشیپ (/lead)', 'lead' => 'سیگنال (/CT)'] as $k => $lbl) echo '<a class="' . ($k === $PG ? 'on' : '') . '" href="?pg=' . h($k) . '&r=' . h($range) . '">' . h($lbl) . '</a>'; ?></div>
+  <div class="tabs"><?php foreach (['main' => 'صفحه اصلی', 'mentor' => 'منتورشیپ (/lead)', 'lead' => 'سیگنال (/CT)', 'bot' => 'ربات تلگرام'] as $k => $lbl) echo '<a class="' . ($k === $PG ? 'on' : '') . '" href="?pg=' . h($k) . '&r=' . h($range) . '">' . h($lbl) . '</a>'; ?></div>
   <div class="tabs"><?php foreach ($ranges as $k => $lbl) echo '<a class="' . ($k === $range ? 'on' : '') . '" href="?pg=' . h($PG) . '&r=' . h($k) . '">' . h($lbl) . '</a>'; ?>
     <a href="?logout=1">خروج</a></div>
 </header>
