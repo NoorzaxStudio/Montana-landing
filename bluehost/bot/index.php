@@ -79,7 +79,9 @@ function menu_markup(array $C): array {
   $rows = [];
   foreach ($C['menu'] as $key => $label) {
     if ($key === 'channel' && empty($C['channel_url'])) continue;
-    $rows[] = [$key === 'channel' ? ['text' => $label, 'url' => $C['channel_url']] : ['text' => $label, 'callback_data' => "s:$key"]];
+    // A section with 'link' opens that url straight from the menu (no message first).
+    $link = $key === 'channel' ? $C['channel_url'] : ($C[$C['sections'][$key]['link'] ?? ''] ?? '');
+    $rows[] = [$link ? ['text' => $label, 'url' => $link] : ['text' => $label, 'callback_data' => "s:$key"]];
   }
   if (!empty($C['lang_button'])) $rows[] = [['text' => $C['lang_button'], 'callback_data' => 'lang:' . ($C['lang'] === 'en' ? 'fa' : 'en')]];
   return ['inline_keyboard' => $rows];

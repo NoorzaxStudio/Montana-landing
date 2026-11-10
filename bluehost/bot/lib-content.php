@@ -144,6 +144,8 @@ return [
       'support' => [
         'text' => "💬 Questions and support\n\nHave a question about the AI bot, your account or the results? Message our support team and we'll answer you personally 👇",
         'button' => ['text' => '💬 Message support', 'url_key' => 'support_url'],
+        // The menu button opens the support account directly.
+        'link' => 'support_url',
       ],
     ],
 
