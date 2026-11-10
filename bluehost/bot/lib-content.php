@@ -116,10 +116,11 @@ return [
     ],
 
     'start' => [
-      // The Lord of Chart motion video (sent as a video, with the menu under it).
+      // The Lord of Chart motion video. The menu follows on its own message menu_delay seconds later.
       'photo' => 'lord-of-chart-intro.mp4',
-      'text' => "🎬 Watch this video to find out why most traders lose money, and how Lord of Chart changes that 👇",
-      'menu_text' => "Choose from the buttons below 👇",
+      'text' => "🚨🚨 Your WHOLE capital is at risk right now 😱💸\n\n📉 Most traders lose money and never find out why 🤯\n\n🎬 Watch this video till the end 👀 and see how Lord of Chart 🤖👑 flips the game for you 📈💰🔥\n\n👇👇👇",
+      'menu_delay' => 25,
+      'menu_text' => "🔥 Ready to let Lord of Chart 🤖 trade for you? 💰\n\nChoose from the buttons below 👇",
     ],
 
     'menu' => [
