@@ -108,7 +108,7 @@ return [
     // Shown in Telegram before someone presses Start (max 512 characters).
     'description' => "🤫 Why do ordinary traders lose money every single day…\n\n…while the banks get richer every single day? 🏦💰\n\nThere's a secret behind it, and I'm going to tell you 🔐\n\n👇 Press START and I'll show you",
     // The bot's "About" line on its profile (max 120 characters).
-    'short_description' => '🤖 Lord of Chart: AI trading signals for gold & major pairs, 24/7 | 🎁 Free to join this week',
+    'short_description' => '🏦 Banks win. Traders lose. Every day. 🤫 Find out why, and how Lord of Chart 🤖 flips the game 👇',
     'commands' => [
       'start' => 'Main menu',
       'howto' => 'How to start',
@@ -169,5 +169,55 @@ return [
     ],
 
     'fallback' => "Choose from the buttons below 👇",
+  ],
+
+  // ---------- Persian AI bot ('fa_ai'): the English AI bot's menu and sign-up in
+  // Persian, for Persian users who got the AI video as a follow-up (/send_fa or
+  // /auto_fa with the buttons option). Anything not set here comes from 'en' (links,
+  // menu order). The bot's name isn't used in these texts. ----------
+  'fa_ai' => [
+    'start' => [
+      'menu_text' => "🔥 آماده‌ای هوش مصنوعی برات ترید کنه؟ 💰\n\nاز دکمه‌های زیر انتخاب کن 👇",
+    ],
+    'menu' => [
+      'results' => '📈 نتایج',
+      'howto' => '🚀 چطور شروع کنم؟',
+      'support' => '💬 سوال و پشتیبانی',
+    ],
+    'signup_button' => '🚀 می‌خوام شروع کنم',
+    'menu_button' => '🔙 منوی اصلی',
+    'lang_button' => '',
+    'sections' => [
+      'results' => [
+        'photo' => 'ai-results.jpg',
+        'text' => "📈 نتایج\n\nهدف ما سود ثابته: ترید منظم و طبق قانون، نه بردهای شانسی.\n\n✅ نتایج ربات روی مای‌اف‌ایکس‌بوک عمومیه؛ یه سایت مستقل که حساب‌های ترید رو تأیید می‌کنه، پس خودت می‌تونی تک‌تک معامله‌ها رو چک کنی.\n\n⚠️ ترید ریسک داره و نتایج گذشته تضمینی برای آینده نیست.",
+        'button' => ['text' => '📊 دیدن نتایج روی Myfxbook', 'url_key' => 'results_url'],
+      ],
+      'howto' => ['signup' => true],
+      'support' => [
+        'text' => "💬 سوال و پشتیبانی\n\nسوالی داری؟ به پشتیبانی پیام بده 👇",
+        'button' => ['text' => '💬 پیام به پشتیبانی', 'url_key' => 'support_url'],
+        'link' => 'support_url',
+      ],
+    ],
+    'signup' => [
+      'campaign' => 'ai-bot-fa',
+      'admin_title' => 'ثبت‌نام ربات AI (فارسی) از ربات',
+      'photo' => 'lord-of-chart-knight.jpg',
+      'intro' => "⚔️ بیا شروع کنیم 👑\n\nفقط ۳ سؤال کوتاه 👇",
+      'steps' => ['name', 'email', 'phone'],
+      'ask_name' => "۱ از ۳: اسم و فامیلت رو بنویس ✍️",
+      'ask_email' => "۲ از ۳: ایمیلت رو بنویس 📧",
+      'ask_phone' => "۳ از ۳: شماره موبایلت رو بنویس (مثل ۰۹۱۲۳۴۵۶۷۸۹) یا دکمه پایین رو بزن 📱",
+      'phone_button' => '📱 ارسال شماره من',
+      'bad_name' => "لطفاً اسمت رو درست بنویس، مثل «علی رضایی».",
+      'bad_email' => "این ایمیل درست به نظر نمی‌رسه. مثل name@gmail.com بنویس.",
+      'bad_phone' => "شماره موبایل درست نیست. مثل ۰۹۱۲۳۴۵۶۷۸۹ بنویس.",
+      'duplicate' => "✅ قبلاً با این شماره ثبت‌نام کردی. تیم ما به‌زودی باهات تماس می‌گیره.",
+      'done' => "✅ ثبت‌نامت انجام شد! 🎉\n\nتیم ما به‌زودی باهات تماس می‌گیره 📞",
+      'done_channel' => "📢 حالا عضو کانال شو تا سیگنال‌های هوش مصنوعی رو بگیری 👇",
+      'channel_button' => '📢 عضویت در کانال',
+    ],
+    'fallback' => "از دکمه‌های زیر انتخاب کن 👇",
   ],
 ];
