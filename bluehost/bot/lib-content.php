@@ -106,7 +106,7 @@ return [
     'support_url' => 'https://t.me/Montanatraderr',
 
     // Shown in Telegram before someone presses Start (max 512 characters).
-    'description' => "🚨 The banks trade with powerful AI bots, and most traders lose to them. Now it's YOUR turn 🤖⚔️\n\n👑 Lord of Chart is the AI that watches gold and major pairs 24/7 and sends you the signals 📲💰\n\n✅ Real results, verified on Myfxbook\n🎁 FREE to join, this week only\n\n👇 Press START and see why most traders lose, and how you won't 🔥",
+    'description' => "🤫 Why do ordinary traders lose money every single day…\n\n…while the banks get richer every single day? 🏦💰\n\nThere's a secret behind it, and I'm going to tell you 🔐\n\n👇 Press START and I'll show you",
     // The bot's "About" line on its profile (max 120 characters).
     'short_description' => '🤖 Lord of Chart: AI trading signals for gold & major pairs, 24/7 | 🎁 Free to join this week',
     'commands' => [
