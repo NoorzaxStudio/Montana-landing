@@ -32,8 +32,32 @@ else { header('Connection: close'); header('Content-Length: 0'); flush(); }
 
 if (!is_array($update)) exit;
 $T = (string) $cfg['token'];
+// After this update is handled (Telegram already has its answer), send any repeating
+// follow-up that is due. See auto_tick.
+register_shutdown_function(function () use ($T) { auto_tick($T); });
 $adminId = (int) ($cfg['admin_id'] ?? 0);
 bot_flag_existing_fa();
+
+// Someone joined a channel the bot is an admin of, or blocked the bot: logged for the
+// admin panel, only for people who have used the bot (so their language is known).
+foreach (['chat_member', 'my_chat_member'] as $kind) {
+  if (!isset($update[$kind])) continue;
+  $cm = $update[$kind];
+  $u = (int) ($cm['new_chat_member']['user']['id'] ?? 0);
+  $new = (string) ($cm['new_chat_member']['status'] ?? '');
+  $old = (string) ($cm['old_chat_member']['status'] ?? '');
+  $lang = (string) (bot_store()['lang'][(string) $u] ?? '');
+  if ($kind === 'chat_member' && $lang !== '' && in_array($old, ['left', 'kicked'], true) && in_array($new, ['member', 'restricted', 'administrator'], true))
+  { bot_event($u, $lang, 'join', (string) ($cm['chat']['id'] ?? ''));
+    bot_store(function (&$d) use ($u) { $d['joined'][(string) $u] = time(); }); }
+  if ($kind === 'my_chat_member' && ($cm['chat']['type'] ?? '') === 'private') {
+    $u = (int) ($cm['from']['id'] ?? 0);
+    $lang = (string) (bot_store()['lang'][(string) $u] ?? '');
+    if ($lang !== '') bot_event($u, $lang, $new === 'kicked' ? 'block' : 'unblock');
+  }
+  exit;
+}
+
 $C = bot_content(user_lang($update['callback_query']['from'] ?? $update['message']['from'] ?? []));
 
 // ---------- language ----------
@@ -79,9 +103,11 @@ function menu_markup(array $C): array {
   $rows = [];
   foreach ($C['menu'] as $key => $label) {
     if ($key === 'channel' && empty($C['channel_url'])) continue;
-    $rows[] = [$key === 'channel' ? ['text' => $label, 'url' => $C['channel_url']] : ['text' => $label, 'callback_data' => "s:$key"]];
+    // A section with 'link' opens that url straight from the menu (no message first).
+    $link = $key === 'channel' ? $C['channel_url'] : ($C[$C['sections'][$key]['link'] ?? ''] ?? '');
+    $rows[] = [$link ? ['text' => $label, 'url' => $link] : ['text' => $label, 'callback_data' => ($C['cb'] ?? '') . "s:$key"]];
   }
-  $rows[] = [['text' => $C['lang_button'], 'callback_data' => 'lang:' . ($C['lang'] === 'en' ? 'fa' : 'en')]];
+  if (!empty($C['lang_button'])) $rows[] = [['text' => $C['lang_button'], 'callback_data' => 'lang:' . ($C['lang'] === 'en' ? 'fa' : 'en')]];
   return ['inline_keyboard' => $rows];
 }
 
@@ -91,8 +117,8 @@ function next_markup(array $C, array $section = []): array {
   $rows = [];
   $b = $section['button'] ?? null;
   if ($b && !empty($C[$b['url_key']])) $rows[] = [['text' => $b['text'], 'url' => $C[$b['url_key']]]];
-  $rows[] = [['text' => $C['signup_button'], 'callback_data' => 's:signup']];
-  $rows[] = [['text' => $C['menu_button'], 'callback_data' => 'menu']];
+  $rows[] = [['text' => $C['signup_button'], 'callback_data' => ($C['cb'] ?? '') . 's:signup']];
+  $rows[] = [['text' => $C['menu_button'], 'callback_data' => ($C['cb'] ?? '') . 'menu']];
   return ['inline_keyboard' => $rows];
 }
 
@@ -140,11 +166,16 @@ function send_video(string $T, int $chat, string $key): bool {
 }
 
 // Welcome text, then its video message, then the menu (on the text itself when there's no video).
-function show_start(string $T, int $chat, array $C): void {
+// With start.menu_delay, the menu comes on its own message that many seconds later, so the
+// video gets watched first. /menu skips the wait.
+function show_start(string $T, int $chat, array $C, bool $wait = true): void {
   $hasVideo = isset(bot_store()['videos'][vkey($C, 'welcome')]);
-  send_photo($T, $chat, $C['start']['photo'] ?? '', $C['start']['text'], $hasVideo ? null : menu_markup($C));
-  if ($hasVideo) {
-    send_video($T, $chat, vkey($C, 'welcome'));
+  $delay = $wait ? (int) ($C['start']['menu_delay'] ?? 0) : 0;
+  $later = $hasVideo || $delay > 0;
+  send_photo($T, $chat, $C['start']['photo'] ?? '', $C['start']['text'], $later ? null : menu_markup($C));
+  if ($hasVideo) send_video($T, $chat, vkey($C, 'welcome'));
+  if ($later) {
+    if ($delay > 0) sleep($delay);
     send_text($T, $chat, $C['start']['menu_text'], menu_markup($C));
   }
 }
@@ -173,11 +204,21 @@ function show_section(string $T, int $chat, array $C, string $key): void {
 // Copies the admin's message to every user of $lang, about 25 a second (Telegram's
 // limit is 30). Users who blocked the bot are remembered and skipped next time.
 // Reports the result to the admin when done.
-function broadcast(string $T, int $admin, int $msgId, string $lang): void {
-  set_time_limit(0);
+// The users a message to $lang goes to: everyone of that language who hasn't blocked
+// the bot; for a repeating follow-up, also not those who signed up or joined the channel.
+function bc_targets(string $lang, bool $auto = false): array {
   $d = bot_store();
+  $skip = ($d['blocked'] ?? []) + ($auto ? ($d['signed'] ?? []) + ($d['joined'] ?? []) : []);
   $ids = array_keys(array_filter($d['lang'] ?? [], fn($l) => $l === $lang));
-  $ids = array_values(array_diff(array_map('strval', $ids), array_map('strval', array_keys($d['blocked'] ?? []))));
+  return array_values(array_diff(array_map('strval', $ids), array_map('strval', array_keys($skip))));
+}
+
+// $follow: content (like 'fa_ai') whose menu is sent to each user 20 seconds after
+// their copy of the message, so they get the buttons once they've watched a bit.
+function broadcast(string $T, int $admin, int $msgId, string $lang, bool $auto = false, string $follow = ''): void {
+  set_time_limit(0);
+  $ids = bc_targets($lang, $auto);
+  $sent = [];
   $ok = 0; $blocked = []; $failed = 0;
   foreach ($ids as $id) {
     $r = tg($T, 'copyMessage', ['chat_id' => $id, 'from_chat_id' => $admin, 'message_id' => $msgId], 15);
@@ -185,14 +226,40 @@ function broadcast(string $T, int $admin, int $msgId, string $lang): void {
       sleep((int) ($r['parameters']['retry_after'] ?? 5));
       $r = tg($T, 'copyMessage', ['chat_id' => $id, 'from_chat_id' => $admin, 'message_id' => $msgId], 15);
     }
-    if (!empty($r['ok'])) $ok++;
+    if (!empty($r['ok'])) { $ok++; $sent[$id] = microtime(true); }
     elseif (($r['error_code'] ?? 0) === 403) $blocked[] = $id;
     else $failed++;
     usleep(40000);
   }
   bot_store(function (&$d) use ($blocked) { foreach ($blocked as $id) $d['blocked'][$id] = time(); });
+  if ($follow !== '' && $sent) {
+    $F = bot_content($follow);
+    foreach ($sent as $id => $at) {
+      $wait = $at + 20 - microtime(true);
+      if ($wait > 0) usleep((int) ($wait * 1e6));
+      $r = tg($T, 'sendMessage', ['chat_id' => $id, 'text' => $F['start']['menu_text'], 'reply_markup' => json_encode(menu_markup($F))], 15);
+      if (($r['error_code'] ?? 0) === 429) { sleep((int) ($r['parameters']['retry_after'] ?? 5)); tg($T, 'sendMessage', ['chat_id' => $id, 'text' => $F['start']['menu_text'], 'reply_markup' => json_encode(menu_markup($F))], 15); }
+      usleep(40000);
+    }
+  }
   $name = $lang === 'en' ? 'انگلیسی' : 'فارسی';
-  send_text($T, $admin, "📨 پیام برای کاربرهای $name فرستاده شد.\n\n✅ رسید: $ok\n🚫 ربات رو بلاک کرده بودن: " . count($blocked) . "\n⚠️ خطا: $failed");
+  send_text($T, $admin, ($auto ? '🔁 ارسال خودکار: ' : '') . "📨 پیام برای کاربرهای $name فرستاده شد.\n\n✅ رسید: $ok\n🚫 ربات رو بلاک کرده بودن: " . count($blocked) . "\n⚠️ خطا: $failed");
+}
+
+// Repeating follow-up (/auto_fa or /auto_en): every 'every' seconds the admin's saved
+// message is copied again to everyone of that language who hasn't signed up, joined
+// the channel or blocked the bot. Checked after each update the bot gets, so a send
+// can be late if nobody uses the bot around the time it's due.
+function auto_tick(string $T): void {
+  foreach (BOT_LANGS as $lang) {
+    $a = bot_store(function (&$d) use ($lang) {
+      $a = $d['auto'][$lang] ?? null;
+      if (!$a || empty($a['on']) || time() - (int) ($a['last'] ?? 0) < (int) ($a['every'] ?? 43200)) return null;
+      $d['auto'][$lang]['last'] = time();  // claimed: a second request won't send it again
+      return $a;
+    });
+    if ($a) broadcast($T, (int) $a['from'], (int) $a['msg'], $lang, true, (string) ($a['follow'] ?? ''));
+  }
 }
 
 function count_visit(int $chat, string $what): void {
@@ -253,8 +320,25 @@ function set_step(int $chat, ?array $reg): void {
   });
 }
 
+// The questions, in order. A language can set its own list in signup.steps.
+function signup_steps(array $C): array {
+  return $C['signup']['steps'] ?? ['name', 'phone', 'city', 'year'];
+}
+
+// Asks the question after $step, or returns null when $step was the last one.
+function ask_next(string $T, int $chat, array $C, string $step): ?string {
+  $steps = signup_steps($C);
+  $next = $steps[array_search($step, $steps, true) + 1] ?? null;
+  if ($next === null) return null;
+  $S = $C['signup'];
+  if ($next === 'phone') send_text($T, $chat, $S['ask_phone'], ['keyboard' => [[['text' => $S['phone_button'], 'request_contact' => true]]], 'resize_keyboard' => true, 'one_time_keyboard' => true]);
+  else send_text($T, $chat, $S["ask_$next"], ['remove_keyboard' => true]);
+  return $next;
+}
+
 function start_signup(string $T, int $chat, array $C): void {
-  set_step($chat, ['step' => 'name']);
+  bot_event($chat, $C['lang'], 'signup');
+  set_step($chat, ['step' => 'name', 'c' => $C['variant'] ?? '']);
   send_photo($T, $chat, $C['signup']['photo'], $C['signup']['intro']);
   send_text($T, $chat, $C['signup']['ask_name'], ['remove_keyboard' => true]);
 }
@@ -271,15 +355,15 @@ function save_lead(array $r, array $from, string $lang, string $campaign): void 
   if ($h = @fopen($f, 'a')) {
     flock($h, LOCK_EX);
     if ($new) fputcsv($h, ['time', 'name', 'phone', 'email', 'birth_year', 'source', 'app', 'campaign', 'user_agent', 'page', 'medium', 'term', 'city']);
-    fputcsv($h, [date('Y-m-d H:i:s'), $cell($r['name']), $r['phone'], '', $r['year'], $source, '', $campaign,
-      'Telegram ' . $tgUser, 'mentor', '', '', $cell($r['city'])]);
+    fputcsv($h, [date('Y-m-d H:i:s'), $cell($r['name']), $r['phone'], $r['email'] ?? '', $r['year'] ?? '', $source, '', $campaign,
+      'Telegram ' . $tgUser, 'mentor', '', '', $cell($r['city'] ?? '')]);
     flock($h, LOCK_UN); fclose($h);
   }
   $sheet = dirname(__DIR__) . '/lib-sheet.php';
   if (is_file($sheet)) {
     require_once $sheet;
-    montana_sheet_send(bot_dir(), ['name' => $r['name'], 'phone' => $r['phone'], 'email' => '', 'birth_year' => $r['year'],
-      'city' => $r['city'], 'source' => mb_substr("$campaign / $source / " . $r['city'], 0, 200)]);
+    montana_sheet_send(bot_dir(), ['name' => $r['name'], 'phone' => $r['phone'], 'email' => $r['email'] ?? '', 'birth_year' => $r['year'] ?? '',
+      'city' => $r['city'] ?? '', 'source' => mb_substr(trim("$campaign / $source / " . ($r['city'] ?? ''), ' /'), 0, 200)]);
   }
   bot_store(function (&$d) { $d['stats']['signed_up'] = ($d['stats']['signed_up'] ?? 0) + 1; });
 }
@@ -288,33 +372,38 @@ function save_lead(array $r, array $from, string $lang, string $campaign): void 
 function signup_answer(string $T, int $chat, array $C, array $m, int $adminId): bool {
   $reg = bot_store()['reg'][(string) $chat] ?? null;
   if (!$reg || time() - (int) ($reg['t'] ?? 0) > 86400) return false;
+  if (!empty($reg['c'])) $C = bot_content((string) $reg['c']);  // sign-up started from the Persian AI buttons
   $S = $C['signup'];
   $text = trim((string) ($m['text'] ?? ''));
-  switch ($reg['step']) {
+  $step = (string) ($reg['step'] ?? '');
+  switch ($step) {
     case 'name':
       $name = trim(preg_replace('/\s+/u', ' ', $text));
-      if (mb_strlen($name) < 3 || mb_strlen($name) > 60 || preg_match('/\d/', fa2en($name)) || str_starts_with($name, '/')) { send_text($T, $chat, $S['bad_name']); break; }
-      set_step($chat, ['step' => 'phone', 'name' => $name]);
-      send_text($T, $chat, $S['ask_phone'], ['keyboard' => [[['text' => $S['phone_button'], 'request_contact' => true]]], 'resize_keyboard' => true, 'one_time_keyboard' => true]);
+      if (mb_strlen($name) < 3 || mb_strlen($name) > 60 || preg_match('/\d/', fa2en($name)) || str_starts_with($name, '/')) { send_text($T, $chat, $S['bad_name']); return true; }
+      $reg['name'] = $name;
+      break;
+    case 'email':
+      $email = strtolower(trim($text));
+      if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 100) { send_text($T, $chat, $S['bad_email']); return true; }
+      $reg['email'] = $email;
       break;
     case 'phone':
       $raw = isset($m['contact']) ? (string) ($m['contact']['phone_number'] ?? '') : $text;
       $phone = $C['lang'] === 'en' ? norm_phone_intl($raw, isset($m['contact'])) : norm_phone($raw);
-      if ($phone === '') { send_text($T, $chat, $S['bad_phone']); break; }
+      if ($phone === '') { send_text($T, $chat, $S['bad_phone']); return true; }
       if (phone_taken($phone)) {
+        bot_event($chat, $C['lang'], 'dup');
         set_step($chat, null);
         send_text($T, $chat, $S['duplicate'], ['remove_keyboard' => true]);
         send_text($T, $chat, $C['fallback'], menu_markup($C));
-        break;
+        return true;
       }
-      set_step($chat, ['phone' => $phone, 'step' => 'city'] + $reg);
-      send_text($T, $chat, $S['ask_city'], ['remove_keyboard' => true]);
+      $reg['phone'] = $phone;
       break;
     case 'city':
       $city = trim(preg_replace('/\s+/u', ' ', $text));
-      if (mb_strlen($city) < 2 || mb_strlen($city) > 60 || preg_match('/\d/', fa2en($city)) || str_starts_with($city, '/')) { send_text($T, $chat, $S['bad_city']); break; }
-      set_step($chat, ['city' => $city, 'step' => 'year'] + $reg);
-      send_text($T, $chat, $S['ask_year']);
+      if (mb_strlen($city) < 2 || mb_strlen($city) > 60 || preg_match('/\d/', fa2en($city)) || str_starts_with($city, '/')) { send_text($T, $chat, $S['bad_city']); return true; }
+      $reg['city'] = $city;
       break;
     case 'year':
       $year = fa2en($text);
@@ -322,20 +411,38 @@ function signup_answer(string $T, int $chat, array $C, array $m, int $adminId): 
       $okYear = $C['lang'] === 'en'
         ? preg_match('/^(19|20)\d\d$/', $year) && (int) $year >= 1930 && (int) $year <= (int) date('Y') - 10
         : preg_match('/^1[34]\d\d$/', $year) && (int) $year >= 1310 && (int) $year <= 1395;
-      if (!$okYear) { send_text($T, $chat, $S['bad_year']); break; }
+      if (!$okYear) { send_text($T, $chat, $S['bad_year']); return true; }
       $reg['year'] = $year;
-      set_step($chat, null);
-      save_lead($reg, $m['from'] ?? [], $C['lang'], $S['campaign'] ?? 'mentorship');
-      $rows = empty($C['channel_url']) ? [] : [[['text' => $S['channel_button'], 'url' => $C['channel_url']]]];
-      $rows[] = [['text' => $C['menu_button'], 'callback_data' => 'menu']];
-      send_text($T, $chat, $S['done'], ['inline_keyboard' => $rows]);
-      if ($adminId) {
-        $u = isset($m['from']['username']) ? ' (@' . $m['from']['username'] . ')' : '';
-        send_text($T, $adminId, "🆕 {$S['admin_title']}$u\n\n👤 {$reg['name']}\n📱 {$reg['phone']}\n🏙 {$reg['city']}\n🎂 {$reg['year']}");
-      }
       break;
     default:
       return false;
+  }
+  bot_event($chat, $C['lang'], "a:$step");
+  $next = ask_next($T, $chat, $C, $step);
+  if ($next !== null) { set_step($chat, ['step' => $next] + $reg); return true; }
+
+  // Last answer: save, thank, and point to the channel.
+  bot_event($chat, $C['lang'], 'done');
+  bot_store(function (&$d) use ($chat) { $d['signed'][(string) $chat] = time(); });
+  set_step($chat, null);
+  save_lead($reg, $m['from'] ?? [], $C['lang'], $S['campaign'] ?? 'mentorship');
+  $rows = empty($C['channel_url']) ? [] : [[['text' => $S['channel_button'], 'url' => $C['channel_url']]]];
+  $rows[] = [['text' => $C['menu_button'], 'callback_data' => ($C['cb'] ?? '') . 'menu']];
+  // When the phone was the last question its keyboard is still up: a separate
+  // done_channel message carries the buttons, so the first one can remove it.
+  if (!empty($S['done_channel'])) {
+    send_text($T, $chat, $S['done'], ['remove_keyboard' => true]);
+    send_text($T, $chat, $S['done_channel'], ['inline_keyboard' => $rows]);
+  } else {
+    send_text($T, $chat, $S['done'], ['inline_keyboard' => $rows]);
+  }
+  if ($adminId) {
+    $u = isset($m['from']['username']) ? ' (@' . $m['from']['username'] . ')' : '';
+    $lines = ["👤 {$reg['name']}", "📱 {$reg['phone']}"];
+    if (!empty($reg['email'])) $lines[] = "📧 {$reg['email']}";
+    if (!empty($reg['city'])) $lines[] = "🏙 {$reg['city']}";
+    if (!empty($reg['year'])) $lines[] = "🎂 {$reg['year']}";
+    send_text($T, $adminId, "🆕 {$S['admin_title']}$u\n\n" . implode("\n", $lines));
   }
   return true;
 }
@@ -346,7 +453,8 @@ function is_section(array $C, string $key): bool {
 
 function open_section(string $T, int $chat, array $C, string $key): void {
   count_visit($chat, $key);
-  if ($key === 'signup') start_signup($T, $chat, $C);
+  bot_event($chat, $C['lang'], "s:$key");
+  if ($key === 'signup' || !empty($C['sections'][$key]['signup'])) start_signup($T, $chat, $C);
   elseif (isset($C['sections'][$key])) show_section($T, $chat, $C, $key);
 }
 
@@ -357,11 +465,14 @@ if (isset($update['callback_query'])) {
   $chat = (int) ($q['message']['chat']['id'] ?? $q['from']['id']);
   $data = (string) ($q['data'] ?? '');
   $from = (int) $q['from']['id'];
+  // Buttons of the Persian AI follow-up: same handling, with that content.
+  if (str_starts_with($data, 'ai:')) { $C = bot_content('fa_ai'); $data = substr($data, 3); }
   tg($T, 'answerCallbackQuery', ['callback_query_id' => $q['id']], 5);
 
   if ($data === 'menu') {
     set_step($chat, null);
     count_visit($chat, 'menu');
+    bot_event($chat, $C['lang'], 'menu');
     send_text($T, $chat, $C['fallback'], menu_markup($C));
   } elseif (str_starts_with($data, 'lang:') && in_array(substr($data, 5), BOT_LANGS, true)) {
     switch_lang($T, $chat, $from, substr($data, 5));
@@ -386,10 +497,15 @@ if (isset($update['callback_query'])) {
       unset($d['pending_bc'][(string) $from]);
       return $p;
     });
-    if ($data === 'bc:go' && !empty($p['msg'])) {
+    if (($data === 'bc:go' || $data === 'bc:gof') && !empty($p['msg'])) {
+      $follow = $data === 'bc:gof' ? 'fa_ai' : '';
       tg($T, 'editMessageReplyMarkup', ['chat_id' => $chat, 'message_id' => $q['message']['message_id'] ?? 0, 'reply_markup' => ['inline_keyboard' => []]], 5);
-      send_text($T, $chat, '⏳ در حال ارسال… آخرش نتیجه رو برات می‌فرستم.');
-      broadcast($T, $from, (int) $p['msg'], (string) $p['lang']);
+      $auto = !empty($p['auto']);
+      if ($auto) bot_store(function (&$d) use ($p, $from) {
+        $d['auto'][$p['lang']] = ['on' => true, 'msg' => (int) $p['msg'], 'from' => $from, 'every' => 43200, 'last' => time(), 'follow' => $follow];
+      });
+      send_text($T, $chat, '⏳ در حال ارسال… آخرش نتیجه رو برات می‌فرستم.' . ($auto ? "\n🔁 از این به بعد هر ۱۲ ساعت تکرار میشه. خاموش کردن: /auto_off" : ''));
+      broadcast($T, $from, (int) $p['msg'], (string) $p['lang'], $auto, $follow);
     } else {
       send_text($T, $chat, 'ارسال لغو شد.');
     }
@@ -416,7 +532,7 @@ if ($cmd === 'admin') {
   $code = (string) ($cfg['admin_code'] ?? '');
   if ($code !== '' && hash_equals($code, $arg)) {
     bot_store(function (&$d) use ($from) { $d['config']['admin_id'] = $from; });
-    send_text($T, $chat, "✅ از این به بعد تو ادمین ربات هستی.\n\n• برای اضافه کردن ویدیو: یه ویدیو مسیج (یا ویدیو) همین‌جا بفرست و بخشش رو انتخاب کن.\n• /videos ویدیوهای فعلی و حذفشون\n• /stats آمار ربات\n• /send_fa یا /send_en پیام همگانی به کاربرهای فارسی یا انگلیسی\n• هر ثبت‌نام جدید همین‌جا برات فرستاده میشه.");
+    send_text($T, $chat, "✅ از این به بعد تو ادمین ربات هستی.\n\n• برای اضافه کردن ویدیو: یه ویدیو مسیج (یا ویدیو) همین‌جا بفرست و بخشش رو انتخاب کن.\n• /videos ویدیوهای فعلی و حذفشون\n• /stats آمار ربات\n• /send_fa یا /send_en پیام همگانی به کاربرهای فارسی یا انگلیسی\n• /auto_fa یا /auto_en همون، ولی هر ۱۲ ساعت تکرار (تا ثبت‌نام، عضویت تو کانال یا بلاک)\n• /auto وضعیت ارسال خودکار، /auto_off خاموش کردنش\n• هر ثبت‌نام جدید همین‌جا برات فرستاده میشه.");
   } else {
     send_text($T, $chat, 'کد درست نیست.');
   }
@@ -425,10 +541,24 @@ if ($cmd === 'admin') {
 
 if ($from === $adminId && $adminId) {
   // /send_fa or /send_en, then the message to send to everyone of that language.
-  if ($cmd === 'send_fa' || $cmd === 'send_en') {
-    $lang = substr($cmd, 5);
-    bot_store(function (&$d) use ($from, $lang) { $d['pending_bc'][(string) $from] = ['lang' => $lang]; });
-    send_text($T, $chat, '✍️ پیامی که می‌خوای برای همه‌ی کاربرهای ' . ($lang === 'en' ? 'انگلیسی' : 'فارسی') . " فرستاده بشه رو همین‌جا بفرست (متن، عکس، ویدیو یا ویدیو مسیج).\nبرای لغو: /cancel");
+  // /auto_fa or /auto_en: the same, but sent again every 12 hours (see auto_tick).
+  if (in_array($cmd, ['send_fa', 'send_en', 'auto_fa', 'auto_en'], true)) {
+    $lang = substr($cmd, -2);
+    $auto = str_starts_with($cmd, 'auto');
+    bot_store(function (&$d) use ($from, $lang, $auto) { $d['pending_bc'][(string) $from] = ['lang' => $lang, 'auto' => $auto]; });
+    send_text($T, $chat, '✍️ پیامی که می‌خوای برای همه‌ی کاربرهای ' . ($lang === 'en' ? 'انگلیسی' : 'فارسی') . ' فرستاده بشه رو همین‌جا بفرست (متن، عکس، ویدیو یا ویدیو مسیج).'
+      . ($auto ? "\n\n🔁 این پیام هر ۱۲ ساعت دوباره فرستاده میشه، به جز برای کسایی که ثبت‌نام کردن، عضو کانال شدن یا ربات رو بلاک کردن. پیام رو از این چت پاک نکن." : '') . "\nبرای لغو: /cancel");
+    exit;
+  }
+  // /auto_off stops the repeating follow-ups, /auto shows them.
+  if ($cmd === 'auto_off' || $cmd === 'auto') {
+    if ($cmd === 'auto_off') bot_store(function (&$d) { foreach ($d['auto'] ?? [] as $l => $a) $d['auto'][$l]['on'] = false; });
+    $lines = [];
+    foreach (bot_store()['auto'] ?? [] as $l => $a) {
+      $name = $l === 'en' ? 'انگلیسی' : 'فارسی';
+      $lines[] = (!empty($a['on']) ? '🟢 ' : '⚪️ ') . "$name: " . (!empty($a['on']) ? 'روشن، ارسال بعدی ' . date('H:i', (int) $a['last'] + (int) $a['every']) . ' (' . count(bc_targets($l, true)) . ' نفر)' : 'خاموش');
+    }
+    send_text($T, $chat, ($lines ? implode("\n", $lines) : 'ارسال خودکاری تنظیم نشده.') . "\n\nروشن کردن: /auto_fa یا /auto_en\nخاموش کردن همه: /auto_off");
     exit;
   }
   $bc = bot_store()['pending_bc'][(string) $from] ?? null;
@@ -440,11 +570,13 @@ if ($from === $adminId && $adminId) {
   if ($bc && empty($bc['msg']) && $cmd === '') {
     $lang = $bc['lang'];
     $d = bot_store();
-    $n = count(array_diff_key(array_filter($d['lang'] ?? [], fn($l) => $l === $lang), $d['blocked'] ?? []));
+    $auto = !empty($bc['auto']);
+    $n = count(bc_targets($lang, $auto));
     bot_store(function (&$d) use ($from, $m) { $d['pending_bc'][(string) $from]['msg'] = (int) $m['message_id']; });
     $name = $lang === 'en' ? 'انگلیسی' : 'فارسی';
-    send_text($T, $chat, "این پیام برای $n کاربر $name فرستاده بشه؟", ['inline_keyboard' => [
-      [['text' => "✅ ارسال به $n نفر", 'callback_data' => 'bc:go']],
+    send_text($T, $chat, $auto ? "این پیام الان برای $n کاربر $name فرستاده بشه و بعد هر ۱۲ ساعت تکرار بشه؟" : "این پیام برای $n کاربر $name فرستاده بشه؟", ['inline_keyboard' => [
+      [['text' => $auto ? "🔁 ارسال به $n نفر، هر ۱۲ ساعت" : "✅ ارسال به $n نفر", 'callback_data' => 'bc:go']],
+      ...($lang === 'fa' ? [[['text' => ($auto ? '🔁' : '✅') . ' همراه دکمه‌های ربات AI (۲۰ ثانیه بعد)', 'callback_data' => 'bc:gof']]] : []),
       [['text' => '✖️ لغو', 'callback_data' => 'bc:cancel']],
     ]]);
     exit;
@@ -497,14 +629,15 @@ if ($cmd === 'start' && in_array($arg, BOT_LANGS, true) && $arg !== $C['lang']) 
   set_lang($from, $arg);
   $C = bot_content($arg);
 }
-if ($cmd === 'language') {
+if ($cmd === 'language' && !empty($C['lang_button'])) {
   switch_lang($T, $chat, $from, $C['lang'] === 'en' ? 'fa' : 'en');
   exit;
 }
 if ($cmd === 'start' || $cmd === 'menu') {
   set_step($chat, null);
   count_visit($chat, 'start');
-  show_start($T, $chat, $C);
+  bot_event($chat, $C['lang'], $cmd, $cmd === 'start' ? $arg : '');
+  show_start($T, $chat, $C, $cmd === 'start');
   exit;
 }
 if ($cmd !== '' && is_section($C, $cmd)) {
@@ -514,4 +647,5 @@ if ($cmd !== '' && is_section($C, $cmd)) {
 }
 if ($cmd === '' && signup_answer($T, $chat, $C, $m, $adminId)) exit;
 
+bot_event($chat, $C['lang'], 'msg');
 send_text($T, $chat, $C['fallback'], menu_markup($C));

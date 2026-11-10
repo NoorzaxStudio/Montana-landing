@@ -98,84 +98,126 @@ return [
   // Telegram app isn't in Persian, a start link ending in ?start=en, or who pressed
   // "English") ----------
   'en' => [
-    // No analysis channel for English users yet: put its link here to add the button.
-    'channel_url' => '',
+    // Lord of Chart channel: the button at the end of the sign-up.
+    'channel_url' => 'https://t.me/+Wdv39t-7LFc1OWVk',
     // Public Myfxbook page of the bot: shown as a button under "Results" once filled in.
     'results_url' => 'https://www.myfxbook.com/members/Montanatrader/montanagold/12274497',
     // Support account, like https://t.me/MontanaSupport: shown under "Questions and support".
     'support_url' => 'https://t.me/Montanatraderr',
 
     // Shown in Telegram before someone presses Start (max 512 characters).
-    'description' => "Hi, I'm Montana, a former broker analyst 👋\n\nTrading is a battle, and the banks bring their strongest bots ⚔️ Our AI trades gold and major pairs 24/7, by the rules, without fear or greed 🤖\n\nYour money never leaves your own account 🔒 Start with a small amount.\n\nPress Start 👇",
+    'description' => "🤫 Why do ordinary traders lose money every single day…\n\n…while the banks get richer every single day? 🏦💰\n\nThere's a secret behind it, and I'm going to tell you 🔐\n\n👇 Press START and I'll show you",
     // The bot's "About" line on its profile (max 120 characters).
-    'short_description' => 'AI trading bot for gold and major pairs, 24/7 | Your money stays in your account',
+    'short_description' => '🏦 Banks win. Traders lose. Every day. 🤫 Find out why, and how Lord of Chart 🤖 flips the game 👇',
     'commands' => [
       'start' => 'Main menu',
       'howto' => 'How to start',
       'support' => 'Questions and support',
-      'language' => 'فارسی / English',
     ],
 
     'start' => [
-      'photo' => 'ai-welcome.jpg',
-      'text' => "Hey 👋 welcome to Montana AI Trading.\n\nI'm Mojtaba Hosseini, known as Montana; a former analyst at brokers and financial institutions. I've seen thousands of trader accounts, and why most of them lose.\n\nToday our AI trades gold and major currency pairs for you, 24/7, rule by rule, without fear or greed 🤖\n\nPick a topic below; each one has a short video from me 👇",
-      'menu_text' => "Choose from the buttons below 👇",
+      // The Lord of Chart motion video. The menu follows on its own message menu_delay seconds later.
+      'photo' => 'lord-of-chart-intro.mp4',
+      'text' => "🚨🚨 Your WHOLE capital is at risk right now 😱💸\n\n📉 Most traders lose money and never find out why 🤯\n\n🎬 Watch this video till the end 👀 and see how Lord of Chart 🤖👑 flips the game for you 📈💰🔥\n\n👇👇👇",
+      'menu_delay' => 25,
+      'menu_text' => "🔥 Ready to let Lord of Chart 🤖 trade for you? 💰\n\nChoose from the buttons below 👇",
     ],
 
     'menu' => [
-      'manual' => "😓 Why manual trading doesn't work",
-      'ai' => '🤖 Why the AI bot works',
       'results' => '📈 Results',
       'howto' => '🚀 How to start',
       'support' => '💬 Questions and support',
     ],
     'signup_button' => "🚀 I want to start",
     'menu_button' => '🔙 Main menu',
-    'lang_button' => '🇮🇷 فارسی',
+    // No language button for English users: they never see that a Persian version exists.
+    'lang_button' => '',
 
     'sections' => [
-      'manual' => [
-        'photo' => 'ai-manual.jpg',
-        'text' => "😓 Why manual trading doesn't work\n\nTrading is a battle between you and the banks, and the banks bring their strongest bots ⚔️\n\n⏳ You need minutes to decide on one position. The market moves in seconds.\n😱 Fear and greed make you exit early, skip your stop-loss or revenge-trade.\n📋 The best strategies are mechanical. No human can follow every rule, every time.\n😴 You have to work and sleep. The market never stops.\n\nThat's why most manual traders lose, even with a good strategy.",
-      ],
-      'ai' => [
-        'photo' => 'ai-bot.jpg',
-        'text' => "🤖 Why the AI bot works\n\n⚡ It weighs every factor in one second and takes the position for you.\n🧠 Zero emotion: it follows the plan on trade 1 and on trade 100.\n✅ It executes the strategy exactly, rule by rule, without a single exception.\n🌙 It watches gold and major pairs 24/7, while you work or sleep.\n🎯 It goes after the big moves, not a few pips.\n\n🔒 Your money never leaves your account. The account is with your broker, in your name; the AI only places trades.",
-      ],
       'results' => [
         'photo' => 'ai-results.jpg',
         'text' => "📈 Results\n\nWe aim for consistent profits: steady, rule-based trading, not lucky one-off wins.\n\n✅ The bot's results are public on Myfxbook, an independent site that verifies trading accounts, so you can check every trade yourself.\n\n⚠️ Trading carries risk, and past results don't guarantee future results.",
         'button' => ['text' => '📊 See the results on Myfxbook', 'url_key' => 'results_url'],
       ],
-      'howto' => [
-        'photo' => 'ai-start.jpg',
-        'text' => "🚀 How to start\n\n1️⃣ Press \"I want to start\" below and answer 4 short questions.\n2️⃣ Our team contacts you and helps you open a trading account with a broker, in your own name.\n3️⃣ You start with a small amount 💰\n4️⃣ We connect the AI bot to your account, and you follow the results.\n\n🔒 Your money stays in your account the whole time; the AI only places trades.",
-      ],
+      // Goes straight into the sign-up (the knight poster, then the first question).
+      'howto' => ['signup' => true],
       'support' => [
         'text' => "💬 Questions and support\n\nHave a question about the AI bot, your account or the results? Message our support team and we'll answer you personally 👇",
         'button' => ['text' => '💬 Message support', 'url_key' => 'support_url'],
+        // The menu button opens the support account directly.
+        'link' => 'support_url',
       ],
     ],
 
     'signup' => [
       'campaign' => 'ai-bot',
       'admin_title' => 'ثبت‌نام ربات AI (انگلیسی) از ربات',
-      'photo' => 'ai-start.jpg',
-      'intro' => "🚀 Start with Montana AI Trading\n\nJust 4 short questions, then our team contacts you. You can go back to the menu any time with /start.",
-      'ask_name' => "1 of 4: Write your full name ✍️",
-      'ask_phone' => "2 of 4: Write your WhatsApp or mobile number with the country code (like +234 803 123 4567), or press the button below 📱",
+      'photo' => 'lord-of-chart-knight.jpg',
+      'intro' => "⚔️ Let's get you started with Lord of Chart 👑\n\nJust 3 quick questions 👇",
+      'steps' => ['name', 'email', 'phone'],
+      'ask_name' => "1 of 3: Write your full name ✍️",
+      'ask_email' => "2 of 3: Write your email address 📧",
+      'ask_phone' => "3 of 3: Write your WhatsApp or mobile number with the country code (like +234 803 123 4567), or press the button below 📱",
       'phone_button' => '📱 Share my number',
-      'ask_city' => "3 of 4: Which city and country do you live in? 🏙",
-      'ask_year' => "4 of 4: Write your year of birth (like 1995) 🎂",
       'bad_name' => "Please write your name properly, like \"John Okafor\".",
+      'bad_email' => "That email doesn't look right. Write it like name@gmail.com",
       'bad_phone' => "That number doesn't look right. Write it with the country code, like +234 803 123 4567.",
-      'bad_city' => "Please write your city properly, like \"Lagos, Nigeria\".",
-      'bad_year' => "Please write your year of birth as four digits, like 1995.",
       'duplicate' => "✅ You've already registered with this number. Our team will contact you soon.",
-      'done' => "✅ You're registered.\n\nOur team will contact you soon to help you open your account and connect the AI bot.\n\nUntil then, check the other topics in the menu 👇",
+      'done' => "✅ You're in! 🎉\n\nOur team will contact you soon 📞",
+      'done_channel' => "📢 Now join the Lord of Chart channel to get the AI signals 👇",
       'channel_button' => '📢 Join the channel',
     ],
 
     'fallback' => "Choose from the buttons below 👇",
+  ],
+
+  // ---------- Persian AI bot ('fa_ai'): the English AI bot's menu and sign-up in
+  // Persian, for Persian users who got the AI video as a follow-up (/send_fa or
+  // /auto_fa with the buttons option). Anything not set here comes from 'en' (links,
+  // menu order). The bot's name isn't used in these texts. ----------
+  'fa_ai' => [
+    'start' => [
+      'menu_text' => "🔥 آماده‌ای هوش مصنوعی برات ترید کنه؟ 💰\n\nاز دکمه‌های زیر انتخاب کن 👇",
+    ],
+    'menu' => [
+      'results' => '📈 نتایج',
+      'howto' => '🚀 چطور شروع کنم؟',
+      'support' => '💬 سوال و پشتیبانی',
+    ],
+    'signup_button' => '🚀 می‌خوام شروع کنم',
+    'menu_button' => '🔙 منوی اصلی',
+    'lang_button' => '',
+    'sections' => [
+      'results' => [
+        'photo' => 'ai-results.jpg',
+        'text' => "📈 نتایج\n\nهدف ما سود ثابته: ترید منظم و طبق قانون، نه بردهای شانسی.\n\n✅ نتایج ربات روی مای‌اف‌ایکس‌بوک عمومیه؛ یه سایت مستقل که حساب‌های ترید رو تأیید می‌کنه، پس خودت می‌تونی تک‌تک معامله‌ها رو چک کنی.\n\n⚠️ ترید ریسک داره و نتایج گذشته تضمینی برای آینده نیست.",
+        'button' => ['text' => '📊 دیدن نتایج روی Myfxbook', 'url_key' => 'results_url'],
+      ],
+      'howto' => ['signup' => true],
+      'support' => [
+        'text' => "💬 سوال و پشتیبانی\n\nسوالی داری؟ به پشتیبانی پیام بده 👇",
+        'button' => ['text' => '💬 پیام به پشتیبانی', 'url_key' => 'support_url'],
+        'link' => 'support_url',
+      ],
+    ],
+    'signup' => [
+      'campaign' => 'ai-bot-fa',
+      'admin_title' => 'ثبت‌نام ربات AI (فارسی) از ربات',
+      'photo' => 'lord-of-chart-knight.jpg',
+      'intro' => "⚔️ بیا شروع کنیم 👑\n\nفقط ۳ سؤال کوتاه 👇",
+      'steps' => ['name', 'email', 'phone'],
+      'ask_name' => "۱ از ۳: اسم و فامیلت رو بنویس ✍️",
+      'ask_email' => "۲ از ۳: ایمیلت رو بنویس 📧",
+      'ask_phone' => "۳ از ۳: شماره موبایلت رو بنویس (مثل ۰۹۱۲۳۴۵۶۷۸۹) یا دکمه پایین رو بزن 📱",
+      'phone_button' => '📱 ارسال شماره من',
+      'bad_name' => "لطفاً اسمت رو درست بنویس، مثل «علی رضایی».",
+      'bad_email' => "این ایمیل درست به نظر نمی‌رسه. مثل name@gmail.com بنویس.",
+      'bad_phone' => "شماره موبایل درست نیست. مثل ۰۹۱۲۳۴۵۶۷۸۹ بنویس.",
+      'duplicate' => "✅ قبلاً با این شماره ثبت‌نام کردی. تیم ما به‌زودی باهات تماس می‌گیره.",
+      'done' => "✅ ثبت‌نامت انجام شد! 🎉\n\nتیم ما به‌زودی باهات تماس می‌گیره 📞",
+      'done_channel' => "📢 حالا عضو کانال شو تا سیگنال‌های هوش مصنوعی رو بگیری 👇",
+      'channel_button' => '📢 عضویت در کانال',
+    ],
+    'fallback' => "از دکمه‌های زیر انتخاب کن 👇",
   ],
 ];

@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       });
       $url = 'https://' . ($_SERVER['HTTP_HOST'] ?? '') . '/bot/index.php'; // Telegram only calls https
       $steps = [
-        'وب‌هوک' => tg($token, 'setWebhook', ['url' => $url, 'secret_token' => $secret, 'allowed_updates' => ['message', 'callback_query'], 'drop_pending_updates' => 'true']),
+        'وب‌هوک' => tg($token, 'setWebhook', ['url' => $url, 'secret_token' => $secret, 'allowed_updates' => ['message', 'callback_query', 'chat_member', 'my_chat_member'], 'drop_pending_updates' => 'true']),
       ];
       // English is the default; people whose Telegram app is in Persian see the Persian texts.
       foreach (['en' => ['', 'انگلیسی (پیش‌فرض)'], 'fa' => ['fa', 'فارسی']] as $lang => [$code, $name]) {

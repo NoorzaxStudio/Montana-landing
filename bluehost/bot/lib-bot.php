@@ -11,6 +11,15 @@ function bot_dir(): string {
   return $dir;
 }
 
+// One line per user action in bot-events.log, for the bot page of the admin panel:
+// time, user id, language, event (start, s:<section>, menu, signup, a:<question>,
+// done, dup, msg, join, block) and an extra field (the ?start= tag, or the channel id).
+function bot_event(int $uid, string $lang, string $ev, string $x = ''): void {
+  if (!$uid) return;
+  $x = preg_replace('/[^\w\-]/', '', mb_substr($x, 0, 40));
+  @file_put_contents(bot_dir() . '/bot-events.log', date('Y-m-d H:i:s') . "\t$uid\t$lang\t$ev\t$x\n", FILE_APPEND | LOCK_EX);
+}
+
 // Read-modify-write bot.json under a lock. $fn gets the data by reference;
 // whatever it returns is returned here.
 function bot_store(?callable $fn = null) {
@@ -51,8 +60,16 @@ function bot_flag_existing_fa(): int {
 function bot_content(string $lang = 'fa'): array {
   static $all = null;
   $all ??= require __DIR__ . '/lib-content.php';
+  $shared = array_diff_key($all, array_flip([...BOT_LANGS, 'fa_ai']));
+  // 'fa_ai': the English AI bot in Persian; its buttons carry the 'ai:' prefix so a
+  // press opens this content again, whatever the user's own language is.
+  if ($lang === 'fa_ai') {
+    $en = $all['en'];
+    $C = array_merge($shared, $en, $all['fa_ai'], ['lang' => 'fa', 'variant' => 'fa_ai', 'cb' => 'ai:']);
+    $C['start'] = $all['fa_ai']['start'] + $en['start'];
+    return $C;
+  }
   if (!in_array($lang, BOT_LANGS, true)) $lang = 'fa';
-  $shared = array_diff_key($all, array_flip(BOT_LANGS));
   return array_merge($shared, $all[$lang], ['lang' => $lang]);
 }
 
