@@ -351,7 +351,7 @@ function is_section(array $C, string $key): bool {
 
 function open_section(string $T, int $chat, array $C, string $key): void {
   count_visit($chat, $key);
-  if ($key === 'signup') start_signup($T, $chat, $C);
+  if ($key === 'signup' || !empty($C['sections'][$key]['signup'])) start_signup($T, $chat, $C);
   elseif (isset($C['sections'][$key])) show_section($T, $chat, $C, $key);
 }
 

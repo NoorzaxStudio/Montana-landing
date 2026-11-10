@@ -139,10 +139,8 @@ return [
         'text' => "📈 Results\n\nWe aim for consistent profits: steady, rule-based trading, not lucky one-off wins.\n\n✅ The bot's results are public on Myfxbook, an independent site that verifies trading accounts, so you can check every trade yourself.\n\n⚠️ Trading carries risk, and past results don't guarantee future results.",
         'button' => ['text' => '📊 See the results on Myfxbook', 'url_key' => 'results_url'],
       ],
-      'howto' => [
-        'photo' => 'ai-start.jpg',
-        'text' => "🚀 How to start\n\n1️⃣ Press \"I want to start\" below and answer 4 short questions.\n2️⃣ Our team contacts you and helps you open a trading account with a broker, in your own name.\n3️⃣ You start with a small amount 💰\n4️⃣ We connect the AI bot to your account, and you follow the results.\n\n🔒 Your money stays in your account the whole time; the AI only places trades.",
-      ],
+      // Goes straight into the sign-up (the knight poster, then the first question).
+      'howto' => ['signup' => true],
       'support' => [
         'text' => "💬 Questions and support\n\nHave a question about the AI bot, your account or the results? Message our support team and we'll answer you personally 👇",
         'button' => ['text' => '💬 Message support', 'url_key' => 'support_url'],
@@ -152,8 +150,8 @@ return [
     'signup' => [
       'campaign' => 'ai-bot',
       'admin_title' => 'ثبت‌نام ربات AI (انگلیسی) از ربات',
-      'photo' => 'ai-start.jpg',
-      'intro' => "🚀 Start with Lord of Chart\n\nJust 4 short questions, then our team contacts you. You can go back to the menu any time with /start.",
+      'photo' => 'lord-of-chart-knight.jpg',
+      'intro' => "⚔️ Let's get you started with Lord of Chart 👑\n\nJust 4 quick questions 👇",
       'ask_name' => "1 of 4: Write your full name ✍️",
       'ask_phone' => "2 of 4: Write your WhatsApp or mobile number with the country code (like +234 803 123 4567), or press the button below 📱",
       'phone_button' => '📱 Share my number',
@@ -164,7 +162,7 @@ return [
       'bad_city' => "Please write your city properly, like \"Lagos, Nigeria\".",
       'bad_year' => "Please write your year of birth as four digits, like 1995.",
       'duplicate' => "✅ You've already registered with this number. Our team will contact you soon.",
-      'done' => "✅ You're registered.\n\nOur team will contact you soon to help you open your account and connect the AI bot.\n\nUntil then, check the other topics in the menu 👇",
+      'done' => "✅ You're in! 🎉\n\nOur team will contact you soon 📞\n\n📢 Now join the Lord of Chart channel to get the AI signals 👇",
       'channel_button' => '📢 Join the channel',
     ],
 
