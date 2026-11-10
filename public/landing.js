@@ -30,7 +30,13 @@
   var PRICES = null;
   var KEYS = ["usd", "eur", "goldGram", "btc"];
   var irs = document.querySelectorAll("#irr [data-k]");
+  var priceCards = document.getElementById("irr");
   var priceRetryDelay = 5000;
+  function finishPriceLoading() {
+    if (!priceCards) return;
+    priceCards.classList.remove("is-loading");
+    priceCards.setAttribute("aria-busy", "false");
+  }
   function drawIR() {
     irs.forEach(function (e) {
       var v = PRICES && PRICES[KEYS[+e.dataset.k]];
@@ -46,6 +52,7 @@
       })
       .then(function (d) {
         var prev = PRICES; PRICES = d; drawIR();
+        finishPriceLoading();
         if (prev) irs.forEach(function (e) {
           var k = KEYS[+e.dataset.k];
           if (prev[k] && d[k] && prev[k] !== d[k]) {
@@ -60,6 +67,7 @@
       })
       .catch(function () {
         drawIR();
+        finishPriceLoading();
         var delay = priceRetryDelay;
         priceRetryDelay = Math.min(priceRetryDelay * 2, 60000);
         setTimeout(fetchPrices, delay);
@@ -76,12 +84,61 @@
     var marketSection = document.createElement("section");
     marketSection.className = "market-section";
     marketSection.setAttribute("aria-labelledby", "market-section-title");
-    marketSection.innerHTML = '<div class="market-section-head"><span class="market-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12h4l3-7 4 14 3-7h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h2 id="market-section-title" data-en="Market pulse" data-fa="نبض بازار">نبض بازار</h2></div><div class="market-ticker"></div><div class="market-section-prices"></div><div class="market-section-note"></div>';
+    marketSection.innerHTML = '<div class="market-section-head"><span class="market-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12h4l3-7 4 14 3-7h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="market-section-head-copy"><h2 id="market-section-title" data-en="Market pulse" data-fa="نبض بازار">نبض بازار</h2><p data-en="Tehran open-market prices and global assets in one view." data-fa="قیمت‌های بازار آزاد ایران و دارایی‌های جهانی، یک‌جا.">قیمت‌های بازار آزاد ایران و دارایی‌های جهانی، یک‌جا.</p></div></div><div class="market-ticker"></div><div class="market-section-prices"></div><div class="market-section-note"></div>';
     tv.parentNode.insertBefore(marketSection, tv);
     marketSection.querySelector(".market-ticker").appendChild(tv);
     marketSection.querySelector(".market-section-prices").appendChild(tomanPrices);
     marketSection.querySelector(".market-section-note").appendChild(pricesNote);
   }
+  function animateIRCardsOnce() {
+    var container = document.querySelector(".market-section-prices .irr");
+    if (!container || !container.animate) return;
+
+    var cards = container.querySelectorAll(":scope > div");
+    if (!cards.length) return;
+
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMotion && reduceMotion.matches) return;
+    var entryAnimations = [];
+
+    function revealCards() {
+      if (reduceMotion && reduceMotion.matches) return;
+      cards.forEach(function (card, index) {
+        entryAnimations.push(card.animate(
+          [
+            { opacity: 0, transform: "translateY(10px) scale(.985)" },
+            { opacity: 1, transform: "translateY(0) scale(1)" }
+          ],
+          {
+            duration: 440,
+            delay: index * 75,
+            easing: "cubic-bezier(.2,.7,.2,1)",
+            fill: "backwards"
+          }
+        ));
+      });
+    }
+
+    if (reduceMotion && reduceMotion.addEventListener) {
+      reduceMotion.addEventListener("change", function (event) {
+        if (event.matches) entryAnimations.forEach(function (animation) { animation.cancel(); });
+      });
+    }
+
+    if ("IntersectionObserver" in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        if (entries.some(function (entry) { return entry.isIntersecting; })) {
+          observer.disconnect();
+          revealCards();
+        }
+      }, { threshold: 0.12 });
+      observer.observe(container);
+    } else {
+      revealCards();
+    }
+  }
+  animateIRCardsOnce();
+
   var SYMBOLS = [
     ["OANDA:XAUUSD", "طلا", "Gold"],
     ["TVC:UKOIL", "نفت برنت", "Brent oil"],
@@ -207,4 +264,38 @@
     });
   }, { threshold: 0.18, rootMargin: "0px 0px -6% 0px" });
   items.forEach(function (item) { observer.observe(item); });
+})();
+
+/* Reveal the remaining key sections and their repeated content on scroll. */
+(function () {
+  var groups = [
+    { selector: ".channel" },
+    { selector: ".path" },
+    { selector: ".vs-band" },
+    { selector: ".steps > .step", stagger: true },
+    { selector: "#faq details", stagger: true }
+  ];
+  var targets = [];
+  groups.forEach(function (group) {
+    var elements = document.querySelectorAll(group.selector);
+    elements.forEach(function (element, index) {
+      element.classList.add("scroll-reveal");
+      if (group.stagger) element.style.setProperty("--scroll-reveal-delay", Math.min(index, 5) * 65 + "ms");
+      targets.push(element);
+    });
+  });
+  if (!targets.length) return;
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion || !("IntersectionObserver" in window)) return;
+
+  document.documentElement.classList.add("scroll-reveal-ready");
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+  targets.forEach(function (target) { observer.observe(target); });
 })();
