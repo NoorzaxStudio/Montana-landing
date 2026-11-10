@@ -34,6 +34,26 @@ if (!is_array($update)) exit;
 $T = (string) $cfg['token'];
 $adminId = (int) ($cfg['admin_id'] ?? 0);
 bot_flag_existing_fa();
+
+// Someone joined a channel the bot is an admin of, or blocked the bot: logged for the
+// admin panel, only for people who have used the bot (so their language is known).
+foreach (['chat_member', 'my_chat_member'] as $kind) {
+  if (!isset($update[$kind])) continue;
+  $cm = $update[$kind];
+  $u = (int) ($cm['new_chat_member']['user']['id'] ?? 0);
+  $new = (string) ($cm['new_chat_member']['status'] ?? '');
+  $old = (string) ($cm['old_chat_member']['status'] ?? '');
+  $lang = (string) (bot_store()['lang'][(string) $u] ?? '');
+  if ($kind === 'chat_member' && $lang !== '' && in_array($old, ['left', 'kicked'], true) && in_array($new, ['member', 'restricted', 'administrator'], true))
+    bot_event($u, $lang, 'join', (string) ($cm['chat']['id'] ?? ''));
+  if ($kind === 'my_chat_member' && ($cm['chat']['type'] ?? '') === 'private') {
+    $u = (int) ($cm['from']['id'] ?? 0);
+    $lang = (string) (bot_store()['lang'][(string) $u] ?? '');
+    if ($lang !== '') bot_event($u, $lang, $new === 'kicked' ? 'block' : 'unblock');
+  }
+  exit;
+}
+
 $C = bot_content(user_lang($update['callback_query']['from'] ?? $update['message']['from'] ?? []));
 
 // ---------- language ----------
@@ -277,6 +297,7 @@ function ask_next(string $T, int $chat, array $C, string $step): ?string {
 }
 
 function start_signup(string $T, int $chat, array $C): void {
+  bot_event($chat, $C['lang'], 'signup');
   set_step($chat, ['step' => 'name']);
   send_photo($T, $chat, $C['signup']['photo'], $C['signup']['intro']);
   send_text($T, $chat, $C['signup']['ask_name'], ['remove_keyboard' => true]);
@@ -330,6 +351,7 @@ function signup_answer(string $T, int $chat, array $C, array $m, int $adminId): 
       $phone = $C['lang'] === 'en' ? norm_phone_intl($raw, isset($m['contact'])) : norm_phone($raw);
       if ($phone === '') { send_text($T, $chat, $S['bad_phone']); return true; }
       if (phone_taken($phone)) {
+        bot_event($chat, $C['lang'], 'dup');
         set_step($chat, null);
         send_text($T, $chat, $S['duplicate'], ['remove_keyboard' => true]);
         send_text($T, $chat, $C['fallback'], menu_markup($C));
@@ -354,10 +376,12 @@ function signup_answer(string $T, int $chat, array $C, array $m, int $adminId): 
     default:
       return false;
   }
+  bot_event($chat, $C['lang'], "a:$step");
   $next = ask_next($T, $chat, $C, $step);
   if ($next !== null) { set_step($chat, ['step' => $next] + $reg); return true; }
 
   // Last answer: save, thank, and point to the channel.
+  bot_event($chat, $C['lang'], 'done');
   set_step($chat, null);
   save_lead($reg, $m['from'] ?? [], $C['lang'], $S['campaign'] ?? 'mentorship');
   $rows = empty($C['channel_url']) ? [] : [[['text' => $S['channel_button'], 'url' => $C['channel_url']]]];
@@ -387,6 +411,7 @@ function is_section(array $C, string $key): bool {
 
 function open_section(string $T, int $chat, array $C, string $key): void {
   count_visit($chat, $key);
+  bot_event($chat, $C['lang'], "s:$key");
   if ($key === 'signup' || !empty($C['sections'][$key]['signup'])) start_signup($T, $chat, $C);
   elseif (isset($C['sections'][$key])) show_section($T, $chat, $C, $key);
 }
@@ -403,6 +428,7 @@ if (isset($update['callback_query'])) {
   if ($data === 'menu') {
     set_step($chat, null);
     count_visit($chat, 'menu');
+    bot_event($chat, $C['lang'], 'menu');
     send_text($T, $chat, $C['fallback'], menu_markup($C));
   } elseif (str_starts_with($data, 'lang:') && in_array(substr($data, 5), BOT_LANGS, true)) {
     switch_lang($T, $chat, $from, substr($data, 5));
@@ -545,6 +571,7 @@ if ($cmd === 'language' && !empty($C['lang_button'])) {
 if ($cmd === 'start' || $cmd === 'menu') {
   set_step($chat, null);
   count_visit($chat, 'start');
+  bot_event($chat, $C['lang'], $cmd, $cmd === 'start' ? $arg : '');
   show_start($T, $chat, $C, $cmd === 'start');
   exit;
 }
@@ -555,4 +582,5 @@ if ($cmd !== '' && is_section($C, $cmd)) {
 }
 if ($cmd === '' && signup_answer($T, $chat, $C, $m, $adminId)) exit;
 
+bot_event($chat, $C['lang'], 'msg');
 send_text($T, $chat, $C['fallback'], menu_markup($C));
