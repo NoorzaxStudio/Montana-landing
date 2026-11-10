@@ -106,19 +106,19 @@ return [
     'support_url' => 'https://t.me/Montanatraderr',
 
     // Shown in Telegram before someone presses Start (max 512 characters).
-    'description' => "Hi, I'm Montana, a former broker analyst 👋\n\nTrading is a battle, and the banks bring their strongest bots ⚔️ Our AI trades gold and major pairs 24/7, by the rules, without fear or greed 🤖\n\nYour money never leaves your own account 🔒 Start with a small amount.\n\nPress Start 👇",
+    'description' => "Hi 👋 This is Lord of Chart, the AI trading bot.\n\nTrading is a battle between traders and banks, and the banks bring their strongest bots ⚔️ Lord of Chart watches gold and major pairs 24/7, by the rules, without fear or greed 🤖\n\nProven results on Myfxbook ✅ Free to join this week.\n\nPress Start 👇",
     // The bot's "About" line on its profile (max 120 characters).
-    'short_description' => 'AI trading bot for gold and major pairs, 24/7 | Your money stays in your account',
+    'short_description' => 'Lord of Chart: AI trading bot for gold and major pairs, 24/7 | Free to join',
     'commands' => [
       'start' => 'Main menu',
       'howto' => 'How to start',
       'support' => 'Questions and support',
-      'language' => 'فارسی / English',
     ],
 
     'start' => [
-      'photo' => 'ai-welcome.jpg',
-      'text' => "Hey 👋 welcome to Montana AI Trading.\n\nI'm Mojtaba Hosseini, known as Montana; a former analyst at brokers and financial institutions. I've seen thousands of trader accounts, and why most of them lose.\n\nToday our AI trades gold and major currency pairs for you, 24/7, rule by rule, without fear or greed 🤖\n\nPick a topic below; each one has a short video from me 👇",
+      // The Lord of Chart motion video (sent as a video, with the menu under it).
+      'photo' => 'lord-of-chart-intro.mp4',
+      'text' => "🎬 Watch this video to find out why most traders lose money, and how Lord of Chart changes that 👇",
       'menu_text' => "Choose from the buttons below 👇",
     ],
 
@@ -131,7 +131,8 @@ return [
     ],
     'signup_button' => "🚀 I want to start",
     'menu_button' => '🔙 Main menu',
-    'lang_button' => '🇮🇷 فارسی',
+    // No language button for English users: they never see that a Persian version exists.
+    'lang_button' => '',
 
     'sections' => [
       'manual' => [
@@ -161,7 +162,7 @@ return [
       'campaign' => 'ai-bot',
       'admin_title' => 'ثبت‌نام ربات AI (انگلیسی) از ربات',
       'photo' => 'ai-start.jpg',
-      'intro' => "🚀 Start with Montana AI Trading\n\nJust 4 short questions, then our team contacts you. You can go back to the menu any time with /start.",
+      'intro' => "🚀 Start with Lord of Chart\n\nJust 4 short questions, then our team contacts you. You can go back to the menu any time with /start.",
       'ask_name' => "1 of 4: Write your full name ✍️",
       'ask_phone' => "2 of 4: Write your WhatsApp or mobile number with the country code (like +234 803 123 4567), or press the button below 📱",
       'phone_button' => '📱 Share my number',

@@ -81,7 +81,7 @@ function menu_markup(array $C): array {
     if ($key === 'channel' && empty($C['channel_url'])) continue;
     $rows[] = [$key === 'channel' ? ['text' => $label, 'url' => $C['channel_url']] : ['text' => $label, 'callback_data' => "s:$key"]];
   }
-  $rows[] = [['text' => $C['lang_button'], 'callback_data' => 'lang:' . ($C['lang'] === 'en' ? 'fa' : 'en')]];
+  if (!empty($C['lang_button'])) $rows[] = [['text' => $C['lang_button'], 'callback_data' => 'lang:' . ($C['lang'] === 'en' ? 'fa' : 'en')]];
   return ['inline_keyboard' => $rows];
 }
 
@@ -497,7 +497,7 @@ if ($cmd === 'start' && in_array($arg, BOT_LANGS, true) && $arg !== $C['lang']) 
   set_lang($from, $arg);
   $C = bot_content($arg);
 }
-if ($cmd === 'language') {
+if ($cmd === 'language' && !empty($C['lang_button'])) {
   switch_lang($T, $chat, $from, $C['lang'] === 'en' ? 'fa' : 'en');
   exit;
 }
