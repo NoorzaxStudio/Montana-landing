@@ -108,7 +108,7 @@ return [
     // Shown in Telegram before someone presses Start (max 512 characters).
     'description' => "🤫 Why do ordinary traders lose money every single day…\n\n…while the banks get richer every single day? 🏦💰\n\nThere's a secret behind it, and I'm going to tell you 🔐\n\n👇 Press START and I'll show you",
     // The bot's "About" line on its profile (max 120 characters).
-    'short_description' => '🤖 Lord of Chart: AI trading signals for gold & major pairs, 24/7 | 🎁 Free to join this week',
+    'short_description' => '🏦 Banks win. Traders lose. Every day. 🤫 Find out why, and how Lord of Chart 🤖 flips the game 👇',
     'commands' => [
       'start' => 'Main menu',
       'howto' => 'How to start',
