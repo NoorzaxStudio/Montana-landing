@@ -492,12 +492,22 @@ if (isset($update['callback_query'])) {
     });
     send_text($T, $chat, (string) $msg);
   } elseif ($from === $adminId && str_starts_with($data, 'bc:')) {
-    $p = bot_store(function (&$d) use ($from) {
+    $p = bot_store(function (&$d) use ($from, $data) {
       $p = $d['pending_bc'][(string) $from] ?? null;
-      unset($d['pending_bc'][(string) $from]);
+      if ($data !== 'bc:test') unset($d['pending_bc'][(string) $from]);
       return $p;
     });
-    if (($data === 'bc:go' || $data === 'bc:gof') && !empty($p['msg'])) {
+    if ($data === 'bc:test' && !empty($p['msg'])) {
+      // Preview: only the admin gets it, the same way users will (copy, then the AI
+      // bot menu 20 seconds later). The send buttons stay so the admin can send after.
+      tg($T, 'copyMessage', ['chat_id' => $chat, 'from_chat_id' => $chat, 'message_id' => (int) $p['msg']], 15);
+      if ($p['lang'] === 'fa') {
+        sleep(20);
+        $F = bot_content('fa_ai');
+        tg($T, 'sendMessage', ['chat_id' => $chat, 'text' => $F['start']['menu_text'], 'reply_markup' => json_encode(menu_markup($F))], 15);
+      }
+      send_text($T, $chat, '🧪 این پیش‌نمایش فقط برای خودت بود. اگه اوکیه، دکمه ارسال رو زیر همون پیام قبلی بزن.');
+    } elseif (($data === 'bc:go' || $data === 'bc:gof') && !empty($p['msg'])) {
       $follow = $data === 'bc:gof' ? 'fa_ai' : '';
       tg($T, 'editMessageReplyMarkup', ['chat_id' => $chat, 'message_id' => $q['message']['message_id'] ?? 0, 'reply_markup' => ['inline_keyboard' => []]], 5);
       $auto = !empty($p['auto']);
@@ -577,6 +587,7 @@ if ($from === $adminId && $adminId) {
     send_text($T, $chat, $auto ? "این پیام الان برای $n کاربر $name فرستاده بشه و بعد هر ۱۲ ساعت تکرار بشه؟" : "این پیام برای $n کاربر $name فرستاده بشه؟", ['inline_keyboard' => [
       [['text' => $auto ? "🔁 ارسال به $n نفر، هر ۱۲ ساعت" : "✅ ارسال به $n نفر", 'callback_data' => 'bc:go']],
       ...($lang === 'fa' ? [[['text' => ($auto ? '🔁' : '✅') . ' همراه دکمه‌های ربات AI (۲۰ ثانیه بعد)', 'callback_data' => 'bc:gof']]] : []),
+      [['text' => '🧪 اول فقط برای خودم (تست)', 'callback_data' => 'bc:test']],
       [['text' => '✖️ لغو', 'callback_data' => 'bc:cancel']],
     ]]);
     exit;
