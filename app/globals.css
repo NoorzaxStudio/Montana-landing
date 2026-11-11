@@ -952,3 +952,25 @@ html:has(footer){scroll-padding-bottom:0}
 }
 @media(max-width:900px){:root[data-theme="dark"] .vs-band::before{background:linear-gradient(180deg,rgba(var(--ink-rgb),.3),var(--panel) 50%,var(--panel) 100%)}}
 @media(max-width:480px){.hero-proof{gap:7px 12px;margin-top:14px;font-size:.7rem}.hero-proof li{max-width:100%}}
+
+/* Clear analysis preview and joining path near the first decision point. */
+.offer-overview{padding-block:clamp(38px,6vw,72px)}
+.offer-overview>.sub{max-width:680px}
+.offer-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:28px}
+.offer-card{min-width:0;padding:clamp(20px,3vw,30px);border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,rgba(var(--acc-rgb),.07),rgba(var(--ink-rgb),.2));box-shadow:0 18px 48px rgba(var(--ink-rgb),.12)}
+.offer-card-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.offer-tag{color:var(--gold-hi);font-size:.76rem;font-weight:700}
+.offer-live{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:.7rem}
+.offer-live i{width:7px;height:7px;border-radius:50%;background:#62c69a;box-shadow:0 0 0 4px rgba(98,198,154,.12)}
+.offer-card h3{margin:18px 0 12px;color:var(--text);font-size:1.18rem;line-height:1.55}
+.offer-checklist,.offer-steps ol{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.offer-checklist li{display:flex;align-items:flex-start;gap:10px;color:var(--muted);font-size:.86rem;line-height:1.75}
+.offer-checklist li::before{content:"✓";flex:none;color:var(--gold-hi);font-weight:800}
+.text-link{display:inline-flex;margin-top:20px;color:var(--gold-hi);font-size:.82rem;font-weight:700;text-decoration:none}
+.offer-steps ol{counter-reset:join}
+.offer-steps li{display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:10px;counter-increment:join}
+.offer-steps li::before{content:counter(join,decimal-leading-zero);grid-row:span 2;color:var(--gold-hi);font:700 .75rem var(--latin)}
+.offer-steps li b{color:var(--text);font-size:.84rem}
+.offer-steps li span{color:var(--muted);font-size:.76rem;line-height:1.7}
+.offer-steps>.btn{margin-top:20px}
+@media(max-width:680px){.offer-grid{grid-template-columns:1fr;gap:12px;margin-top:20px}.offer-card{border-radius:16px}.offer-card h3{font-size:1.05rem}}
