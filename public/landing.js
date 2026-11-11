@@ -273,6 +273,7 @@
     { selector: ".path" },
     { selector: ".vs-band" },
     { selector: ".steps > .step", stagger: true },
+    { selector: ".analysis-journey-step", stagger: true },
     { selector: "#faq details", stagger: true }
   ];
   var targets = [];
