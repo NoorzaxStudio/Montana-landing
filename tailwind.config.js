@@ -1,7 +1,6 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
-  content: ["./app/**/*.{js,jsx}", "./components/**/*.{js,jsx}"],
+  content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -20,10 +19,12 @@ module.exports = {
       },
       backgroundImage: {
         "gold-gradient": "linear-gradient(135deg, #f1d9a7 0%, #c18d3f 100%)",
-        "hero-shade": "linear-gradient(90deg, rgba(8,16,28,.96) 0%, rgba(8,16,28,.83) 48%, rgba(8,16,28,.22) 100%)",
-        "hero-shade-rtl": "linear-gradient(270deg, rgba(8,16,28,.96) 0%, rgba(8,16,28,.83) 48%, rgba(8,16,28,.22) 100%)",
+        "hero-shade":
+          "linear-gradient(90deg, rgba(8,16,28,.96) 0%, rgba(8,16,28,.83) 48%, rgba(8,16,28,.22) 100%)",
+        "hero-shade-rtl":
+          "linear-gradient(270deg, rgba(8,16,28,.96) 0%, rgba(8,16,28,.83) 48%, rgba(8,16,28,.22) 100%)",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [],
 };

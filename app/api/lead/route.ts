@@ -1,13 +1,29 @@
 // Consultation form -> Google Sheet (Apps Script web app). Secrets stay on the server.
+import type { LeadPayload, LeadResponse, SheetLead } from "@/types/lead";
+
 export const runtime = "nodejs";
 
 const PHONE = /^(\+98|0098|0)?9\d{9}$/;
-const clean = (v, n) => String(v ?? "").trim().slice(0, n);
+const clean = (v: unknown, n: number) =>
+  String(v ?? "")
+    .trim()
+    .slice(0, n);
 
-export async function POST(req) {
-  let body;
+export async function POST(req: Request): Promise<Response> {
+  let body: LeadPayload;
   try {
-    body = await req.json();
+    const payload: unknown = await req.json();
+    if (
+      typeof payload !== "object" ||
+      payload === null ||
+      Array.isArray(payload)
+    ) {
+      return Response.json(
+        { ok: false, error: "bad_request" },
+        { status: 400 },
+      );
+    }
+    body = payload as LeadPayload;
   } catch {
     return Response.json({ ok: false, error: "bad_request" }, { status: 400 });
   }
@@ -26,20 +42,26 @@ export async function POST(req) {
   const token = process.env.SHEET_TOKEN;
   if (!url || !token) {
     console.error("lead: SHEET_WEBHOOK_URL or SHEET_TOKEN is not set");
-    return Response.json({ ok: false, error: "not_configured" }, { status: 500 });
+    return Response.json(
+      { ok: false, error: "not_configured" },
+      { status: 500 },
+    );
   }
 
   try {
+    const payload: SheetLead = { token, name, phone, email, source };
     const r = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, name, phone, email, source }),
+      body: JSON.stringify(payload),
       redirect: "follow",
       cache: "no-store",
     });
     const text = await r.text();
-    let data = {};
-    try { data = JSON.parse(text); } catch {}
+    let data: LeadResponse = {};
+    try {
+      data = JSON.parse(text);
+    } catch {}
     if (!r.ok || data.ok !== true) {
       console.error("lead: sheet rejected", r.status, text.slice(0, 200));
       return Response.json({ ok: false, error: "sheet" }, { status: 502 });

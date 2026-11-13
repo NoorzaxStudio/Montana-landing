@@ -1,10 +1,13 @@
 
-@tailwind utilities;
+@config "../tailwind.config.js";
+@import "tailwindcss/utilities";
 
 /* Layout: personal-brand page in one RTL column, phone first. Hero and signal sections are full photos with a gradient under the text; the story section mixes a faded scene with a cut-out. Live market tape under the hero. */
 
 :root{
   --content-max:1240px;
+  --landing-section-gap:64px;
+  --landing-section-gutter:16px;
   --ink:#f6f8fb;--ink-rgb:246,248,251;
   --panel:#ffffff;--panel-rgb:255,255,255;
   --panel-2:#eef2f7;
@@ -240,6 +243,8 @@ footer .page{padding-block:28px 40px;display:grid;gap:14px}
   .brand small{display:none}
   .mbar{display:flex;position:fixed;inset-inline:0;bottom:0;z-index:30;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:rgba(var(--ink-rgb),.95);border-top:1px solid var(--line);direction:var(--dir)}
   .mbar .btn{width:100%}
+  .mbar{transition:transform .25s ease,visibility .25s}
+  .mbar.is-hidden{transform:translateY(100%);visibility:hidden}
   .compare{grid-template-columns:1fr}
   .scenes{min-height:380px}
   .fact b{font-size:2.4rem}
@@ -391,12 +396,13 @@ footer .page{padding-block:28px 40px;display:grid;gap:14px}
 .site-nav{display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--line);border-radius:999px;background:rgba(var(--panel-rgb),.5)}
 .site-nav a{display:inline-flex;min-height:34px;align-items:center;padding:0 14px;border-radius:999px;color:var(--muted);font-size:.78rem;text-decoration:none;transition:background .18s,color .18s}
 .site-nav a:hover,.site-nav a:focus-visible{background:rgba(var(--acc-rgb),.09);color:var(--gold-hi)}
-.site-actions{direction:var(--dir)}
+.site-nav a.is-active{background:rgba(var(--acc-rgb),.14);color:var(--gold-hi);box-shadow:inset 0 0 0 1px rgba(var(--acc-rgb),.28)}
+.site-actions{direction:var(--dir);gap:8px}
 .site-toggle{display:inline-flex;width:40px;height:40px;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:999px;background:rgba(var(--panel-rgb),.55);color:var(--text);cursor:pointer;transition:border-color .18s,background .18s,color .18s}
 .site-language{font-family:var(--font-iran-sans),sans-serif;font-size:.78rem;font-weight:700}
 .site-toggle:hover{border-color:rgba(var(--acc-rgb),.5);background:rgba(var(--acc-rgb),.07);color:var(--gold-hi)}
 .site-toggle svg{width:17px;height:17px}
-.site-channel{min-height:40px;padding:0 16px;border:0;background:var(--button-bg);box-shadow:0 5px 18px rgba(var(--button-rgb),.2);color:var(--button-fg)!important;text-decoration:none;transition:background .15s,transform .15s}
+.site-channel{display:inline-flex;height:36px;min-height:36px;align-items:center;justify-content:center;gap:8px;padding:0 12px;border:0;border-radius:999px;background:var(--button-bg);box-shadow:0 5px 18px rgba(var(--button-rgb),.2);color:var(--button-fg)!important;font-size:.78rem;line-height:1.2;text-decoration:none;white-space:nowrap;transition:background .15s,transform .15s}
 .site-channel:hover{background:var(--button-hover);transform:translateY(-1px)}
 .site-mobile-menu{display:none}
 .site-mobile-menu summary{display:grid;width:40px;height:40px;place-items:center;border:1px solid var(--line);border-radius:999px;background:rgba(var(--panel-rgb),.55);color:var(--text);cursor:pointer;list-style:none}
@@ -406,6 +412,7 @@ footer .page{padding-block:28px 40px;display:grid;gap:14px}
 .site-nav-mobile{display:grid;gap:3px;padding:0;border:0;background:transparent}
 .site-nav-mobile a{min-height:44px;border-radius:12px;color:var(--text);font-size:.88rem}
 .site-nav-mobile a:hover{background:rgba(var(--acc-rgb),.08)}
+.site-nav-mobile a.is-active{background:rgba(var(--acc-rgb),.12);color:var(--gold-hi);box-shadow:inset 0 0 0 1px rgba(var(--acc-rgb),.28)}
 .site-channel-mobile{display:flex;width:100%;margin-top:8px}
 @media(max-width:1023px){.site-nav:not(.site-nav-mobile),.site-actions>.site-channel{display:none}.site-mobile-menu{display:block}}
 @media(max-width:640px){.site-header-inner{height:70px}.site-brand-name{font-size:.8rem;letter-spacing:.18em}.site-actions{gap:6px}.site-toggle,.site-mobile-menu summary{width:44px;height:44px}}
@@ -427,6 +434,7 @@ footer .page{padding-block:28px 40px;display:grid;gap:14px}
 .tape.tv{min-height:46px;padding:0 4px}
 .tape.tv::before,.tape.tv::after{display:none}
 .tape.tv .tradingview-widget-copyright{display:none}
+
 .irr span.na{color:var(--muted)}
 
 /* Hero: cinematic photo treatment with a subtle abstract SVG backdrop. */
@@ -509,6 +517,7 @@ footer .page{padding-block:28px 40px;display:grid;gap:14px}
 .market-section .irr>div:nth-child(4)::before{content:"₿";border-color:rgba(234,133,63,.2);background:rgba(234,133,63,.1);color:#c66b28}
 .market-section .irr b{display:flex;min-height:30px;align-items:center;padding-inline-start:40px;color:#c9c3bd;font-size:.78rem;line-height:1.45;text-align:start}
 .market-section .irr span[data-k]{display:block;margin-top:7px;color:#f4e9df;font-family:var(--body);font-size:clamp(1rem,1.55vw,1.28rem);font-variant-numeric:tabular-nums;font-weight:700;line-height:1.4;text-align:start;white-space:nowrap}
+.market-section .irr time{display:block;margin-top:3px;color:#aaa39e;font-size:.65rem;line-height:1.4}
 .market-section .irr.is-loading span[data-k]{width:min(100%,8.5em);height:1.1em;border-radius:999px;background:linear-gradient(100deg,rgba(var(--fg-rgb),.06) 20%,rgba(var(--fg-rgb),.16) 45%,rgba(var(--fg-rgb),.06) 70%);background-size:220% 100%;color:transparent!important;animation:priceShimmer 1.35s ease-in-out infinite}
 @keyframes priceShimmer{to{background-position:-220% 0}}
 .market-section .irr small{display:inline-block;margin-inline-start:5px;color:#aaa39e;font-size:.7rem}
@@ -738,9 +747,12 @@ html:has(footer){scroll-padding-bottom:0}
 }
 
 /* Shared content width for every bounded landing-page surface. */
-.site-header-inner{max-width:var(--content-max)}
+.site-header-inner{width:min(var(--content-max),calc(100% - 2 * var(--landing-section-gutter)));max-width:var(--content-max);margin-inline:auto}
 .hero-band .page{max-width:var(--content-max)}
-#tv,#about-me,#channel,#learning-path,#faq{scroll-margin-top:94px}
+/* Header height + 16px, so a nav jump lands the section top just below the sticky header. */
+#top > section{scroll-margin-top:91px}
+@media(max-width:640px){#top > section{scroll-margin-top:87px}}
+#top{scroll-margin-top:100vh}
 
 /* Light theme surfaces for the selected landing sections. */
 :root:not([data-theme="dark"]) .hero-band{
@@ -842,8 +854,8 @@ html:has(footer){scroll-padding-bottom:0}
 :root:not([data-theme="dark"]) #top .page.block .road .fine{color:var(--muted)}
 
 /* Keep the learning path and final Q&A aligned with the landing content rail. */
-#learning-path{max-width:var(--content-max);margin-inline:auto}
-#faq{width:100%;max-width:none;margin-inline:auto}
+#learning-path .path{max-width:var(--content-max);margin-inline:auto}
+#faq .faq{width:100%;max-width:none;margin-inline:auto}
 
 /* One-time scroll reveal for the remaining key sections. */
 .scroll-reveal-ready .scroll-reveal:not(.is-visible){opacity:0;transform:translate3d(0,12px,0)}
@@ -926,7 +938,7 @@ html:has(footer){scroll-padding-bottom:0}
 .analysis-journey::before{content:"";position:absolute;z-index:-1;inset-block-start:36px;inset-inline:9%;height:1px;background:linear-gradient(90deg,transparent,rgba(var(--acc-rgb),.48),transparent)}
 .analysis-journey-step{position:relative;display:grid;grid-template-rows:36px auto;align-content:start;gap:12px;min-width:0;padding:20px 16px 22px;border-inline-start:1px solid var(--line)}
 .analysis-journey-step:first-child{border-inline-start:0}
-.analysis-journey-index{z-index:1;display:grid;width:36px;height:36px;place-items:center;border:1px solid rgba(var(--acc-rgb),.55);border-radius:50%;background:var(--panel);box-shadow:0 0 0 5px rgba(var(--ink-rgb),.42);color:var(--gold-hi);font:700 .76rem var(--latin);direction:ltr}
+.analysis-journey-index{z-index:1;display:grid;width:36px;height:36px;place-items:center;border:1px solid rgba(var(--acc-rgb),.55);border-radius:50%;background:var(--panel);box-shadow:0 0 0 5px rgba(var(--ink-rgb),.42);color:var(--gold-hi);font:700 .8rem/1 var(--display);font-variant-numeric:tabular-nums;direction:ltr}
 .analysis-journey-copy{min-width:0}
 .analysis-journey-copy h3{margin:0 0 6px;color:var(--text);font-size:1rem;line-height:1.55}
 .analysis-journey-copy p{margin:0;color:var(--muted);font-size:.82rem;line-height:1.8}
@@ -963,14 +975,68 @@ html:has(footer){scroll-padding-bottom:0}
 .offer-live{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:.7rem}
 .offer-live i{width:7px;height:7px;border-radius:50%;background:#62c69a;box-shadow:0 0 0 4px rgba(98,198,154,.12)}
 .offer-card h3{margin:18px 0 12px;color:var(--text);font-size:1.18rem;line-height:1.55}
-.offer-checklist,.offer-steps ol{display:grid;gap:10px;margin:0;padding:0;list-style:none}
-.offer-checklist li{display:flex;align-items:flex-start;gap:10px;color:var(--muted);font-size:.86rem;line-height:1.75}
-.offer-checklist li::before{content:"✓";flex:none;color:var(--gold-hi);font-weight:800}
+.offer-steps ol{display:grid;gap:10px;margin:0;padding:0;list-style:none}
 .text-link{display:inline-flex;margin-top:20px;color:var(--gold-hi);font-size:.82rem;font-weight:700;text-decoration:none}
 .offer-steps ol{counter-reset:join}
 .offer-steps li{display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:10px;counter-increment:join}
 .offer-steps li::before{content:counter(join,decimal-leading-zero);grid-row:span 2;color:var(--gold-hi);font:700 .75rem var(--latin)}
+:root[lang="fa"] .offer-steps li::before{content:counter(join,persian);font:700 .9rem var(--display)}
 .offer-steps li b{color:var(--text);font-size:.84rem}
 .offer-steps li span{color:var(--muted);font-size:.76rem;line-height:1.7}
 .offer-steps>.btn{margin-top:20px}
+.offer-preview,.offer-steps{display:flex;flex-direction:column}
+.offer-preview>.text-link{margin-top:auto;padding-top:4px;align-self:flex-start}
+.offer-steps>.btn{margin-top:auto;align-self:flex-start}
+.offer-steps ol{margin-bottom:20px}
+.signal-ticket{display:grid;gap:12px;margin:0 0 18px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.signal-ticket-head{display:flex;align-items:center;gap:10px}
+.signal-ticket-head b{color:var(--text);font:700 1rem var(--latin);letter-spacing:.02em}
+.signal-side{padding:3px 10px;border-radius:999px;background:rgba(98,198,154,.14);color:#2f9e72;font-size:.72rem;font-weight:700}
+.signal-sample{margin-inline-start:auto;padding:3px 10px;border:1px dashed var(--line);border-radius:999px;color:var(--muted);font-size:.68rem}
+.signal-levels{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;margin:0}
+.signal-levels div{min-width:0;padding:10px 12px;border-radius:12px;background:var(--panel-2)}
+.signal-levels dt{color:var(--muted);font-size:.7rem}
+.signal-levels dd{margin:4px 0 0;color:var(--text);font-size:.78rem;font-weight:700;line-height:1.5}
+.signal-levels dd[dir="ltr"]{font:700 .98rem var(--latin);text-align:end}
+.signal-levels div:nth-child(2) dd{color:#d65a4f}
+.signal-reason{margin:0;color:var(--muted);font-size:.8rem;line-height:1.8}
+.signal-reason b{color:var(--text)}
+.signal-status{display:flex;align-items:center;gap:8px;margin:0;padding-top:10px;border-top:1px solid var(--line);color:var(--muted);font-size:.74rem;line-height:1.6}
+.signal-status i{flex:none;width:7px;height:7px;border-radius:50%;background:#62c69a;box-shadow:0 0 0 4px rgba(98,198,154,.12)}
+@media(max-width:480px){.signal-levels{grid-template-columns:1fr 1fr}.signal-levels div:last-child{grid-column:1/-1}}
 @media(max-width:680px){.offer-grid{grid-template-columns:1fr;gap:12px;margin-top:20px}.offer-card{border-radius:16px}.offer-card h3{font-size:1.05rem}}
+
+/* Keep landing section wrappers aligned and use one vertical rhythm. */
+#top > *{margin-block:var(--landing-section-gap) 0}
+#top > .hero-band{margin-block-start:0}
+#top > :not(.hero-band){width:min(var(--content-max),calc(100% - 2 * var(--landing-section-gutter)));margin-inline:auto}
+/* The gap above is a section's only outer spacing, and its box fills the shared frame. */
+#top > .page.block{padding:0}
+footer{margin-top:var(--landing-section-gap)}
+/* Hero image and copy sit on the same frame edges as the sections below. */
+@media(min-width:901px){
+  .hero-band .page{width:calc(100% - 2 * var(--landing-section-gutter));max-width:var(--content-max);padding-inline:0}
+  .hero-media{left:max(var(--landing-section-gutter),calc((100% - var(--content-max)) / 2))}
+  :root[lang="en"] .hero-media{left:auto;right:max(var(--landing-section-gutter),calc((100% - var(--content-max)) / 2))}
+}
+@media(min-width:381px) and (max-width:900px){
+  .hero-band .page{padding-inline:var(--landing-section-gutter)}
+  .hero-media{inset-inline-end:var(--landing-section-gutter)}
+}
+#top > .scroll-reveal:not(.is-visible){transform:none}
+#top > .scroll-reveal.is-visible{animation-name:landingSectionFade}
+@keyframes landingSectionFade{from{opacity:0}to{opacity:1}}
+@media(max-width:700px){
+  :root{--landing-section-gap:48px;--landing-section-gutter:12px}
+}
+
+/* Laptops and tablet landscape: the widescreen layout scaled down as a whole, so its proportions stay the same. */
+/* On html, not body: Chrome skips anchor scrolling when body is zoomed. */
+/* Text is rem-based: the larger root offsets part of the zoom so small labels stay ~10px+. */
+@media (min-width:1024px) and (max-width:1599px){html{zoom:.9;font-size:106.25%}}
+/* Touch screens: every tappable link at least 44px tall. */
+@media (pointer:coarse){
+  .text-link,footer .flinks a,footer .brand{display:inline-flex;align-items:center;min-height:44px}
+  footer .flinks{gap:0 18px}
+  .site-nav:not(.site-nav-mobile) a{min-height:44px}
+}
